@@ -1,5 +1,5 @@
-#include <aif/Stopwatch.h>
-#include <aif/Logger.h>
+#include <aif/tools/Stopwatch.h>
+#include <aif/log/Logger.h>
 
 #include <gtest/gtest.h>
 #include <iostream>

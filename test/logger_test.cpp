@@ -1,4 +1,4 @@
-#include <aif/Logger.h>
+#include <aif/log/Logger.h>
 
 #include <gtest/gtest.h>
 #include <iostream>

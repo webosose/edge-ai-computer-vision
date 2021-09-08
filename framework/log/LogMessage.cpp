@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <aif/LogMessage.h>
+#include <aif/log/LogMessage.h>
 
 namespace aif {
 

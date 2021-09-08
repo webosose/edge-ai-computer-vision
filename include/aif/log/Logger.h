@@ -5,7 +5,7 @@
 #include <mutex>
 #include <cstring>
 
-#include <aif/LogMessage.h>
+#include <aif/log/LogMessage.h>
 
 namespace aif {
 

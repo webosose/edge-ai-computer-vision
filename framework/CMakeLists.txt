@@ -53,7 +53,7 @@ ENDIF(WITH_EDGETPU)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wl,--no-as-needed")
 
-set(LIB_NAME ai-framework)
+set(LIB_NAME ${PROJECT_NAME})
 set(HDR_DIR ${CMAKE_SOURCE_DIR}/framework)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/framework)
 
@@ -69,11 +69,11 @@ link_directories(
 
 # Source Files
 
-set(SRC_FILES
-    ${SRC_DIR}/LogMessage.cpp
-    ${SRC_DIR}/Logger.cpp
-    ${SRC_DIR}/Stopwatch.cpp
-)
+#set(SRC_FILES
+#    ${SRC_DIR}/LogMessage.cpp
+#    ${SRC_DIR}/Logger.cpp
+#    ${SRC_DIR}/Stopwatch.cpp
+#)
 
 set(LIBS
     ${Boost_LIBRARIES}
@@ -105,18 +105,5 @@ target_link_libraries(${LIB_NAME}
     ${LIBS}
 )
 
-install(
-    DIRECTORY ${INCLUDE_DIR}/aif
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aif
-)
-
-install(
-    FILES ${CMAKE_SOURCE_DIR}/files/${LIB_NAME}.pc
-    DESTINATION lib/pkgconfig
-)
-
-install(
-    TARGETS ${LIB_NAME}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/log")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/tools")
