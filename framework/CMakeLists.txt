@@ -72,6 +72,7 @@ link_directories(
 set(SRC_FILES
     ${SRC_DIR}/LogMessage.cpp
     ${SRC_DIR}/Logger.cpp
+    ${SRC_DIR}/Stopwatch.cpp
 )
 
 set(LIBS
