@@ -7,155 +7,135 @@
 #include <fstream>
 #include <functional>
 
-using namespace aif;
+#define RAPIDJSON_HAS_STDSTRING 1
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
-#if 0
+using namespace aif;
+namespace rj = rapidjson;
+
 //--------------------------------------------------
-// Echo server
+// JSON DayTime server
 //--------------------------------------------------
-class EchoSession : public WSServerSession
+class DayTimeSession : public WSServerSession
 {
 public:
-    EchoSession(tcp::socket&& socket)
+    DayTimeSession(tcp::socket&& socket)
         : WSServerSession(std::move(socket))
     {}
 
-    ~EchoSession() override
+    ~DayTimeSession() override
     {
     }
 
-    void onInit() override
+    void onHandleMessage(const std::string& message) override
     {
-        TRACE("onInit()");
+        // json parsing
+        rj::Document payload;
+        payload.Parse(message.c_str());
+
+        std::string req = payload["req"].GetString();
+
+        if (req == "daytime") {
+            onHandleDayTime();
+        } else {
+            onHandleError(req);
+        }
     }
 
-    void onHandleRequest(const std::string& request) override
+    void onHandleDayTime()
     {
-        TRACE("onHandleRequest(): ", request);
+        // { returnCode: 0, daytime: "xxx" }
+        rj::Document res;
+        res.SetObject();
+        res.AddMember("returnCode", 0, res.GetAllocator());
+        res.AddMember("daytime", daytimeString(), res.GetAllocator());
+
+        rj::StringBuffer buffer;
+        rj::Writer<rj::StringBuffer> writer(buffer);
+        res.Accept(writer);
+
+        response(buffer.GetString());
+    }
+
+    std::string daytimeString()
+    {
+        std::stringstream msg;
+        std::time_t now = time(nullptr);
+        msg << std::ctime(&now);
+        return msg.str();
+    }
+
+    void onHandleError(const std::string& req)
+    {
+        // { returnCode: 1, error: "xxx" }
+        rj::Document res;
+        res.SetObject();
+        res.AddMember("returnCode", 1, res.GetAllocator());
+        res.AddMember("error", std::string("unknow request: ") + req, res.GetAllocator());
+
+        rj::StringBuffer buffer;
+        rj::Writer<rj::StringBuffer> writer(buffer);
+        res.Accept(writer);
+
+        response(buffer.GetString());
     }
 };
 
-class EchoServer : public WSServer
+class DayTimeServer : public WSServer
 {
 public:
-    EchoServer(asio::io_context& ioc, tcp::endpoint endpoint)
+    DayTimeServer(asio::io_context& ioc, tcp::endpoint endpoint)
         : WSServer(ioc, endpoint)
     {}
 
-    ~EchoServer() override
+    ~DayTimeServer() override
     {}
 
     std::shared_ptr<WSServerSession> createSession(tcp::socket&& socket) override
     {
-        return std::make_shared<EchoSession>(std::move(socket));
+        return std::make_shared<DayTimeSession>(std::move(socket));
     }
 };
 
 //--------------------------------------------------
-// Asynchronous Echo client
+// JSON DayTime client
 //--------------------------------------------------
 
-using EchoCallback = std::function<void(const std::string&)>;
+using DayTimeCallback = std::function<void(const std::string&)>;
 
-class EchoClient : public WSClient
+class DayTimeClient : public WSClient
 {
-    EchoCallback m_echoCb;
 public:
-    EchoClient(asio::io_context& ioc)
-        : WSClient(ioc)
-        , m_echoCb(nullptr)
+    DayTimeClient(asio::io_context& ioc, ErrorCallback errorCb = nullptr)
+        : WSClient(ioc, errorCb)
     {}
 
-    ~EchoClient() override
+    ~DayTimeClient() override
     {}
 
-    t_aif_status echo(std::string& message, EchoCallback cb = nullptr)
+    t_aif_status getDayTimeAsync(DayTimeCallback cb)
     {
-        try {
+        // { req: "daytime" }
+        rj::Document payload;
+        payload.SetObject();
+        payload.AddMember("req", "daytime", payload.GetAllocator());
 
+        rj::StringBuffer buffer;
+        rj::Writer<rj::StringBuffer> writer(buffer);
+        payload.Accept(writer);
+
+        sendMessage(buffer.GetString(), [&](const t_aif_event& e){
+            TRACE("e.type: ", e.type, ", e.data: ", e.data);
             if (cb) {
-                m_echoCb = cb;
+                cb(e.data);
             }
+        });
 
-            // Send the message
-            m_ws.async_write(
-                asio::buffer(message),
-                beast::bind_front_handler(
-                    &EchoClient::onSendEcho,
-                    std::static_pointer_cast<EchoClient>(shared_from_this())));
-
-            return kAifOk;
-        } catch(beast::system_error const& se) {
-            if(se.code() == websocket::error::closed) {
-                Logi("connection closed.");
-            } else {
-                Loge(__func__, "Error: [", se.code() , "] ", se.code().message());
-            }
-            return kAifError;
-        } catch(const std::exception& e) {
-            Loge(__func__, "Error: ", e.what());
-            return kAifError;
-        }
-    }
-
-private:
-    void onSendEcho(
-        beast::error_code ec,
-        std::size_t bytes_transferred)
-    {
-        boost::ignore_unused(bytes_transferred);
-
-        try {
-            if (ec)
-                throw beast::system_error(ec);
-
-            // Read a message into our buffer
-            m_ws.async_read(
-                m_buffer,
-                beast::bind_front_handler(
-                    &EchoClient::onRecvEcho,
-                    std::static_pointer_cast<EchoClient>(shared_from_this())));
-
-        } catch(beast::system_error const& se) {
-            if(se.code() == websocket::error::closed) {
-                Logi("connection closed.");
-            } else {
-                Loge(__func__, "Error: [", se.code() , "] ", se.code().message());
-            }
-        } catch(const std::exception& e) {
-            Loge(__func__, "Error: ", e.what());
-        }
-    }
-
-    void onRecvEcho(
-        beast::error_code ec,
-        std::size_t bytes_transferred)
-    {
-        boost::ignore_unused(bytes_transferred);
-
-        try {
-            if (ec)
-                throw beast::system_error(ec);
-
-            // read echo message....
-
-            if (m_echoCb != nullptr) {
-                m_echoCb("Received echo message..");
-            }
-
-        } catch(beast::system_error const& se) {
-            if(se.code() == websocket::error::closed) {
-                Logi("connection closed.");
-            } else {
-                Loge(__func__, "Error: [", se.code() , "] ", se.code().message());
-            }
-        } catch(const std::exception& e) {
-            Loge(__func__, "Error: ", e.what());
-        }
+        return kAifOk;
     }
 };
-
-#endif
 
 //--------------------------------------------------
 // WebSocketServer Test
@@ -232,6 +212,65 @@ TEST_F(WebSocketTest, ws02_wsclient_async)
                      EXPECT_TRUE(e.type == kWebSocketClose);
                 });
             });
+    });
+
+    // Run the I/O service. The call will return when
+    // the socket is closed.
+    ioc.run();
+}
+
+TEST_F(WebSocketTest, ws03_daytime_server)
+{
+    try {
+        auto const address = asio::ip::make_address("0.0.0.0");
+        auto const port = static_cast<unsigned short>(std::atoi("8080"));
+        auto const threads = 1;
+
+        // The io_context is required for all I/O
+        asio::io_context ioc{threads};
+
+        // Create and launch a listening port
+        std::make_shared<DayTimeServer>(ioc, tcp::endpoint{address, port})->run();
+
+        // Run the I/O service on the requested number of threads
+        std::vector<std::thread> v;
+        v.reserve(threads - 1);
+        for(auto i = threads - 1; i > 0; --i)
+            v.emplace_back(
+            [&ioc]
+            {
+                ioc.run();
+            });
+        ioc.run();
+
+        EXPECT_TRUE(true);
+
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        EXPECT_TRUE(false);
+    }
+}
+
+TEST_F(WebSocketTest, ws04_daytime_client)
+{
+    auto const host = "0.0.0.0";
+    auto const port = "8080";
+
+    // The io_context is required for all I/O
+    asio::io_context ioc;
+    auto client = std::make_shared<DayTimeClient>(ioc, [&](const t_aif_event& e) {
+        TRACE("e.type: ", e.type, ", e.data: ", e.data);
+    });
+
+    client->open(host, port, [&](const t_aif_event& e) {
+        TRACE("e.type: ", e.type, ", e.data: ", e.data);
+        EXPECT_TRUE(e.type == kWebSocketOpen);
+
+        client->getDayTimeAsync([&](const std::string& data){
+            TRACE("daytime: ", data);
+            EXPECT_TRUE(data.size() > 0);
+            client->close();
+        });
     });
 
     // Run the I/O service. The call will return when
