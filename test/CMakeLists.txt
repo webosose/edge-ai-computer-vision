@@ -76,6 +76,8 @@ set(SRC_FILES
     ${SRC_DIR}/face_descriptor_test.cpp
     ${SRC_DIR}/face_detector_test.cpp
     ${SRC_DIR}/face_param_test.cpp
+    ${SRC_DIR}/posenet_descriptor_test.cpp
+    ${SRC_DIR}/posenet_detector_test.cpp
     ${GTEST_DIR}/gtest-all.cc
     ${GTEST_DIR}/test_main.cpp
 )

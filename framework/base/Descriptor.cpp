@@ -1,5 +1,4 @@
 #include <aif/base/Descriptor.h>
-#include <aif/log/Logger.h>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>

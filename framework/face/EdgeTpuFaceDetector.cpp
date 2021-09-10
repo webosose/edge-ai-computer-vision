@@ -1,7 +1,7 @@
 #include <aif/face/EdgeTpuFaceDetector.h>
-#include <aif/base/Utils.h>
-#include <aif/log/Logger.h>
 #include <aif/tools/Stopwatch.h>
+#include <aif/tools/Utils.h>
+#include <aif/log/Logger.h>
 
 #include <tensorflow/lite/kernels/register.h>
 #include <tensorflow/lite/tools/gen_op_registration.h>

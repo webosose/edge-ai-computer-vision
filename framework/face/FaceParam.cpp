@@ -1,5 +1,4 @@
 #include <aif/face/FaceParam.h>
-#include <aif/base/Utils.h>
 #include <aif/log/Logger.h>
 
 #include <iostream>

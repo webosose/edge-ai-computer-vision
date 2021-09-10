@@ -4,7 +4,7 @@
 #include <aif/face/EdgeTpuFaceDetector.h>
 #endif
 
-#include <aif/base/Utils.h>
+#include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
 #include <opencv2/opencv.hpp>

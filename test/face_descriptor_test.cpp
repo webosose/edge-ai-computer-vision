@@ -1,6 +1,6 @@
 #include <aif/face/FaceDescriptor.h>
-#include <aif/base/Utils.h>
 #include <aif/log/Logger.h>
+#include <aif/tools/Utils.h>
 
 #include <gtest/gtest.h>
 #include <iostream>

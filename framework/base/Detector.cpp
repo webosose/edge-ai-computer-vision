@@ -1,7 +1,7 @@
 #include <aif/base/Detector.h>
-#include <aif/base/Utils.h>
-#include <aif/log/Logger.h>
 #include <aif/tools/Stopwatch.h>
+#include <aif/tools/Utils.h>
+#include <aif/log/Logger.h>
 
 using aif::Stopwatch;
 
