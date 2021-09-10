@@ -16,4 +16,4 @@ DetectorParam::~DetectorParam()
 {
 }
 
-}
+} // end of namespace aif

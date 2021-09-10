@@ -19,7 +19,6 @@ Detector::Detector(
 
 Detector::~Detector()
 {
-    m_interpreter.reset();
 }
 
 t_aif_status Detector::init()
@@ -127,4 +126,4 @@ t_aif_status Detector::detect(
     }
 }
 
-}
+} // end of namespace aif

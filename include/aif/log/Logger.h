@@ -12,10 +12,12 @@ namespace aif {
 class Logger
 {
 public:
-    static void init();
+    static void init(LogLevel loglevel = LogLevel::DEBUG);
 
 //    static std::shared_ptr<Logger> get();
     static Logger& getInstance();
+    static LogLevel strToLogLevel(const std::string& str);
+    static std::string logLevelToStr(LogLevel level);
 
     //Logger() = default;
 
@@ -43,6 +45,7 @@ public:
 private:
     static std::unique_ptr<Logger> s_instance;
     static std::once_flag s_onceFlag;
+    static aif::LogLevel s_logLevel;
 //    static std::mutex s_mutex;
 
     Logger() = default;
@@ -112,4 +115,4 @@ private:
 
 #endif
 
-#endif // AIF_LOGGGER_H
+#endif // AIF_LOGGER_H

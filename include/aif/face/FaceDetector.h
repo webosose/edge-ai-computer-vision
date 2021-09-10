@@ -22,7 +22,7 @@ protected:
 
     t_aif_status generateAnchors(int width, int height);
     t_aif_status faceDetect(std::shared_ptr<Descriptor>& descriptor);
-    float calculateScale( float min_scale, float max_scale, int stride_index, int num_strides);
+    float calculateScale(float min_scale, float max_scale, int stride_index, int num_strides);
 
 protected:
     std::vector<t_aif_anchor> m_anchors;

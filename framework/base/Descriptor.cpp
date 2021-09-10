@@ -37,4 +37,4 @@ std::string Descriptor::toStr()
     return buffer.GetString();
 }
 
-}
+} // end of namespace aif

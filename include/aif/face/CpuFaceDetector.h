@@ -22,10 +22,6 @@ protected:
     t_aif_status compileModel() override;
 
     t_aif_status fillInputTensor(const cv::Mat& img) override;
-
-    // virtual t_aif_status generateAnchors(int width, int height);
-
-    // virtual t_aif_status faceDetect(FaceDescriptorList& foundFaces);
 };
 
 //------------------------------------------------------

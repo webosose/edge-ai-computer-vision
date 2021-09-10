@@ -10,11 +10,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <tensorflow/lite/interpreter.h>
-// #include <tensorflow/lite/kernels/register.h>
-// #include <tensorflow/lite/model.h>
-// #include <tensorflow/lite/tools/gen_op_registration.h>
-// #include <tensorflow/lite/kernels/internal/reference/non_max_suppression.h>
-
 
 namespace aif {
 
@@ -93,7 +88,7 @@ t_aif_status fillInputTensor(
         else // shrink...
             cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_AREA);
 
-        std::cout << "resized size: " << img_resized.size() << std::endl;
+        TRACE("resized size: ", img_resized.size());
         if (img_resized.rows != height || img_resized.cols != width) {
             throw std::runtime_error("image resize failed!!");
         }

@@ -3,8 +3,8 @@
 
 #include <aif/base/Descriptor.h>
 #include <aif/base/Types.h>
-#define RAPIDJSON_HAS_STDSTRING 1
-#include <rapidjson/document.h>
+// #define RAPIDJSON_HAS_STDSTRING 1
+// #include <rapidjson/document.h>
 
 namespace aif {
 
