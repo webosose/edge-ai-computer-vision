@@ -1,0 +1,48 @@
+#ifndef AIF_EDGE_FACE_DETECTOR_H
+#define AIF_EDGE_FACE_DETECTOR_H
+
+#include <aif/face/FaceDetector.h>
+#include <edgetpu.h>
+
+namespace aif {
+
+//------------------------------------------------------
+// EdgeTpuFaceDetector
+//------------------------------------------------------
+class EdgeTpuFaceDetector : public FaceDetector
+{
+public:
+    EdgeTpuFaceDetector(
+        const std::string& modelPath,
+        const std::shared_ptr<DetectorParam>& param);
+
+    virtual ~EdgeTpuFaceDetector();
+
+protected:
+
+    t_aif_status compileModel() override;
+
+    t_aif_status fillInputTensor(const cv::Mat& img) override;
+
+    // virtual t_aif_status generateAnchors(int width, int height);
+
+    // virtual t_aif_status faceDetect(FaceDescriptorList& foundFaces);
+
+protected:
+    std::shared_ptr<edgetpu::EdgeTpuContext> m_edgetpuContext;
+};
+
+//------------------------------------------------------
+// EdgeTpuShortRangeFaceDetector
+//------------------------------------------------------
+class EdgeTpuShortRangeFaceDetector : public EdgeTpuFaceDetector
+{
+public:
+    EdgeTpuShortRangeFaceDetector();
+
+    virtual ~EdgeTpuShortRangeFaceDetector();
+};
+
+} // end of namespace aif
+
+#endif // AIF_EDGE_FACE_DETECTOR_H
