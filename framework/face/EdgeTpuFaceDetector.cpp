@@ -163,7 +163,7 @@ FaceParam(
 //------------------------------------------------------
 EdgeTpuShortRangeFaceDetector::EdgeTpuShortRangeFaceDetector()
     : EdgeTpuFaceDetector(
-        "model/face-detector-quantized_edgetpu.tflite",
+        "/usr/share/aif/model/face-detector-quantized_edgetpu.tflite",
         std::make_shared<FaceParam>(
             std::vector<int>{8, 16, 16, 16},    // strides
             std::vector<float>{1.0f},             // optAspectRatios

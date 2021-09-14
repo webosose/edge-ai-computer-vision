@@ -36,7 +36,7 @@ TEST_F(PosenetDetectorTest, pd01_cpu_init)
 {
     CpuPosenetDetector pd;
     EXPECT_EQ(pd.init(), kAifOk);
-    EXPECT_EQ(pd.getModelPath(), "model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite");
+    EXPECT_EQ(pd.getModelPath(), "/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite");
     auto modelInfo = pd.getModelInfo();
     EXPECT_EQ(modelInfo.height, 353);
     EXPECT_EQ(modelInfo.width, 481);
@@ -50,7 +50,7 @@ TEST_F(PosenetDetectorTest, pd02_cpu_from_person)
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
-    EXPECT_TRUE(pd.detectFromImage("images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(pd.detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }
 
@@ -62,7 +62,7 @@ TEST_F(PosenetDetectorTest, pd03_cpu_from_people)
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
-    EXPECT_TRUE(pd.detectFromImage("images/people.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(pd.detectFromImage("/usr/share/aif/images/people.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 5);
 }
 
@@ -71,7 +71,7 @@ TEST_F(PosenetDetectorTest, pd04_cpu_posenet_from_base64_person)
     CpuPosenetDetector pd;
     EXPECT_EQ(pd.init(), kAifOk);
 
-    auto base64image = aif::fileToStr("images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr("/usr/share/aif/images/mona_base64.txt"); // 128 x 128
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
     EXPECT_TRUE(pd.detectFromBase64(base64image, descriptor) == aif::kAifOk);
@@ -86,7 +86,7 @@ TEST_F(PosenetDetectorTest, pd05_edgetpu_from_person)
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
-    EXPECT_TRUE(pd.detectFromImage("images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(pd.detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }
 #endif

@@ -15,7 +15,7 @@ namespace aif {
 
 CpuPosenetDetector::CpuPosenetDetector()
     : PosenetDetector(
-            "model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
+            "/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
             std::make_shared<PosenetParam>())
 {
 }

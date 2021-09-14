@@ -149,7 +149,7 @@ FaceParam(
 //------------------------------------------------------
 ShortRangeFaceDetector::ShortRangeFaceDetector()
     : CpuFaceDetector(
-        "model/face_detection_short_range.tflite",
+        "/usr/share/aif/model/face_detection_short_range.tflite",
         std::make_shared<FaceParam>(
             std::vector<int>{8, 16, 16, 16},   // strides
             std::vector<float>{1.0f},          // optAspectRatios
@@ -175,7 +175,7 @@ ShortRangeFaceDetector::~ShortRangeFaceDetector()
 //------------------------------------------------------
 FullRangeFaceDetector::FullRangeFaceDetector()
     : CpuFaceDetector(
-        "model/face_detection_full_range.tflite",
+        "/usr/share/aif/model/face_detection_full_range.tflite",
         std::make_shared<FaceParam>(
             std::vector<int>{4},        // strides
             std::vector<float>{1.0f},   // optAspectRatios

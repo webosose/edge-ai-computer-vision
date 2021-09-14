@@ -30,7 +30,7 @@ protected:
 
 TEST_F(UtilTest, util01_base64_encode)
 {
-    std::string image_file = "images/mona.jpg";
+    std::string image_file = "/usr/share/aif/images/mona.jpg";
     std::ifstream fin { image_file, std::ifstream::binary };
     EXPECT_FALSE(!fin);
     fin.seekg(0, fin.end);
@@ -62,7 +62,7 @@ TEST_F(UtilTest, util02_base64_decode)
     // encoded_str << fin.rdbuf();
     // fin.close();
 
-    auto encoded_str = aif::fileToStr("images/mona_base64.txt");
+    auto encoded_str = aif::fileToStr("/usr/share/aif/images/mona_base64.txt");
     std::cout << encoded_str << std::endl;
 
     auto decoded_size = base64::decoded_size(encoded_str.size());
@@ -80,25 +80,25 @@ TEST_F(UtilTest, util02_base64_decode)
     // imgFile.write(buffer.data(), result.first);
     // imgFile.close();
 
-    EXPECT_TRUE(aif::bufferToFile(buffer, result.first, "images/mona_decoded.jpg"));
+    EXPECT_TRUE(aif::bufferToFile(buffer, result.first, "/usr/share/aif/images/mona_decoded.jpg"));
 }
 
 TEST_F(UtilTest, util03_base64Encode_to_string)
 {
-    std::string base64str = aif::base64Encode("images/mona.jpg");
+    std::string base64str = aif::base64Encode("/usr/share/aif/images/mona.jpg");
     EXPECT_TRUE(base64str.size() > 0);
     std::cout << base64str << std::endl;
 }
 
 TEST_F(UtilTest, util04_base64Encode_to_file)
 {
-    bool result = aif::base64Encode("images/mona.jpg", "images/mona_base64.txt");
+    bool result = aif::base64Encode("/usr/share/aif/images/mona.jpg", "/usr/share/aif/images/mona_base64.txt");
     EXPECT_TRUE(result);
 }
 
 TEST_F(UtilTest, util05_base64Decode_to_buffer)
 {
-    std::string base64str = aif::base64Encode("images/mona.jpg");
+    std::string base64str = aif::base64Encode("/usr/share/aif/images/mona.jpg");
     EXPECT_TRUE(base64str.size() > 0);
     //std::cout << base64str << std::endl;
 
@@ -112,10 +112,10 @@ TEST_F(UtilTest, util05_base64Decode_to_buffer)
 TEST_F(UtilTest, util06_base64Decode_to_file)
 {
     std::array<std::pair<std::string, std::string>, 4> filenames{{
-        { "images/mona.jpg", "images/mona_decoded.jpg" },
-        { "images/bts.jpg", "images/bts_decoded.jpg" },
-        { "images/blackpink.jpg", "images/blackpink_decoded.jpg" },
-        { "images/doctors.jpg", "images/doctos_decoded.jpg" }
+        { "/usr/share/aif/images/mona.jpg", "/usr/share/aif/images/mona_decoded.jpg" },
+        { "/usr/share/aif/images/bts.jpg", "/usr/share/aif/images/bts_decoded.jpg" },
+        { "/usr/share/aif/images/blackpink.jpg", "/usr/share/aif/images/blackpink_decoded.jpg" },
+        { "/usr/share/aif/images/doctors.jpg", "/usr/share/aif/images/doctos_decoded.jpg" }
     }};
 
     for (const auto& f : filenames) {
@@ -132,7 +132,7 @@ TEST_F(UtilTest, util06_base64Decode_to_file)
 
 TEST_F(UtilTest, util07_base64Decode_normalize)
 {
-    auto base64str = aif::fileToStr("images/mona_base64.txt"); // 128 x 128
+    auto base64str = aif::fileToStr("/usr/share/aif/images/mona_base64.txt"); // 128 x 128
 
     const int width = 128;
     const int height = 128;
