@@ -30,6 +30,9 @@ public:
     void run();
 
 protected:
+
+    virtual void onInit();
+
     // Start the asynchronous operation
     void onRun();
 

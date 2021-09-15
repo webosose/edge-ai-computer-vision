@@ -3,6 +3,7 @@
 
 #include <aif/base/Types.h>
 #include <aif/base/DetectorParam.h>
+#include <aif/base/Descriptor.h>
 
 #include <tensorflow/lite/model.h>
 #include <tensorflow/lite/interpreter.h>
@@ -11,8 +12,6 @@
 #include <string>
 
 namespace aif {
-
-class Descriptor;
 
 class Detector
 {

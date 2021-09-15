@@ -148,6 +148,7 @@ protected:
 
     void SetUp() override
     {
+        Logger::init(LogLevel::TRACE4);
     }
 
     void TearDown() override
@@ -207,7 +208,7 @@ TEST_F(WebSocketTest, ws02_wsclient_async)
                 EXPECT_TRUE(e.type == kWebSocketMessage);
                 EXPECT_TRUE(e.data == "hello");
 
-                client->close([](const t_aif_event& e) {
+                client->close([&](const t_aif_event& e) {
                      TRACE("e.type: ", e.type, ", e.data: ", e.data);
                      EXPECT_TRUE(e.type == kWebSocketClose);
                 });
@@ -269,7 +270,10 @@ TEST_F(WebSocketTest, ws04_daytime_client)
         client->getDayTimeAsync([&](const std::string& data){
             TRACE("daytime: ", data);
             EXPECT_TRUE(data.size() > 0);
-            client->close();
+            // client->close([&](const t_aif_event& e) {
+            //     TRACE("e.type: ", e.type, ", e.data: ", e.data);
+            //     EXPECT_TRUE(e.type == kWebSocketClose);
+            // });
         });
     });
 

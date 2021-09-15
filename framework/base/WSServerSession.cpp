@@ -62,10 +62,18 @@ void WSServerSession::run()
             shared_from_this()));
 }
 
+/*virtual */
+void WSServerSession::onInit()
+{
+}
+
 // Start the asynchronous operation
 void WSServerSession::onRun()
 {
     try {
+
+        onInit();
+
         // Set suggested timeout settings for the websocket
         m_ws.set_option(
             websocket::stream_base::timeout::suggested(
