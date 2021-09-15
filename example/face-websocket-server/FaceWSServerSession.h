@@ -1,17 +1,17 @@
-#ifndef AICAMERA_SERVER_SESSION_H
-#define AICAMERA_SERVER_SESSION_H
+#ifndef FACE_WSSERVER_SESSION_H
+#define FACE_WSSERVER_SESSION_H
 
 #include <aif/base/WSServerSession.h>
 #include <aif/base/Detector.h>
 
 #include <map>
 
-class AICameraServerSession : public aif::WSServerSession
+class FaceWSServerSession : public aif::WSServerSession
 {
 public:
-    AICameraServerSession(tcp::socket&& socket);
+    FaceWSServerSession(tcp::socket&& socket);
 
-    ~AICameraServerSession() override;
+    ~FaceWSServerSession() override;
 
 protected:
     void onInit() override;
@@ -34,4 +34,4 @@ private:
         > m_detectors;
 };
 
-#endif // end of AICAMERA_SERVER_SESSION_H
+#endif // end of FACE_WSSERVER_SESSION_H

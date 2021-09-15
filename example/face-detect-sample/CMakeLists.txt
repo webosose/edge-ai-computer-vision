@@ -8,7 +8,6 @@ OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
-find_package(ZLIB REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})

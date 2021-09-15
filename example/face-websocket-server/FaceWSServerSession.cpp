@@ -1,4 +1,4 @@
-#include "AICameraServerSession.h"
+#include "FaceWSServerSession.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/document.h>
@@ -14,10 +14,10 @@ using namespace aif;
 namespace rj = rapidjson;
 
 //--------------------------------------------------------------
-// AICameraServerSession class definition
+// FaceWSServerSession class definition
 //--------------------------------------------------------------
 
-AICameraServerSession::AICameraServerSession(tcp::socket&& socket)
+FaceWSServerSession::FaceWSServerSession(tcp::socket&& socket)
     : WSServerSession(std::move(socket))
 {
     m_detectors["face_detect_cpu"] = FaceDetectorFactory::create("short_range");
@@ -28,11 +28,11 @@ AICameraServerSession::AICameraServerSession(tcp::socket&& socket)
 #endif
 }
 
-AICameraServerSession::~AICameraServerSession()/* override*/
+FaceWSServerSession::~FaceWSServerSession()/* override*/
 {
 }
 
-void AICameraServerSession::onInit()/* override*/
+void FaceWSServerSession::onInit()/* override*/
 {
     Stopwatch sw;
     for (auto& detector : m_detectors) {
@@ -43,7 +43,7 @@ void AICameraServerSession::onInit()/* override*/
     }
 }
 
-void AICameraServerSession::onHandleMessage(const std::string& message)/* override*/
+void FaceWSServerSession::onHandleMessage(const std::string& message)/* override*/
 {
     std::string requestName;
     try {
@@ -95,7 +95,7 @@ void AICameraServerSession::onHandleMessage(const std::string& message)/* overri
 }
 
 std::shared_ptr<Descriptor>
-AICameraServerSession::createDescriptor(const std::string& req)
+FaceWSServerSession::createDescriptor(const std::string& req)
 {
     if (req == "face_detect")
         return std::make_shared<FaceDescriptor>();
@@ -109,7 +109,7 @@ AICameraServerSession::createDescriptor(const std::string& req)
 }
 
 std::shared_ptr<Detector>
-AICameraServerSession::getDetector(
+FaceWSServerSession::getDetector(
     const std::string& req, const std::string& hwAccelator)
 {
     std::string detectorName = req + "_" + hwAccelator;
@@ -120,7 +120,7 @@ AICameraServerSession::getDetector(
     return m_detectors[detectorName];
 }
 
-void AICameraServerSession::onHandleError(
+void FaceWSServerSession::onHandleError(
     const std::string& req, const std::string& errmsg)
 {
     // { returnCode: 1, error: "xxx" }

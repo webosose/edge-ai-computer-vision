@@ -1,4 +1,4 @@
-#include "AICameraServer.h"
+#include "FaceWSServer.h"
 
 #include <aif/log/Logger.h>
 #include <aif/tools/ConfigReader.h>
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     //ConfigReader reader("aif.config");
     //Logger::init(Logger::strToLogLevel(reader.getOption("LogLevel")));
     Logger::init(LogLevel::TRACE4);
-    Logd("**aicamera-server**");
+    Logd("**", argv[0], "**");
     // Check command line arguments.
     if (argc != 4)
     {
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     asio::io_context ioc{threads};
 
     // Create and launch a listening port
-    std::make_shared<AICameraServer>(ioc, tcp::endpoint{address, port})->run();
+    std::make_shared<FaceWSServer>(ioc, tcp::endpoint{address, port})->run();
 
     // Run the I/O service on the requested number of threads
     std::vector<std::thread> v;

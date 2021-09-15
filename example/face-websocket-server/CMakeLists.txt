@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.7)
-project(aicamera-server CXX)
+project(face-websocket-server CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 
@@ -35,7 +35,7 @@ add_definitions(
     -std=c++14
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
-    -DLOG_CONTEXT="CAMERA"
+    -DLOG_CONTEXT="FACEWS"
 )
 
 IF(WITH_EDGETPU)
@@ -62,8 +62,8 @@ link_directories(
 # Source Files
 
 set(SRC_FILES
-    ${SRC_DIR}/AICameraServerSession.cpp
-    ${SRC_DIR}/AICameraServer.cpp
+    ${SRC_DIR}/FaceWSServerSession.cpp
+    ${SRC_DIR}/FaceWSServer.cpp
     ${SRC_DIR}/main.cpp
 )
 
