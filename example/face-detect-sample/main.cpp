@@ -86,9 +86,15 @@ int main(int argc, char* argv[])
     std::cout << "imagefile: " << imagefile << std::endl;
 
     cv::Mat image = cv::imread(imagefile);
+    int input_size = image.cols > image.rows ? image.cols : image.rows;
 
-    s_width = image.cols;
-    s_height = image.rows;
+    cv::Mat padded_image;
+    padded_image.create(input_size, input_size, image.type());
+    padded_image.setTo(cv::Scalar::all(0));
+    image.copyTo(padded_image(cv::Rect(0, 0, image.cols, image.rows)));
+
+    s_width = input_size;
+    s_height = input_size;
     s_bpp = image.channels();
     int imagesize = s_width * s_height * s_bpp;
     std::cout << imagefile << ": w=" <<  s_width <<
@@ -108,7 +114,7 @@ int main(int argc, char* argv[])
     }
 
     std::vector<cv::Rect> faces;
-    DetectFaces(image, faces);
+    DetectFaces(padded_image, faces);
 
     for(auto i = 0; i < faces.size(); i++) {
         std::cout << i << ": [ "
