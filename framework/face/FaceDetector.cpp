@@ -293,29 +293,52 @@ t_aif_status FaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
         AIF_TRACE1 << "Found " << num_selected_indices << " faces...";
         for(int i = 0 ; i < num_selected_indices ; i++){
             int idx = selected_indices[i];
-            AIF_TRACE1 << "face " << i << " : (" << good_region[4*idx+0] << ", "
-                                                << good_region[4*idx+1]  << ", "
-                                                << good_region[4*idx+2] << ", "
-                                                << good_region[4*idx+3] << "),  score "
+            bool doUpdate = checkUpdate(i, good_region[4*idx+0], good_region[4*idx+1],
+                                        good_region[4*idx+2] - good_region[4*idx+0],
+                                        good_region[4*idx+3] - good_region[4*idx+1],
+                                        param->updateThreshold);
+            if(doUpdate){
+                m_prev_faces[i][0] = good_region[4*idx+0];
+                m_prev_faces[i][1] = good_region[4*idx+1];
+                m_prev_faces[i][2] = good_region[4*idx+2];
+                m_prev_faces[i][3] = good_region[4*idx+3];
+                m_prev_faces[i][4] = good_facepoint[12*idx+0];
+                m_prev_faces[i][5] = good_facepoint[12*idx+1];
+                m_prev_faces[i][6] = good_facepoint[12*idx+2];
+                m_prev_faces[i][7] = good_facepoint[12*idx+3];
+                m_prev_faces[i][8] = good_facepoint[12*idx+4];
+                m_prev_faces[i][9] = good_facepoint[12*idx+5];
+                m_prev_faces[i][10] = good_facepoint[12*idx+6];
+                m_prev_faces[i][11] = good_facepoint[12*idx+7];
+                m_prev_faces[i][12] = good_facepoint[12*idx+8];
+                m_prev_faces[i][13] = good_facepoint[12*idx+9];
+                m_prev_faces[i][14] = good_facepoint[12*idx+10];
+                m_prev_faces[i][15] = good_facepoint[12*idx+11];
+            }
+            AIF_TRACE1 << "face " << i << " : (" << m_prev_faces[i][0] << ", "
+                                                << m_prev_faces[i][1]  << ", "
+                                                << m_prev_faces[i][2] << ", "
+                                                << m_prev_faces[i][3] << "),  score "
                                                 << selected_scores[i];
+
             faceDescriptor->addFace(
                 selected_scores[i],
-                good_region[4*idx+0],
-                good_region[4*idx+1],
-                good_region[4*idx+2],
-                good_region[4*idx+3],
-                good_facepoint[12*idx+0],  // lefteye_x
-                good_facepoint[12*idx+1],  // lefteye_y
-                good_facepoint[12*idx+2],  // righteye_x
-                good_facepoint[12*idx+3],  // righteye_y
-                good_facepoint[12*idx+4],  // nosetip_x
-                good_facepoint[12*idx+5],  // nosetip_y
-                good_facepoint[12*idx+6],  // mouth_x
-                good_facepoint[12*idx+7],  // mouth_y
-                good_facepoint[12*idx+8],  // leftear_x
-                good_facepoint[12*idx+9],  // leftear_y
-                good_facepoint[12*idx+10],  // rightear_x
-                good_facepoint[12*idx+11]   // rightear_y
+                m_prev_faces[i][0],
+                m_prev_faces[i][1],
+                m_prev_faces[i][2],
+                m_prev_faces[i][3],
+                m_prev_faces[i][4],  // lefteye_x
+                m_prev_faces[i][5],  // lefteye_y
+                m_prev_faces[i][6],  // righteye_x
+                m_prev_faces[i][7],  // righteye_y
+                m_prev_faces[i][8],  // nosetip_x
+                m_prev_faces[i][9],  // nosetip_y
+                m_prev_faces[i][10],  // mouth_x
+                m_prev_faces[i][11],  // mouth_y
+                m_prev_faces[i][12],  // leftear_x
+                m_prev_faces[i][13],  // leftear_y
+                m_prev_faces[i][14],  // rightear_x
+                m_prev_faces[i][15]   // rightear_y
             );
 
         }
@@ -336,6 +359,47 @@ float FaceDetector::calculateScale(float min_scale, float max_scale, int stride_
     } else{
         return min_scale + (max_scale - min_scale) * 1.0f * stride_index / (num_strides - 1.0f);
     }
+}
+
+bool FaceDetector::checkUpdate(int idx, float cur_x, float cur_y, float cur_w, float cur_h, float updateThreshold){
+    if (m_prev_faces.size() <= idx) {
+            std::vector<float> init_coord = {0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            m_prev_faces.push_back(init_coord);
+            return true;
+        }
+
+        float A = cur_w * cur_h;
+        float B = (m_prev_faces[idx][2] - m_prev_faces[idx][0]) * (m_prev_faces[idx][3] - m_prev_faces[idx][1]);
+        float x1, y1, w1, h1, x2, y2, w2, h2;
+        if (cur_x < m_prev_faces[idx][0]) {
+            x1 = cur_x;
+            w1 = cur_w;
+            x2 = m_prev_faces[idx][0];
+            w2 = (m_prev_faces[idx][2] - m_prev_faces[idx][0]);
+        } else {
+            x2 = cur_x;
+            w2 = cur_w;
+            x1 = m_prev_faces[idx][0];
+            w1 = (m_prev_faces[idx][2] - m_prev_faces[idx][0]);
+        }
+
+        if (cur_y < m_prev_faces[idx][1]) {
+            y1 = cur_y;
+            h1 = cur_h;
+            y2 = m_prev_faces[idx][1];
+            h2 = (m_prev_faces[idx][3] - m_prev_faces[idx][1]);
+        } else {
+            y2 = cur_y;
+            h2 = cur_h;
+            y1 = m_prev_faces[idx][1];
+            h1 = (m_prev_faces[idx][3] - m_prev_faces[idx][1]);
+        }
+
+        float A_and_B =
+            (std::min(x1 + w1, x2 + w2) - x2) *
+            (std::min(y1 + h1, y2 + h2) - y2);
+        float A_or_B = A + B - A_and_B;
+        return (A_and_B / A_or_B) < (1.0f - updateThreshold) ? true : false;
 }
 
 } // end of namespace aif

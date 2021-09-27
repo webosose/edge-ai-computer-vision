@@ -23,7 +23,8 @@ public:
         bool  reduceBoxesInLowestLayer = false,
         float scoreThreshold = 0.7f,
         float iouThreshold = 0.2f,
-        int   maxOutputSize = 100
+        int   maxOutputSize = 100,
+        float updateThreshold = 0.3f
     );
 
     FaceParam(const FaceParam& other);
@@ -53,6 +54,7 @@ public:
     float scoreThreshold;
     float iouThreshold;
     int   maxOutputSize;
+    float updateThreshold;
 };
 
 } // end of namespace aif

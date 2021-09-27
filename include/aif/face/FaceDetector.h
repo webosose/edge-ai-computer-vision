@@ -23,9 +23,12 @@ protected:
     t_aif_status generateAnchors(int width, int height);
     t_aif_status faceDetect(std::shared_ptr<Descriptor>& descriptor);
     float calculateScale(float min_scale, float max_scale, int stride_index, int num_strides);
+    bool checkUpdate(int idx, float cur_x, float cur_y, float cur_w, float cur_h, float threshold);
 
 protected:
     std::vector<t_aif_anchor> m_anchors;
+public:
+    std::vector<std::vector<float>> m_prev_faces;
 };
 
 } // end of namespace aif

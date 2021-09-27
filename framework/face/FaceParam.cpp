@@ -22,7 +22,8 @@ FaceParam::FaceParam(
         bool  _reduceBoxesInLowestLayer,
         float _scoreThreshold,
         float _iouThreshold,
-        int   _maxOutputSize
+        int   _maxOutputSize,
+        float _updateThreshold
     )
     : DetectorParam()
     , strides{_strides}
@@ -36,6 +37,7 @@ FaceParam::FaceParam(
     , scoreThreshold{_scoreThreshold}
     , iouThreshold{_iouThreshold}
     , maxOutputSize{_maxOutputSize}
+    , updateThreshold{_updateThreshold}
 {
 }
 
@@ -51,6 +53,7 @@ FaceParam::FaceParam(const FaceParam& other)
     , scoreThreshold{other.scoreThreshold}
     , iouThreshold{other.iouThreshold}
     , maxOutputSize{other.maxOutputSize}
+    , updateThreshold{other.updateThreshold}
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -67,6 +70,7 @@ FaceParam::FaceParam(FaceParam&& other) noexcept
     , scoreThreshold{std::exchange(other.scoreThreshold, 0.7f)}
     , iouThreshold{std::exchange(other.iouThreshold, 0.2f)}
     , maxOutputSize{std::exchange(other.maxOutputSize, 100)}
+    , updateThreshold{std::exchange(other.updateThreshold, 0.3f)}
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -89,6 +93,7 @@ FaceParam& FaceParam::operator=(const FaceParam& other)
     scoreThreshold = other.scoreThreshold;
     iouThreshold = other.iouThreshold;
     maxOutputSize = other.maxOutputSize;
+    updateThreshold = other.updateThreshold;
 
     return *this;
 }
@@ -111,6 +116,7 @@ FaceParam& FaceParam::operator=(FaceParam&& other) noexcept
     scoreThreshold = std::exchange(other.scoreThreshold, 0.7f);
     iouThreshold = std::exchange(other.iouThreshold, 0.2f);
     maxOutputSize = std::exchange(other.maxOutputSize, 100);
+    updateThreshold = std::exchange(other.updateThreshold, 0.3f);
 
     return *this;
 }
@@ -128,7 +134,8 @@ bool FaceParam::operator==(const FaceParam& other) const
         (reduceBoxesInLowestLayer == other.reduceBoxesInLowestLayer) &&
         (std::abs(scoreThreshold - other.scoreThreshold) < aif::EPSILON) &&
         (std::abs(iouThreshold - other.iouThreshold) < aif::EPSILON) &&
-        (maxOutputSize == other.maxOutputSize)
+        (maxOutputSize == other.maxOutputSize) &&
+        (std::abs(updateThreshold - other.updateThreshold) < aif::EPSILON)
     );
 }
 
@@ -168,6 +175,7 @@ std::ostream& operator<<(std::ostream& os, const FaceParam& fp)
     os << "\tscoreThreshold: " << fp.scoreThreshold << ",\n";
     os << "\tiouThreshold: " << fp.iouThreshold << ",\n";
     os << "\tmaxOutputSize: " << fp.maxOutputSize << "\n";
+    os << "\tupdateThreshold: " << fp.updateThreshold << "\n";
     os << "}";
 
     return os;

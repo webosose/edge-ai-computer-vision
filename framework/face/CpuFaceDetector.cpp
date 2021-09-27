@@ -161,7 +161,8 @@ ShortRangeFaceDetector::ShortRangeFaceDetector()
             false,              // reduceBoxesInLowestLayer
             0.7f,               // scoreThreshold
             0.2f,               // iouThreshold
-            100                 // maxOutputSize
+            100,                // maxOutputSize
+            0.3f                // updateThreshold
         ))
 {
 }
@@ -187,7 +188,8 @@ FullRangeFaceDetector::FullRangeFaceDetector()
             false,              // reduceBoxesInLowestLayer
             0.7f,               // scoreThreshold
             0.2f,               // iouThreshold
-            100                 // maxOutputSize
+            100,                // maxOutputSize
+            0.3f                // updateThreshold
         ))
 {
 }
