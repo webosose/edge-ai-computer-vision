@@ -16,8 +16,6 @@ namespace {
 
 } // end of anonymous namespace
 
-using aif::tools::Stopwatch;
-
 namespace aif {
 
 //------------------------------------------------------

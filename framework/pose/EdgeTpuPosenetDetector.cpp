@@ -11,8 +11,6 @@
 #include <stdexcept>
 #include <sstream>
 
-using aif::tools::Stopwatch;
-
 namespace aif {
 
 EdgeTpuPosenetDetector::EdgeTpuPosenetDetector()
