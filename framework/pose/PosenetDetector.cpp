@@ -97,9 +97,12 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
         }
         posenetDescriptor->addKeyPoints(points);
     }
-    posenetDescriptor->makeBodyParts();
+    m_prev_poses = posenetDescriptor->makeBodyParts(m_prev_poses);
+    
 
     return kAifOk;
 }
+
+
 
 } // end of namespace aif

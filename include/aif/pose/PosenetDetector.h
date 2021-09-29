@@ -19,6 +19,9 @@ protected:
     t_aif_status fillInputTensor(const cv::Mat& img) override;
     t_aif_status preProcessing() override;
     t_aif_status postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor) override;
+    
+    std::vector<std::vector<cv::Rect>> m_prev_poses;
+
 };
 
 } // end of namespace aif

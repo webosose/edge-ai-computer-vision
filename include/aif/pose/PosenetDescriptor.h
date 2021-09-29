@@ -38,11 +38,12 @@ public:
     cv::Rect getUpperBodyRect(const std::vector<cv::Point>& keyPoints) const;
     cv::Rect getBodyRect(const std::vector<cv::Point>& keyPoints) const;
     size_t getPoseCount() const { return m_keyPoints.size(); }
-    void makeBodyParts();
+    std::vector<std::vector<cv::Rect>> makeBodyParts(std::vector<std::vector<cv::Rect>> prev);
 
 protected:
     cv::Rect getRect(const std::vector<KeyPointType>& types,
         const std::vector<cv::Point>& keyPoints) const;
+    bool isIOU(const cv::Rect& a, const cv::Rect& b, float threshold) const;
 private:
     std::vector<std::vector<cv::Point>> m_keyPoints;
     //std::vector<pair<KeyPointType, KeyPointType>> m_edges;
