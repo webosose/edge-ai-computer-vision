@@ -1,0 +1,94 @@
+@@startuml ai-framework
+
+'--------------------------------------------
+' FRAMEWORK
+'--------------------------------------------
+
+package boost::asio {
+}
+
+package boost::beast {
+
+}
+
+package aif {
+
+package base {
+    class Detector
+    class Descriptor
+    class FaceDetectorFactory
+    class PosenetDetectorFactory
+    class WSServer {
+        + WSServer(ioc, endpoint)
+        + run()
+        # accept()
+        # onAccept(errCode, socket)
+        # fail(errCode, what)
+        -- virtual method --
+        # createSession(socket): WSServerSession*
+    }
+    class WSServerSession {
+        + WSServerSession(socket)
+        + run()
+        # onRun()
+        # onAccept()
+        # readMessage()
+        # onMessage()
+        # response()
+        # onResponse()
+        -- virtual method --
+        # onInit()
+        # onHandleMessage(message)
+    }
+    class WSClient {
+        + WSClient(ioc, errorCb)
+        + open(host, port, openCb)
+        + sendMessage(message, messageCb)
+        + close(closeCb)
+        # onResolve()
+        # onConnect()
+        # onOpen()
+        # onSend()
+        # onMessage()
+        # onClose()
+    }
+}
+' end of base package
+
+'Relations
+WSServer --> boost::asio
+WSServer --> boost::beast
+WSServer ..> WSServerSession
+WSServerSession "1" .. "1..*" WSClient
+WSServerSession --> boost::asio
+WSServerSession --> boost::beast
+WSClient --> boost::asio
+WSClient --> boost::beast
+}
+' end of aif package
+
+class FaceWSServer {
+    + FaceWSServer(ioc, endpoint)
+    # createSession: WSServerSession*
+}
+
+class FaceWSServerSession {
+    + FaceWSServerSession(socket)
+    # onInit()
+    # onHandleMessage(message)
+    - createDescriptor(req)
+    - getDetector(req, hwAccelerator)
+    - onHandleError(req, errmsg)
+    - m_detectors: unordered_map<string, Detector*>
+}
+
+FaceWSServer --|> WSServer
+FaceWSServer ..> FaceWSServerSession
+FaceWSServerSession --|> WSServerSession
+FaceWSServerSession "1" *--> "1..*" Detector
+FaceWSServerSession ..> Descriptor
+FaceWSServerSession ..> FaceDetectorFactory
+FaceWSServerSession ..> PosenetDetectorFactory
+Detector ..> Descriptor
+
+@@enduml
