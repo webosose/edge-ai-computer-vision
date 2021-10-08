@@ -33,19 +33,24 @@ public:
         LEFT_ANKLE = 15,
         RIGHT_ANKLE = 16
     };
-    void addKeyPoints(const std::vector<cv::Point>& points);
-    cv::Rect getFaceRect(const std::vector<cv::Point>& keyPoints) const;
-    cv::Rect getUpperBodyRect(const std::vector<cv::Point>& keyPoints) const;
-    cv::Rect getBodyRect(const std::vector<cv::Point>& keyPoints) const;
+    void addKeyPoints(float score,
+            const std::vector<cv::Point2f>& points,
+            const std::vector<float>& keyPointsScore);
+    cv::Rect2f getFaceRect(const std::vector<cv::Point2f>& keyPoints) const;
+    cv::Rect2f getUpperBodyRect(const std::vector<cv::Point2f>& keyPoints) const;
+    cv::Rect2f getBodyRect(const std::vector<cv::Point2f>& keyPoints) const;
     size_t getPoseCount() const { return m_keyPoints.size(); }
-    std::vector<std::vector<cv::Rect>> makeBodyParts(std::vector<std::vector<cv::Rect>> prev);
+    std::vector<std::vector<cv::Rect2f>> makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev);
 
 protected:
-    cv::Rect getRect(const std::vector<KeyPointType>& types,
-        const std::vector<cv::Point>& keyPoints) const;
-    bool isIOU(const cv::Rect& a, const cv::Rect& b, float threshold) const;
+    cv::Rect2f getRect(const std::vector<KeyPointType>& types,
+        const std::vector<cv::Point2f>& keyPoints) const;
+    float getScore(const std::vector<float>& scores, KeyPointType begin, KeyPointType end) const;
+    bool isIOU(const cv::Rect2f& a, const cv::Rect2f& b, float threshold) const;
 private:
-    std::vector<std::vector<cv::Point>> m_keyPoints;
+    std::vector<float> m_scores;
+    std::vector<std::vector<cv::Point2f>> m_keyPoints;
+    std::vector<std::vector<float>> m_keyPointsScores;
     //std::vector<pair<KeyPointType, KeyPointType>> m_edges;
 };
 

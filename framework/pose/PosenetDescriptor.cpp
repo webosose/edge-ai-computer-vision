@@ -46,15 +46,19 @@ PosenetDescriptor::~PosenetDescriptor()
 {
 }
 
-void PosenetDescriptor::addKeyPoints( const std::vector<cv::Point>& points)
+void PosenetDescriptor::addKeyPoints(float score,
+            const std::vector<cv::Point2f>& points,
+            const std::vector<float>& keyPointsScore)
 {
+    m_scores.push_back(score);
     m_keyPoints.push_back(points);
+    m_keyPointsScores.push_back(keyPointsScore);
 }
 
-cv::Rect PosenetDescriptor::getRect(const std::vector<KeyPointType>& types,
-        const std::vector<cv::Point>& keyPoints) const
+cv::Rect2f PosenetDescriptor::getRect(const std::vector<KeyPointType>& types,
+        const std::vector<cv::Point2f>& keyPoints) const
 {
-    int left, right, top, bottom;
+    float left, right, top, bottom;
     left = top = std::numeric_limits<int>::max();
     right = bottom = 0;
     for (auto type : types) {
@@ -69,22 +73,26 @@ cv::Rect PosenetDescriptor::getRect(const std::vector<KeyPointType>& types,
     float height = (bottom - top) * scaleH;
     float x = (left + right) / 2.0 - (width / 2.0) ;
     float y = (top + bottom) / 2.0 - (height/ 2.0) ;
-    return cv::Rect(x, y, width, height);
+    return cv::Rect2f(x, y, width, height);
 }
 
-cv::Rect PosenetDescriptor::getFaceRect(const std::vector<cv::Point>& keyPoints) const {
-    float scaleW = 1.2;
+cv::Rect2f PosenetDescriptor::getFaceRect(const std::vector<cv::Point2f>& keyPoints) const {
     float scaleH = 1.2;
-    float width = (keyPoints[KeyPointType::LEFT_EAR].x - keyPoints[KeyPointType::RIGHT_EAR].x) * scaleW;
+    std::vector<KeyPointType> types;
+    for (int type = NOSE; type <= RIGHT_EAR; type++) {
+        types.emplace_back(static_cast<KeyPointType>(type));
+    }
+    cv::Rect2f rect = getRect(types, keyPoints);
+    float width = rect.width;
     float height = width * scaleH;
-    float x = (keyPoints[KeyPointType::LEFT_EAR].x + keyPoints[KeyPointType::RIGHT_EAR].x) / 2.0 - (width / 2.0);
+    float x = rect.x;
     float y = keyPoints[KeyPointType::NOSE].y - (height / 2.0);
 
-    cv::Rect faceRect(x, y, width, height);
+    cv::Rect2f faceRect(x, y, width, height);
     return faceRect;
 }
 
-cv::Rect PosenetDescriptor::getUpperBodyRect(const std::vector<cv::Point>& keyPoints) const {
+cv::Rect2f PosenetDescriptor::getUpperBodyRect(const std::vector<cv::Point2f>& keyPoints) const {
     std::vector<KeyPointType> types;
     for (int type = NOSE; type <= RIGHT_HIP; type++) {
         types.emplace_back(static_cast<KeyPointType>(type));
@@ -92,7 +100,7 @@ cv::Rect PosenetDescriptor::getUpperBodyRect(const std::vector<cv::Point>& keyPo
     return getRect(types, keyPoints);
 }
 
-cv::Rect PosenetDescriptor::getBodyRect(const std::vector<cv::Point>& keyPoints) const {
+cv::Rect2f PosenetDescriptor::getBodyRect(const std::vector<cv::Point2f>& keyPoints) const {
     std::vector<KeyPointType> types;
     for (int type = NOSE; type <= RIGHT_ANKLE; type++) {
         types.emplace_back(static_cast<KeyPointType>(type));
@@ -100,15 +108,26 @@ cv::Rect PosenetDescriptor::getBodyRect(const std::vector<cv::Point>& keyPoints)
     return getRect(types, keyPoints);
 }
 
-std::vector<std::vector<cv::Rect>> PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect>> prev)
+float PosenetDescriptor::getScore(const std::vector<float>& scores, KeyPointType begin, KeyPointType end) const {
+    float score = 0;
+    for (int i = begin; i <= end; i++) {
+        score += scores[i];
+    }
+    score = score / (end - begin + 1);
+    return score;
+}
+
+std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev)
 {
-    std::vector<std::vector<cv::Rect>> current;
+    std::vector<std::vector<cv::Rect2f>> current;
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
 
-    int i = 0;
-    for (auto keyPoints : m_keyPoints) {
+    for (int i = 0; i < m_keyPoints.size(); i++) {
+        auto& keyPoints = m_keyPoints[i];
+        auto& scores = m_keyPointsScores[i];
+
         rj::Value person(rj::kObjectType);
-        cv::Rect faceRect = getFaceRect(keyPoints);
+        cv::Rect2f faceRect = getFaceRect(keyPoints);
 
         if (i < prev.size() && !isIOU(faceRect, prev[i][0], 0.3)) {
             faceRect = prev[i][0];
@@ -119,6 +138,7 @@ std::vector<std::vector<cv::Rect>> PosenetDescriptor::makeBodyParts(std::vector<
             .PushBack(faceRect.width, allocator)
             .PushBack(faceRect.height, allocator);
         person.AddMember("face", face, allocator);
+        person.AddMember("face_score", getScore(scores, NOSE, RIGHT_EAR), allocator);
 
         cv::Rect bodyRect = getBodyRect(keyPoints);
         if (i < prev.size() && !isIOU(bodyRect, prev[i][1], 0.3)) {
@@ -130,6 +150,7 @@ std::vector<std::vector<cv::Rect>> PosenetDescriptor::makeBodyParts(std::vector<
             .PushBack(bodyRect.width, allocator)
             .PushBack(bodyRect.height, allocator);
         person.AddMember("body", body, allocator);
+        person.AddMember("body_score", getScore(scores, NOSE, RIGHT_ANKLE), allocator);
 
         cv::Rect upperBodyRect = getUpperBodyRect(keyPoints);
         if (i < prev.size() && !isIOU(upperBodyRect, prev[i][2], 0.3)) {
@@ -141,15 +162,26 @@ std::vector<std::vector<cv::Rect>> PosenetDescriptor::makeBodyParts(std::vector<
             .PushBack(upperBodyRect.width, allocator)
             .PushBack(upperBodyRect.height, allocator);
         person.AddMember("upperBody", upperBody, allocator);
+        person.AddMember("upperBody_score", getScore(scores, NOSE, RIGHT_HIP), allocator);
+
+        person.AddMember("score", m_scores[i], allocator);
+        rj::Value points(rj::kArrayType);
+        for (int j = 0; j < 17; j++) {
+            rj::Value point(rj::kArrayType);
+            point.PushBack(keyPoints[j].x, allocator);
+            point.PushBack(keyPoints[j].y, allocator);
+            points.PushBack(point, allocator);
+        }
+        person.AddMember("keyPoints", points, allocator);
         m_root["poses"].PushBack(person, allocator);
+
         current.push_back({faceRect, bodyRect, upperBodyRect});
-        i++;
     }
 
     return current;
 }
 
-bool PosenetDescriptor::isIOU(const cv::Rect& cur, const cv::Rect& prev, float updateThreshold) const
+bool PosenetDescriptor::isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float updateThreshold) const
 {
     float A = cur.width * cur.height;
     float B = prev.width * prev.height;

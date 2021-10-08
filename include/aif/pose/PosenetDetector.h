@@ -20,7 +20,9 @@ protected:
     t_aif_status preProcessing() override;
     t_aif_status postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor) override;
     
-    std::vector<std::vector<cv::Rect>> m_prev_poses;
+private:
+    void printOutput();
+    std::vector<std::vector<cv::Rect2f>> m_prev_poses;
 
 };
 

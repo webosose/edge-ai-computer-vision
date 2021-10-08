@@ -43,12 +43,13 @@ TEST_F(PosenetDescriptorTest, jsonPosenetdesc02_addKeyPoints_test)
 {
     PosenetDescriptor jpd;
 
-    std::vector<cv::Point> keypoints;
+    std::vector<cv::Point2f> keypoints;
     for (int i = 0; i < 17; i++) {
-        keypoints.emplace_back(cv::Point(1.1 * i, 1.1 * i));
+        keypoints.emplace_back(cv::Point2f(1.1 * i, 1.1 * i));
     }
-    jpd.addKeyPoints(keypoints);
-    std::vector<std::vector<cv::Rect>> prev;
+    std::vector<float> scores(17);
+    jpd.addKeyPoints(0.5, keypoints, scores);
+    std::vector<std::vector<cv::Rect2f>> prev;
     jpd.makeBodyParts(prev);
 
     auto json = jpd.toStr();
@@ -70,17 +71,18 @@ TEST_F(PosenetDescriptorTest, jsonPosenetdesc02_addKeyPoints_test)
 TEST_F(PosenetDescriptorTest, jsonPosenetdesc03_addPosenet_two_test)
 {
     PosenetDescriptor jpd;
-    std::vector<cv::Point> keypoints1, keypoints2;
+    std::vector<cv::Point2f> keypoints1, keypoints2;
     for (int i = 0; i < 17; i++) {
-        keypoints1.emplace_back(cv::Point(1.1 * i, 1.1 * i));
+        keypoints1.emplace_back(cv::Point2f(1.1 * i, 1.1 * i));
     }
-    jpd.addKeyPoints(keypoints1);
+    std::vector<float> scores(17);
+    jpd.addKeyPoints(0.5, keypoints1, scores);
 
     for (int i = 0; i < 17; i++) {
-        keypoints2.emplace_back(cv::Point(2.1 * i, 2.1 * i));
+        keypoints2.emplace_back(cv::Point2f(2.1 * i, 2.1 * i));
     }
-    jpd.addKeyPoints(keypoints2);
-    std::vector<std::vector<cv::Rect>> prev;
+    jpd.addKeyPoints(0.5, keypoints2, scores);
+    std::vector<std::vector<cv::Rect2f>> prev;
     jpd.makeBodyParts(prev);
 
     auto json = jpd.toStr();
@@ -99,12 +101,13 @@ TEST_F(PosenetDescriptorTest, jsonPosenetdesc04_add_response_and_returncode)
 {
     PosenetDescriptor jpd;
 
-    std::vector<cv::Point> keypoints;
+    std::vector<cv::Point2f> keypoints;
     for (int i = 0; i < 17; i++) {
-        keypoints.emplace_back(cv::Point(1.1 * i, 1.1 * i));
+        keypoints.emplace_back(cv::Point2f(1.1 * i, 1.1 * i));
     }
-    jpd.addKeyPoints(keypoints);
-    std::vector<std::vector<cv::Rect>> prev;
+    std::vector<float> scores(17);
+    jpd.addKeyPoints(0.5, keypoints, scores);
+    std::vector<std::vector<cv::Rect2f>> prev;
     jpd.makeBodyParts(prev);
 
     jpd.addResponseName("face_detect");

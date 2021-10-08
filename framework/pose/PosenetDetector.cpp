@@ -59,26 +59,37 @@ t_aif_status PosenetDetector::preProcessing()
     return kAifOk;
 }
 
+void PosenetDetector::printOutput() {
+    const std::vector<int>& outputs = m_interpreter->outputs();
+    for (int i = 0; i < outputs.size(); i++) {
+        TfLiteTensor *output= m_interpreter->tensor(outputs[i]);
+        TRACE(i, ":output bytes: ", output->bytes);
+        TRACE(i, ":output type: ", output->type);
+        TRACE(i, ":output dims 0: ", output->dims->data[0]);
+        TRACE(i, ":output dims 1: ",  output->dims->data[1]);
+        TRACE(i, ":output dims 2: ",  output->dims->data[2]);
+        TRACE(i, ":output dims 3: ",  output->dims->data[3]);
+    }
+}
+
 t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
 {
+    //printOutput();
     const std::vector<int> &t_outputs = m_interpreter->outputs();
-    TfLiteTensor *output= m_interpreter->tensor(t_outputs[0]);
-    TRACE("output bytes: ", output->bytes);
-    TRACE("output type: ", output->type);
-    TRACE("output dims 0: ", output->dims->data[0]);
-    TRACE("output dims 1: ",  output->dims->data[1]);
-    TRACE("output dims 2: ",  output->dims->data[2]);
-    TRACE("output dims 3: ",  output->dims->data[3]);
+    TfLiteTensor *output = m_interpreter->tensor(t_outputs[0]);         // poseCount * 17 keyPoints
+    float* keyPoints = reinterpret_cast<float*>(output->data.data);
 
-    TfLiteTensor *output3 = m_interpreter->tensor(t_outputs[1]);
-    float* pose_score = output3->data.f;
+    TfLiteTensor *output2 = m_interpreter->tensor(t_outputs[1]);        // poseCount * 17 keyPoiints score
+    float* keyPointsScore = reinterpret_cast<float*>(output2->data.data);
 
-    TfLiteTensor *output4 = m_interpreter->tensor(t_outputs[3]);
+    TfLiteTensor *output3 = m_interpreter->tensor(t_outputs[2]);        // poseCount * pose score
+    float* pose_score = reinterpret_cast<float*>(output3->data.data);
+
+    TfLiteTensor *output4 = m_interpreter->tensor(t_outputs[3]);        // poseCount
     float* pose_count = output4->data.f;
     TRACE("poses count: ", *pose_count);
 
     std::shared_ptr<PosenetDescriptor> posenetDescriptor = std::dynamic_pointer_cast<PosenetDescriptor>(descriptor);
-    float* keyPoints = reinterpret_cast<float*>(output->data.data);
     float scaleX = (float)img.size().width / (float)m_modelInfo.width;
     float scaleY = (float)img.size().height / (float)m_modelInfo.height;
 
@@ -88,21 +99,20 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
 
     int k = 0;
     for (int i = 0; i < *pose_count; i++ ) {
-        std::vector<cv::Point> points;
+        std::vector<cv::Point2f> points;
+        std::vector<float> scores;
         for (int j = 0; j < 17; j++ ) {
             float height = keyPoints[k] * scaleY;
             float width = keyPoints[k+1] * scaleX;
-            points.push_back(cv::Point(width, height));
+            points.push_back(cv::Point2f(width, height));
             k = k + 2;
+            scores.push_back(keyPointsScore[i * 17 + j]);
         }
-        posenetDescriptor->addKeyPoints(points);
+        posenetDescriptor->addKeyPoints(pose_score[i], points, scores);
     }
     m_prev_poses = posenetDescriptor->makeBodyParts(m_prev_poses);
-    
 
     return kAifOk;
 }
-
-
 
 } // end of namespace aif
