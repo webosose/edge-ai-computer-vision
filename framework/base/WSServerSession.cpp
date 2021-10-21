@@ -42,6 +42,7 @@ namespace aif {
 
 WSServerSession::WSServerSession(tcp::socket&& socket)
     : m_ws{std::move(socket)}
+    , m_outBuffer(std::make_shared<msgpack::sbuffer>())
 {
 }
 
@@ -175,14 +176,14 @@ void WSServerSession::onHandleMessage(const std::string& message)
 void WSServerSession::response(const std::string& message)
 {
     // encode message
-    std::stringstream out_buffer;
-    msgpack::pack(out_buffer, message);
-    out_buffer.seekg(0);
+    m_outBuffer->clear();
+    msgpack::packer<msgpack::sbuffer> packer(*m_outBuffer);
+    packer.pack(message);
 
     // Send the response
     m_ws.binary(true);
     m_ws.async_write(
-        asio::buffer(out_buffer.str()),
+        asio::buffer(m_outBuffer->data(), m_outBuffer->size()),
         beast::bind_front_handler(
             &WSServerSession::onResponse,
             shared_from_this()));

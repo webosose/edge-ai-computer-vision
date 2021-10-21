@@ -8,6 +8,7 @@
 #include <map>
 
 #include <aif/base/Types.h>
+#include <msgpack.hpp>
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -60,8 +61,8 @@ protected:
 protected:
     beast::websocket::stream<beast::tcp_stream> m_ws;
     beast::flat_buffer m_buffer;
+    std::shared_ptr<msgpack::sbuffer> m_outBuffer;
 };
-
 
 } // end of namespace aif
 
