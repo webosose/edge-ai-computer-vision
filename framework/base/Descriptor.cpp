@@ -18,9 +18,10 @@ Descriptor::~Descriptor()
 {
 }
 
-void Descriptor::addResponseName(const std::string& responseName)
+void Descriptor::addResponseName(const std::string& responseName, const std::string id)
 {
     m_root.AddMember("response", responseName, m_root.GetAllocator());
+    m_root.AddMember("id", id, m_root.GetAllocator());
 }
 
 void Descriptor::addReturnCode(int returnCode)

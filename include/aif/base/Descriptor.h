@@ -13,7 +13,9 @@ public:
     Descriptor();
     virtual ~Descriptor();
 
-    virtual void addResponseName(const std::string& responseName);
+    virtual void addResponseName(
+            const std::string& responseName,
+            const std::string id = "none");
     virtual void addReturnCode(int returnCode);
     std::string toStr();
 

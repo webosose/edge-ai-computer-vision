@@ -1,3 +1,18 @@
+/* Copyright 2019-2021 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
 #include <aif/pose/posenet_decoder.h>
 
 #include <algorithm>
@@ -269,9 +284,9 @@ void BacktrackDecodePose(const float* scores, const float* short_offsets,
       // [fwd Y offsets][fwd X offsets][bwd Y offsets][bwd X offsets]
       // OTOH edge_id is [0,kNumEdges) for forward edges and
       // [kNumEdges, 2*kNumEdges) for backward edges.
-      // Thus if the edge is a backward edge (>kNumEdges) then we need
+      // Thus if the edge is a backward edge (>=kNumEdges) then we need
       // to start 16 indices later to be correctly aligned with the mid-offsets.
-      if (edge_id > posenet_decoder_op::kNumEdges) {
+      if (edge_id >= posenet_decoder_op::kNumEdges) {
         edge_id += posenet_decoder_op::kNumEdges;
       }
 
@@ -398,6 +413,61 @@ void PerformSoftKeypointNMS(const std::vector<int>& decreasing_indices,
   }
 }
 
+// Computes the sum of the squared distance between a list of embeddings and a
+// list of pose keypoints.
+float ComputeSumSquaredDistance(const std::vector<Point>& embedding,
+                                const PoseKeypoints& pose) {
+  float distance = 0;
+  for (int p = 0; p < embedding.size(); p++) {
+    distance += ComputeSquaredDistance(embedding[p], pose.keypoint[p]);
+  }
+  return distance;
+}
+
+// Follows the long-range offsets, and then refines the position by the
+// long-range offsets for a fixed number of steps.
+Point GetEmbedding(const int y_location, const int x_location,
+                   const float* long_offsets, const int keypoint_index,
+                   const int refinement_steps, const int height,
+                   const int width, const int num_keypoints, const int stride) {
+  float y = static_cast<float>(y_location);
+  float x = static_cast<float>(x_location);
+  const int channels[] = {keypoint_index, keypoint_index + num_keypoints};
+  constexpr int num_channels = 2;
+  for (int i = 0; i <= refinement_steps; i++) {
+    float offsets[2];
+    SampleTensorAtMultipleChannels(long_offsets, height, width,
+                                   2 * num_keypoints, y, x, channels,
+                                   num_channels, offsets);
+    y = clamp(y + offsets[0], 0.0f, height - 1.0f);
+    x = clamp(x + offsets[1], 0.0f, width - 1.0f);
+  }
+  return Point{y * stride, x * stride};
+}
+
+// Matches the list of embeddings to a pose in a list of poses based off the
+// sum of the squared distance between the pose keypoints and the embeddings.
+int MatchEmbeddingToInstance(const int y_location, const int x_location,
+                             const float* long_offsets, const int height,
+                             const int width, PoseKeypoints* poses,
+                             const size_t num_poses, const int num_keypoints,
+                             const int refinement_steps, const int stride) {
+  std::vector<Point> embeddings;
+  embeddings.reserve(num_keypoints);
+  for (int i = 0; i < num_keypoints; i++) {
+    embeddings.push_back(GetEmbedding(y_location, x_location, long_offsets, i,
+                                      refinement_steps, height, width,
+                                      num_keypoints, stride));
+  }
+  std::vector<float> dists;
+  dists.reserve(num_poses);
+  for (int k = 0; k < num_poses; k++) {
+    dists.push_back(ComputeSumSquaredDistance(embeddings, poses[k]));
+  }
+  return std::distance(dists.begin(),
+                       std::min_element(dists.begin(), dists.end()));
+}
+
 namespace posenet_decoder_op {
 
 int DecodeAllPoses(const float* scores, const float* short_offsets,
@@ -502,13 +572,30 @@ int DecodeAllPoses(const float* scores, const float* short_offsets,
           scratch_poses[index].keypoint[k].x * stride;
     }
 
-    memcpy(&pose_keypoint_scores[pose_counter], &scratch_keypoint_scores[index],
-           sizeof(PoseKeypointScores));
+    std::memcpy(&pose_keypoint_scores[pose_counter],
+                &scratch_keypoint_scores[index], sizeof(PoseKeypointScores));
     pose_scores[pose_counter] = all_instance_scores[index];
     pose_counter++;
   }
 
   return pose_counter;
+}
+
+void DecodeInstanceMasks(const float* long_offsets, int height, int width,
+                         PoseKeypoints* poses, size_t num_poses,
+                         int refinement_steps, int stride,
+                         float* instance_masks) {
+  std::fill(instance_masks, instance_masks + height * width * num_poses, 0.0f);
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      int instance_index = MatchEmbeddingToInstance(
+          y, x, long_offsets, height, width, poses, num_poses, kNumKeypoints,
+          refinement_steps, stride);
+      if (instance_index >= 0) {
+        instance_masks[(instance_index * width + y) * height + x] = 1.0f;
+      }
+    }
+  }
 }
 
 }  // namespace posenet_decoder_op

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(face-websocket-server CXX)
 
-OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
+OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" ON)
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)

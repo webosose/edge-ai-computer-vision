@@ -1,5 +1,20 @@
-#ifndef EDGETPU_CPP_POSENET_POSENET_DECODER_H_
-#define EDGETPU_CPP_POSENET_POSENET_DECODER_H_
+/* Copyright 2019-2021 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+#ifndef EDGETPU_CPP_POSENET_DECODER_H_
+#define EDGETPU_CPP_POSENET_DECODER_H_
 
 #include <ostream>
 #include <queue>
@@ -87,6 +102,12 @@ int DecodeAllPoses(
                                // [max_detections*sizeof(float)]
 );
 
+// Decodes person instance masks from decoded poses and long_offsets.
+//   long_offsets 33x33x2*kNumKeypoints (x and y per keypoint)
+void DecodeInstanceMasks(const float* long_offsets, int height, int width,
+                         PoseKeypoints* poses, size_t num_poses,
+                         int refinement_steps, int stride,
+                         float* instance_masks);
 }  // namespace posenet_decoder_op
 
 // Defines a 2-D keypoint with (x, y) float coordinates and its type id.
@@ -191,6 +212,22 @@ void PerformSoftKeypointNMS(
     const int num_keypoints, const float squared_nms_radius, const int topk,
     std::vector<float>* all_instance_scores);
 
+float ComputeSumSquaredDistance(
+    const std::vector<posenet_decoder_op::Point>& embedding,
+    const posenet_decoder_op::PoseKeypoints& pose);
+
+posenet_decoder_op::Point GetEmbedding(
+    const int y_location, const int x_location, const float* long_offsets,
+    const int keypoint_index, const int refinement_steps, const int height,
+    const int width, const int num_keypoints, const int stride);
+
+int MatchEmbeddingToInstance(const int y_location, const int x_location,
+                             const float* long_offsets, const int height,
+                             const int width,
+                             posenet_decoder_op::PoseKeypoints* poses,
+                             const size_t num_poses, const int num_keypoints,
+                             const int refinement_steps, const int stride);
+
 }  // namespace coral
 
-#endif  // EDGETPU_CPP_POSENET_POSENET_DECODER_H_
+#endif  // EDGETPU_CPP_POSENET_DECODER_H_

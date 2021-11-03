@@ -7,6 +7,10 @@
 
 #include <aif/face/FaceDetectorFactory.h>
 #include <aif/pose/PosenetDetectorFactory.h>
+#include <aif/movenet/MovenetDetectorFactory.h>
+#include <aif/bodypix/BodypixDetectorFactory.h>
+#include <aif/semantic/SemanticDetectorFactory.h>
+#include <aif/selfie/SelfieDetectorFactory.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/log/Logger.h>
 
@@ -22,10 +26,20 @@ FaceWSServerSession::FaceWSServerSession(tcp::socket&& socket)
 {
     m_detectors["face_detect_cpu"] = FaceDetectorFactory::create("short_range");
     m_detectors["posenet_detect_cpu"] = PosenetDetectorFactory::create("posenet_cpu");
+    m_detectors["movenet_detect_cpu"] = MovenetDetectorFactory::create("movenet_cpu");
+    m_detectors["bodypix_detect_cpu"] = BodypixDetectorFactory::create("bodypix_cpu");
+    m_detectors["semantic_detect_cpu"] = SemanticDetectorFactory::create("semantic_cpu");
+    m_detectors["selfie_detect_cpu"] = SelfieDetectorFactory::create("selfie_cpu");
 #ifdef USE_EDGETPU
     m_detectors["face_detect_edgetpu"] = FaceDetectorFactory::create("short_range_edgetpu");
     m_detectors["posenet_detect_edgetpu"] = PosenetDetectorFactory::create("posenet_edgetpu");
+    m_detectors["movenet_detect_edgetpu"] = MovenetDetectorFactory::create("movenet_edgetpu");
+    m_detectors["bodypix_detect_edgetpu"] = BodypixDetectorFactory::create("bodypix_edgetpu");
+    m_detectors["semantic_detect_edgetpu"] = SemanticDetectorFactory::create("semantic_edgetpu");
 #endif
+
+
+
 }
 
 FaceWSServerSession::~FaceWSServerSession()/* override*/
@@ -53,6 +67,10 @@ void FaceWSServerSession::onHandleMessage(const std::string& message)/* override
         requestName = payload["req"].GetString();
         std::string hwAccelator = payload["hw_accelator"].GetString();
         std::string base64Image = payload["arg"]["input"].GetString();
+        std::string id = "none";
+        if (payload["arg"].HasMember("id")) {
+            id = payload["arg"]["id"].GetString();
+        }
 
         Stopwatch sw;
         int base64ImageSize = base64Image.size();
@@ -77,7 +95,7 @@ void FaceWSServerSession::onHandleMessage(const std::string& message)/* override
         detector->detectFromBase64(base64Image, descriptor);
         TRACE("DETECT TIME: ", sw.getMs(), " ms");
 
-        descriptor->addResponseName(requestName);
+        descriptor->addResponseName(requestName, id);
         descriptor->addReturnCode(kAifOk);
         response(descriptor->toStr());
 
@@ -101,8 +119,16 @@ FaceWSServerSession::createDescriptor(const std::string& req)
         return std::make_shared<FaceDescriptor>();
     else if (req == "posenet_detect")
         return std::make_shared<PosenetDescriptor>();
+    else if (req == "movenet_detect")
+        return std::make_shared<MovenetDescriptor>();
+    else if (req == "bodypix_detect")
+        return std::make_shared<BodypixDescriptor>();
+    else if (req == "semantic_detect")
+        return std::make_shared<SemanticDescriptor>();
+    else if (req == "selfie_detect")
+        return std::make_shared<SelfieDescriptor>();
 
-    std::runtime_error(
+   std::runtime_error(
         std::string("cannot create descriptor(unknown request name: ")
             + req +")");
     return nullptr;
