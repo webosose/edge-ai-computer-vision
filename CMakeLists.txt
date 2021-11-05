@@ -7,6 +7,7 @@ add_subdirectory(framework)
 add_subdirectory(test)
 add_subdirectory(example/face-websocket-server)
 add_subdirectory(example/face-detect-sample)
+add_subdirectory(example/posenet-sample)
 
 add_dependencies(ai-framework-test ai-framework)
 add_dependencies(face-websocket-server ai-framework)

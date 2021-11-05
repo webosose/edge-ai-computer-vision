@@ -1,5 +1,6 @@
 #include <aif/pose/PosenetDetectorFactory.h>
 #include <aif/pose/CpuPosenetDetector.h>
+#include <aif/pose/ArmNNPosenetDetector.h>
 
 #ifdef USE_EDGETPU
 #include <aif/pose/EdgeTpuPosenetDetector.h>
@@ -12,10 +13,17 @@ namespace aif {
 //------------------------------------------------------
 
 /*static */
-std::shared_ptr<PosenetDetector> PosenetDetectorFactory::create(const std::string& name)
+std::shared_ptr<PosenetDetector> PosenetDetectorFactory::create(
+        const std::string& name,
+        const std::string& model_path,
+        const std::string& options)
 {
     if (name == "posenet_cpu") {
         return std::make_shared<CpuPosenetDetector>();
+    }
+
+    if (name == "posenet_cpu_armnn") {
+        return std::make_shared<ArmNNPosenetDetector>(model_path, options); 
     }
 
 #ifdef USE_EDGETPU

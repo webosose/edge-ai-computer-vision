@@ -12,7 +12,10 @@ namespace aif {
 class PosenetDetectorFactory
 {
 public:
-    static std::shared_ptr<PosenetDetector> create(const std::string& name);
+    static std::shared_ptr<PosenetDetector> create(
+           const std::string& name,
+           const std::string& model_path = "/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
+           const std::string& options = "");
 };
 
 } // end of namespace aif

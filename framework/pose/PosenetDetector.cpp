@@ -10,6 +10,7 @@ PosenetDetector::PosenetDetector(
     const std::shared_ptr<DetectorParam>& param)
     : Detector(modelPath, param)
 {
+    Logger::init(aif::LogLevel::TRACE1);
 }
 
 PosenetDetector::~PosenetDetector()
@@ -31,7 +32,10 @@ t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("tflite interpreter not initialized!!");
         }
 
-        t_aif_status res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
+        std::cout<<"modelPath is...." << m_modelPath << std::endl;
+        t_aif_status res;
+        if (m_modelPath.find("quant")!=std::string::npos) {
+            res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
                 m_interpreter.get(),
                 img,
                 width,
@@ -40,6 +44,17 @@ t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
                 true,
                 aif::kAifNone
                 );
+        } else {
+            res = aif::fillInputTensor<float, cv::Vec3f>(
+                m_interpreter.get(),
+                img,
+                width,
+                height,
+                channels,
+                false,
+                aif::kAifStandardization
+                );
+        }
         if (res != kAifOk) {
             throw std::runtime_error("fillInputTensor failed!!");
         }

@@ -7,6 +7,7 @@ set(POSENET_SRC
     ${POSENET_SRC_DIR}/PosenetParam.cpp
     ${POSENET_SRC_DIR}/PosenetDetector.cpp
     ${POSENET_SRC_DIR}/CpuPosenetDetector.cpp
+    ${POSENET_SRC_DIR}/ArmNNPosenetDetector.cpp
     ${POSENET_SRC_DIR}/PosenetDetectorFactory.cpp
     ${POSENET_SRC_DIR}/PosenetDescriptor.cpp
 )
