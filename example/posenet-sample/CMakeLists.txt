@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.7)
 project(posenet-sample CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
+OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
@@ -19,14 +20,17 @@ find_package(PkgConfig)
 pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
+
+
+IF(WITH_ARMNN)
 PKG_CHECK_MODULES(ARMNN-DELEGATE REQUIRED armnn-delegate)
+ENDIF(WITH_ARMNN)
 
 # include directories
 include_directories(
     ${TFLITE_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIRS}
     ${RAPIDJSON_INCLUDE_DIRS}
-    ${ARMNN-DELEGATE_INCLUDE_DIRS}
 )
 
 # link directories
@@ -34,7 +38,6 @@ link_directories(
     ${TFLITE_LIBRARY_DIRS}
     ${OPENCV_LIBRARY_DIRS}
     ${RAPIDJSON_LIBRARY_DIRS}
-    ${ARMNN-DELEGATE_LIBRARY_DIRS}
 )
 
 add_definitions(
@@ -51,6 +54,15 @@ IF(WITH_EDGETPU)
     LINK_DIRECTORIES(${EDGETPU_LIBRARY_DIRS})
     ADD_DEFINITIONS(-DUSE_EDGETPU)
 ENDIF(WITH_EDGETPU)
+
+
+IF(WITH_ARMNN)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(ARMNN-DELEGATE REQUIRED armnn-delegate)
+    INCLUDE_DIRECTORIES(${ARMNN-DELEGATE_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${ARMNN-DELEGATE_LIBRARY_DIRS})
+    ADD_DEFINITIONS(-DUSE_ARMNN)
+ENDIF(WITH_ARMNN)
 
 set(HDR_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -93,6 +105,7 @@ IF(WITH_EDGETPU)
     )
 ENDIF(WITH_EDGETPU)
 
+IF(WITH_ARMNN)
 set(SRC_FILES
         ${SRC_FILES}
         ${ARMNN-DELEGATE_SRCS}
@@ -101,6 +114,7 @@ set(LIBS
         ${LIBS}
         ${ARMNN-DELEGATE_LIBRARIES}
     )
+ENDIF(WITH_ARMNN)
 
 add_executable(
     ${PROJECT_NAME}

@@ -7,8 +7,6 @@ set(POSENET_SRC
     ${POSENET_SRC_DIR}/PosenetParam.cpp
     ${POSENET_SRC_DIR}/PosenetDetector.cpp
     ${POSENET_SRC_DIR}/CpuPosenetDetector.cpp
-    ${POSENET_SRC_DIR}/ArmNNPosenetDetector.cpp
-    ${POSENET_SRC_DIR}/PosenetDetectorFactory.cpp
     ${POSENET_SRC_DIR}/PosenetDescriptor.cpp
 )
 
@@ -18,5 +16,12 @@ IF(WITH_EDGETPU)
     )
 ENDIF(WITH_EDGETPU)
 
+IF(WITH_ARMNN)
+    set(POSENET_ARMNN_SRC
+        ${POSENET_SRC_DIR}/ArmNNPosenetDetector.cpp
+    )
+ENDIF(WITH_ARMNN)
+
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${POSENET_SRC_DIR})
-target_sources(${PROJECT_NAME} PRIVATE ${POSENET_SRC} ${POSENET_EDGETPU_SRC})
+target_sources(${PROJECT_NAME} PRIVATE ${POSENET_SRC} ${POSENET_EDGETPU_SRC} ${POSENET_ARMNN_SRC})

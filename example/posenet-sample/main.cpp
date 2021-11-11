@@ -1,5 +1,4 @@
-#include <aif/pose/PosenetDetectorFactory.h>
-#include <aif/pose/PosenetDetector.h>
+#include <aif/base/DetectorFactory.h>
 
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -19,15 +18,21 @@ static int s_width = 0;
 static int s_height = 0;
 static int s_bpp = 0;
 
-static std::shared_ptr<aif::PosenetDetector> posenetDetector = nullptr;
+static std::shared_ptr<aif::Detector> posenetDetector = nullptr;
 
 } // anonymous namespace
 
+#ifdef USE_ARMNN
+const char* DETECTOR_NAME  = "posenet_mobilenet_armnn";
+#else
+const char* DETECTOR_NAME  = "posenet_mobilenet_cpu";
+#endif
+
 void DetectPosenet(const std::string& image_path, std::vector<cv::Rect>& poseRects)
 {
-    std::shared_ptr<aif::Descriptor> descriptor = std::make_shared<aif::PosenetDescriptor>();
+    std::shared_ptr<aif::Descriptor> descriptor = aif::DetectorFactory::get().getDescriptor(DETECTOR_NAME);
     posenetDetector->detectFromImage(image_path, descriptor);
-    
+
     //std::cout << descriptor->toStr() << std::endl;
     rj::Document json;
     json.Parse(descriptor->toStr());
@@ -65,7 +70,7 @@ bool validateParams(int argc, char* argv[], bool& useArmNN, std::string& armnnOp
     }
 
     useArmNN = false;
-    
+
     if (std::strcmp(argv[1], "--model") || std::strcmp(argv[3], "--image"))
     {
         printUsage();
@@ -107,9 +112,9 @@ int main(int argc, char* argv[])
     if (useArmnn) {
         //armnnOptions = "backends:CpuAcc;logging-severity:info";
         std::cout << "armnnOptions: " << armnnOptions << std::endl;
-        posenetDetector = aif::PosenetDetectorFactory::create("posenet_cpu_armnn", model_path, armnnOptions);
+        posenetDetector = aif::DetectorFactory::get().getDetector(DETECTOR_NAME);
     } else {
-        posenetDetector = aif::PosenetDetectorFactory::create("posenet_cpu");
+        posenetDetector = aif::DetectorFactory::get().getDetector(DETECTOR_NAME);
     }
 
     if (posenetDetector == nullptr) {

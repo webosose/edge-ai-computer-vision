@@ -2,6 +2,9 @@
 #define AIF_ARMNN_POSENET_DETECTOR_H
 
 #include <aif/pose/PosenetDetector.h>
+#include <aif/pose/PosenetDescriptor.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DetectorFactoryRegistrations.h>
 #include <armnn/delegate/armnn_delegate.hpp>
 
 namespace aif {
@@ -27,6 +30,8 @@ private:
     std::string m_Options;
 };
 
+DetectorFactoryRegistration<ArmNNPosenetDetector, PosenetDescriptor>
+posenet_mobilenet_cpu("posenet_mobilenet_armnn");
 
 } // end of namespace aif
 

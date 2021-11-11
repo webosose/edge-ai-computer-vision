@@ -14,13 +14,11 @@
 
 namespace aif {
 
-ArmNNPosenetDetector::ArmNNPosenetDetector(
-    const std::string& model_path,
-    const std::string& options
-)   : PosenetDetector(
-            model_path, //"/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
-            std::make_shared<PosenetParam>())
-    , m_Options(options)
+ArmNNPosenetDetector::ArmNNPosenetDetector()
+    : PosenetDetector(
+        "/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
+        std::make_shared<PosenetParam>())
+    //, m_Options(options)
     , m_delegate(nullptr, armnnDelegate::TfLiteArmnnDelegateDelete)
 {
 }
