@@ -22,7 +22,7 @@ protected:
     std::shared_ptr<edgetpu::EdgeTpuContext> m_edgetpuContext;
 };
 
-DetectorFactoryRegistration<CpuMNameDetector, MNameDescriptor> 
+DetectorFactoryRegistration<EdgeTpuMNameDetector, MNameDescriptor>
 mname_model_edgetpu("mname_model_edgetpu");
 
 } // end of namespace aif

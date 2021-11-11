@@ -6,7 +6,6 @@ set(MNAME_SRC
     ${MNAME_SRC_DIR}/MNameParam.cpp
     ${MNAME_SRC_DIR}/MNameDetector.cpp
     ${MNAME_SRC_DIR}/CpuMNameDetector.cpp
-    ${MNAME_SRC_DIR}/MNameDetectorFactory.cpp
     ${MNAME_SRC_DIR}/MNameDescriptor.cpp
 )   
 
