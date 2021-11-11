@@ -1,4 +1,4 @@
-#include <aif/pose/PosenetDetectorFactory.h>
+//#include <aif/pose/PosenetDetectorFactory.h>
 #include <aif/pose/CpuPosenetDetector.h>
 #ifdef USE_EDGETPU
 #include <aif/pose/EdgeTpuPosenetDetector.h>

@@ -1,9 +1,11 @@
-#include <aif/face/FaceDetectorFactory.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/Detector.h>
+#include <aif/base/Descriptor.h>
 #include <aif/face/CpuFaceDetector.h>
 #ifdef USE_EDGETPU
 #include <aif/face/EdgeTpuFaceDetector.h>
 #endif
-
+#include <aif/face/FaceDescriptor.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -52,7 +54,7 @@ TEST_F(FaceDetectorTest, fd02_short_range_detect_faces_from_mona)
     EXPECT_TRUE(fd.detectFromImage("/usr/share/aif/images/mona.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundFaces->size(), 1);
 
-    auto fd2 = FaceDetectorFactory::create("short_range");
+    auto fd2 = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_EQ(fd2->init(), kAifOk);
     foundFaces->clear();
     EXPECT_TRUE(fd2->detectFromImage("/usr/share/aif/images/mona.jpg", descriptor) == aif::kAifOk);
@@ -117,7 +119,7 @@ TEST_F(FaceDetectorTest, fd07_full_range_detect_faces_from_mona)
     EXPECT_TRUE(fd.detectFromImage("/usr/share/aif/images/mona.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundFaces->size(), 1);
 
-    auto fd2 = FaceDetectorFactory::create("full_range");
+    auto fd2 = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_EQ(fd2->init(), kAifOk);
     foundFaces->clear();
     EXPECT_TRUE(fd2->detectFromImage("/usr/share/aif/images/mona.jpg", descriptor) == aif::kAifOk);
@@ -155,7 +157,7 @@ TEST_F(FaceDetectorTest, fd11_short_range_detect_faces_from_base64mona)
     EXPECT_TRUE(fd.detectFromBase64(base64image, descriptor) == aif::kAifOk);
     EXPECT_EQ(foundFaces->size(), 1);
 
-    auto fd2 = FaceDetectorFactory::create("short_range");
+    auto fd2 = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_EQ(fd2->init(), kAifOk);
     foundFaces->clear();
     EXPECT_TRUE(fd2->detectFromBase64(base64image, descriptor) == aif::kAifOk);
@@ -174,7 +176,7 @@ TEST_F(FaceDetectorTest, edgetpu01_short_range_detect_faces_from_base64mona)
     EXPECT_TRUE(fd.detectFromBase64(base64image, descriptor) == aif::kAifOk);
     EXPECT_EQ(foundFaces->size(), 1);
 
-    auto fd2 = FaceDetectorFactory::create("short_range_edgetpu");
+    auto fd2 = DetectorFactory::get().getDetector("face_short_range_edgetpu");
     EXPECT_EQ(fd2->init(), kAifOk);
     foundFaces->clear();
     EXPECT_TRUE(fd2->detectFromBase64(base64image, descriptor) == aif::kAifOk);

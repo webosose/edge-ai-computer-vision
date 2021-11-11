@@ -5,7 +5,6 @@ set(SEMANTIC_SRC
     ${SEMANTIC_SRC_DIR}/SemanticParam.cpp
     ${SEMANTIC_SRC_DIR}/SemanticParam.cpp
     ${SEMANTIC_SRC_DIR}/SemanticDetector.cpp
-    ${SEMANTIC_SRC_DIR}/SemanticDetectorFactory.cpp
     ${SEMANTIC_SRC_DIR}/SemanticDescriptor.cpp
     ${SEMANTIC_SRC_DIR}/CpuSemanticDetector.cpp
 )   

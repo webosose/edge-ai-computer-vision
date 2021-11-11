@@ -290,7 +290,7 @@ t_aif_status FaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
                                 selected_scores.data(),
                                 &num_selected_indices);
 
-        AIF_TRACE1 << "Found " << num_selected_indices << " faces...";
+        TRACE("Found ", num_selected_indices, " faces...");
         for(int i = 0 ; i < num_selected_indices ; i++){
             int idx = selected_indices[i];
             bool doUpdate = checkUpdate(i, good_region[4*idx+0], good_region[4*idx+1],
@@ -315,11 +315,12 @@ t_aif_status FaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
                 m_prev_faces[i][14] = good_facepoint[12*idx+10];
                 m_prev_faces[i][15] = good_facepoint[12*idx+11];
             }
-            AIF_TRACE1 << "face " << i << " : (" << m_prev_faces[i][0] << ", "
-                                                << m_prev_faces[i][1]  << ", "
-                                                << m_prev_faces[i][2] << ", "
-                                                << m_prev_faces[i][3] << "),  score "
-                                                << selected_scores[i];
+            TRACE("face ", i, " : (",
+                    m_prev_faces[i][0], ", " ,
+                    m_prev_faces[i][1], ", ",
+                    m_prev_faces[i][2], ", ",
+                    m_prev_faces[i][3], "),  score " ,
+                    selected_scores[i]);
 
             faceDescriptor->addFace(
                 selected_scores[i],

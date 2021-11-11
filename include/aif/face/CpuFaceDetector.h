@@ -2,6 +2,10 @@
 #define AIF_CPU_FACE_DETECTOR_H
 
 #include <aif/face/FaceDetector.h>
+#include <aif/face/FaceDescriptor.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DetectorFactoryRegistrations.h>
+
 
 namespace aif {
 
@@ -35,6 +39,9 @@ public:
     virtual ~ShortRangeFaceDetector();
 };
 
+DetectorFactoryRegistration<ShortRangeFaceDetector, FaceDescriptor>
+face_short_range_cpu("face_short_range_cpu");
+
 //------------------------------------------------------
 // FullRangeFaceDetector
 //------------------------------------------------------
@@ -45,6 +52,9 @@ public:
 
     virtual ~FullRangeFaceDetector();
 };
+
+DetectorFactoryRegistration<FullRangeFaceDetector, FaceDescriptor>
+face_full_range_cpu("face_full_range_cpu");
 
 } // end of namespace aif
 

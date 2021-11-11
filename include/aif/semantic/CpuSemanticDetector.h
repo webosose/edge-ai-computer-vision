@@ -2,6 +2,9 @@
 #define AIF_CPU_SEMANTIC_DETECTOR_H
 
 #include <aif/semantic/SemanticDetector.h>
+#include <aif/semantic/SemanticDescriptor.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DetectorFactoryRegistrations.h>
 
 namespace aif {
 
@@ -16,6 +19,8 @@ protected:
 
 };
 
+DetectorFactoryRegistration<CpuSemanticDetector, SemanticDescriptor>
+semantic_deeplabv3_cpu("semantic_deeplabv3_cpu");
 } // end of namespace aif
 
 #endif // AIF_CPU_SEMANTIC_DETECTOR_H

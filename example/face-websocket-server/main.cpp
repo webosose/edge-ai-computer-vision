@@ -12,9 +12,8 @@ namespace {
 
 int main(int argc, char* argv[])
 {
-    //ConfigReader reader("aif.config");
-    //Logger::init(Logger::strToLogLevel(reader.getOption("LogLevel")));
-    Logger::init(LogLevel::TRACE4);
+    ConfigReader reader("aif.config");
+    Logger::init(Logger::strToLogLevel(reader.getOption("LogLevel")));
     Logd("**", argv[0], "**");
     // Check command line arguments.
     if (argc != 4)

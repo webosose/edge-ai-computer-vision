@@ -2,6 +2,10 @@
 #define AIF_EDGETPU_SEMANTIC_DETECTOR_H
 
 #include <aif/semantic/SemanticDetector.h>
+#include <aif/semantic/SemanticDescriptor.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DetectorFactoryRegistrations.h>
+
 #include <edgetpu.h>
 
 namespace aif {
@@ -18,6 +22,9 @@ protected:
 protected:
     std::shared_ptr<edgetpu::EdgeTpuContext> m_edgetpuContext;
 };
+
+DetectorFactoryRegistration<EdgeTpuSemanticDetector, SemanticDescriptor>
+semantic_deeplabv3_edgetpu("semantic_deeplabv3_edgetpu");
 
 } // end of namespace aif
 

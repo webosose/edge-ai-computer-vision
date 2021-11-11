@@ -1,4 +1,4 @@
-#include <aif/face/FaceDetectorFactory.h>
+#include <aif/base/DetectorFactory.h>
 #include <aif/face/CpuFaceDetector.h>
 #ifdef USE_EDGETPU
 #include <aif/face/EdgeTpuFaceDetector.h>
@@ -22,7 +22,7 @@ static int s_width = 0;
 static int s_height = 0;
 static int s_bpp = 0;
 
-static std::shared_ptr<aif::FaceDetector> faceDetector = nullptr;
+static std::shared_ptr<aif::Detector> faceDetector = nullptr;
 
 } // anonymous namespace
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
         ", bpp=" << s_bpp <<
         ", imagesize=" << imagesize << std::endl;
 
-    faceDetector = aif::FaceDetectorFactory::create("short_range");
+    faceDetector = aif::DetectorFactory::get().getDetector("face_short_range_cpu");
     if (faceDetector == nullptr) {
         std::cerr << "faceDetector create error!" << std::endl;
         return EXIT_FAILURE;

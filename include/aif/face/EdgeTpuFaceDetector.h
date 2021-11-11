@@ -2,6 +2,9 @@
 #define AIF_EDGE_FACE_DETECTOR_H
 
 #include <aif/face/FaceDetector.h>
+#include <aif/face/FaceDescriptor.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DetectorFactoryRegistrations.h>
 #include <edgetpu.h>
 
 namespace aif {
@@ -38,6 +41,9 @@ public:
 
     virtual ~EdgeTpuShortRangeFaceDetector();
 };
+
+DetectorFactoryRegistration<EdgeTpuShortRangeFaceDetector, FaceDescriptor>
+face_detect_edgetpu("face_short_range_edgetpu");
 
 } // end of namespace aif
 

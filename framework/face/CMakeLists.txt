@@ -6,7 +6,6 @@ set(FACE_SRC
     ${FACE_SRC_DIR}/FaceParam.cpp
     ${FACE_SRC_DIR}/FaceDetector.cpp
     ${FACE_SRC_DIR}/CpuFaceDetector.cpp
-    ${FACE_SRC_DIR}/FaceDetectorFactory.cpp
 )
 
 IF(WITH_EDGETPU)

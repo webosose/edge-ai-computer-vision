@@ -5,7 +5,6 @@ set(BODYPIX_SRC
     ${BODYPIX_SRC_DIR}/BodypixParam.cpp
     ${BODYPIX_SRC_DIR}/BodypixParam.cpp
     ${BODYPIX_SRC_DIR}/BodypixDetector.cpp
-    ${BODYPIX_SRC_DIR}/BodypixDetectorFactory.cpp
     ${BODYPIX_SRC_DIR}/BodypixDescriptor.cpp
     ${BODYPIX_SRC_DIR}/CpuBodypixDetector.cpp
 )   

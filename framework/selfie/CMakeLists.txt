@@ -6,7 +6,6 @@ set(SELFIE_SRC
     ${SELFIE_SRC_DIR}/SelfieParam.cpp
     ${SELFIE_SRC_DIR}/SelfieDetector.cpp
     ${SELFIE_SRC_DIR}/CpuSelfieDetector.cpp
-    ${SELFIE_SRC_DIR}/SelfieDetectorFactory.cpp
     ${SELFIE_SRC_DIR}/SelfieDescriptor.cpp
     ${SELFIE_SRC_DIR}/transpose_conv_bias.cpp
 )

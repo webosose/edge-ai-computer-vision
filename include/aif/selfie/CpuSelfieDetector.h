@@ -2,6 +2,9 @@
 #define AIF_CPU_SELFIE_DETECTOR_H
 
 #include <aif/selfie/SelfieDetector.h>
+#include <aif/selfie/SelfieDescriptor.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DetectorFactoryRegistrations.h>
 
 namespace aif {
 
@@ -16,6 +19,8 @@ protected:
 
 };
 
+DetectorFactoryRegistration<CpuSelfieDetector, SelfieDescriptor>
+selfie_mediapipe_cpu("selfie_mediapipe_cpu");
 } // end of namespace aif
 
 #endif // AIF_CPU_SELFIE_DETECTOR_H

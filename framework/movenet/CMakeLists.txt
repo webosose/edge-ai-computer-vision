@@ -6,7 +6,6 @@ set(MOVENET_SRC
     ${MOVENET_SRC_DIR}/MovenetParam.cpp
     ${MOVENET_SRC_DIR}/MovenetDetector.cpp
     ${MOVENET_SRC_DIR}/CpuMovenetDetector.cpp
-    ${MOVENET_SRC_DIR}/MovenetDetectorFactory.cpp
     ${MOVENET_SRC_DIR}/MovenetDescriptor.cpp
 )   
 

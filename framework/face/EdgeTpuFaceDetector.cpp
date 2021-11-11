@@ -30,6 +30,9 @@ EdgeTpuFaceDetector::EdgeTpuFaceDetector(
 
 EdgeTpuFaceDetector::~EdgeTpuFaceDetector()
 {
+    // Releases interpreter instance before the EdgeTpuContext is destroyed.
+    // the lifetime of EdgeTpuContext should be longer than all associated interpreter instances.
+    m_interpreter.reset();
 }
 
 t_aif_status EdgeTpuFaceDetector::compileModel()/* override*/
