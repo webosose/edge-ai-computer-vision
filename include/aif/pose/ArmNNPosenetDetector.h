@@ -5,33 +5,27 @@
 #include <aif/pose/PosenetDescriptor.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DetectorFactoryRegistrations.h>
-#include <armnn/delegate/armnn_delegate.hpp>
+#include <aif/delegate/ArmNNDelegate.h>
 
 namespace aif {
 
-using ArmNNDelegatePtr = std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>;
 class ArmNNPosenetDetector : public PosenetDetector
 {
 public:
-    ArmNNPosenetDetector(
-        const std::string& model_path,
-        const std::string& options);
+    ArmNNPosenetDetector();
     virtual ~ArmNNPosenetDetector();
 
+    t_aif_status setOptions(const std::string& options) override;
 protected:
     t_aif_status compileModel() override;
 
 private:
-    std::vector<std::string> splitString(const std::string& str,
-                                         const char delim);
-    bool parseDelegateOptions(armnnDelegate::DelegateOptions& delegateOptions);
-
-    ArmNNDelegatePtr m_delegate;
-    std::string m_Options;
+    std::unique_ptr<ArmNNDelegate> m_delegateProvider;
+    ArmNNDelegatePtr m_delegatePtr;
 };
 
 DetectorFactoryRegistration<ArmNNPosenetDetector, PosenetDescriptor>
-posenet_mobilenet_cpu("posenet_mobilenet_armnn");
+posenet_mobilenet_armnn("posenet_mobilenet_armnn");
 
 } // end of namespace aif
 
