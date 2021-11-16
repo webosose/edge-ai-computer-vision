@@ -3,6 +3,9 @@
 #ifdef USE_EDGETPU
 #include <aif/pose/EdgeTpuPosenetDetector.h>
 #endif
+#ifdef USE_ARMNN
+#include <aif/pose/ArmNNPosenetDetector.h>
+#endif
 
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -83,6 +86,30 @@ TEST_F(PosenetDetectorTest, pd05_edgetpu_from_person)
 {
     EdgeTpuPosenetDetector pd;
     EXPECT_EQ(pd.init(), kAifOk);
+
+    PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
+    std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_TRUE(pd.detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
+}
+#endif
+
+#ifdef USE_ARMNN
+TEST_F(PosenetDetectorTest, pd06_armnn_posenet_from_person_default)
+{
+    ArmNNPosenetDetector pd;
+    EXPECT_EQ(pd.init(), kAifOk);
+
+    PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
+    std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_TRUE(pd.detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
+}
+
+TEST_F(PosenetDetectorTest, pd07_armnn_posenet_from_person_cpuAcc)
+{
+    ArmNNPosenetDetector pd;
+    EXPECT_EQ(pd.init("backends:CpuAcc"), kAifOk);
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);

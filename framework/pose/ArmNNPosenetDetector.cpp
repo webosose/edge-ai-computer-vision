@@ -18,8 +18,8 @@ ArmNNPosenetDetector::ArmNNPosenetDetector()
     : PosenetDetector(
         "/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
         std::make_shared<PosenetParam>())
-    //, m_Options(options)
-    , m_delegate(nullptr, armnnDelegate::TfLiteArmnnDelegateDelete)
+    , m_delegateProvider(std::make_unique<ArmNNDelegate>())
+    , m_delegatePtr(nullptr, armnnDelegate::TfLiteArmnnDelegateDelete)
 {
 }
 
@@ -27,51 +27,9 @@ ArmNNPosenetDetector::~ArmNNPosenetDetector()
 {
 }
 
-
-std::vector<std::string> ArmNNPosenetDetector::splitString(const std::string& str, const char delim)
+t_aif_status ArmNNPosenetDetector::setOptions(const std::string& options) /*override;*/
 {
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream ss(str);
-    while (std::getline(ss, token, delim)) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
-bool ArmNNPosenetDetector::parseDelegateOptions(armnnDelegate::DelegateOptions& delegateOptions)
-{
-
-    const std::vector<std::string> options = splitString(m_Options, ';');
-    std::vector<std::string> keys, values;
-
-    for (const auto& option: options) {
-        auto key_value = splitString(option, ':');
-        if (key_value.size() != 2) {
-            std::cout << "option string is wrong..." << std::endl;
-            return false;
-        }
-        keys.emplace_back(key_value[0]);
-        values.emplace_back(key_value[1]);
-    }
-
-    for (auto i=0; i < options.size(); i++) {
-	std::cout << "key:" << keys[i] << ", value:" << values[i] << std::endl;
-        if (keys[i] == std::string("backends")) {
-            std::vector<armnn::BackendId> backends;
-            auto backendsStr = splitString(values[i], ',');
-            for (const auto& backend : backendsStr) {
-                backends.push_back(backend);
-            }
-            delegateOptions.SetBackends(backends);
-        }
-        if (keys[i] == std::string("logging-severity")) {
-            delegateOptions.SetLoggingSeverity(values[i]);
-        }
-        // TODO: other options....
-    }
-
-    return true;
+    return m_delegateProvider->setArmNNDelegateOptions(options);
 }
 
 t_aif_status ArmNNPosenetDetector::compileModel()/* override*/
@@ -94,11 +52,9 @@ t_aif_status ArmNNPosenetDetector::compileModel()/* override*/
         }
 
         // Create the Arm NN Delegate
-        auto delegateOptions = armnnDelegate::TfLiteArmnnDelegateOptionsDefault();
-        parseDelegateOptions(delegateOptions);
-        m_delegate.reset(armnnDelegate::TfLiteArmnnDelegateCreate(delegateOptions));
+        m_delegatePtr = m_delegateProvider->createArmNNDelegate();
         // Instruct the Interpreter to use the armnnDelegate
-        m_interpreter->ModifyGraphWithDelegate(m_delegate.get());
+        m_interpreter->ModifyGraphWithDelegate(m_delegatePtr.get());
 
         res = m_interpreter->AllocateTensors();
         if (res != kTfLiteOk) {

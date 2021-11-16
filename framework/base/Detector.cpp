@@ -21,13 +21,18 @@ Detector::~Detector()
 {
 }
 
-t_aif_status Detector::init()
+t_aif_status Detector::init(const std::string& options)
 {
     std::stringstream errlog;
     try {
         Stopwatch sw;
         // compile model
         sw.start();
+        if (!options.empty() && (setOptions(options) != kAifOk)) {
+            errlog.clear();
+            errlog << "set option failed: " << options << std::endl;
+            throw std::runtime_error(errlog.str());
+        }
         if (compileModel() != kAifOk) {
             errlog.clear();
             errlog << "tflite model compile failed: " << m_modelPath;

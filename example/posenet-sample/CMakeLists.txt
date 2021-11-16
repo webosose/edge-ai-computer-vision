@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.7)
 project(posenet-sample CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
-OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
+OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)

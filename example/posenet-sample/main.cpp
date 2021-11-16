@@ -19,14 +19,9 @@ static int s_height = 0;
 static int s_bpp = 0;
 
 static std::shared_ptr<aif::Detector> posenetDetector = nullptr;
+static std::string DETECTOR_NAME = "";
 
 } // anonymous namespace
-
-#ifdef USE_ARMNN
-const char* DETECTOR_NAME  = "posenet_mobilenet_armnn";
-#else
-const char* DETECTOR_NAME  = "posenet_mobilenet_cpu";
-#endif
 
 void DetectPosenet(const std::string& image_path, std::vector<cv::Rect>& poseRects)
 {
@@ -54,36 +49,36 @@ void DetectPosenet(const std::string& image_path, std::vector<cv::Rect>& poseRec
 void printUsage()
 {
     std::cerr <<
-        "Usage: posenet-sample --model ${path to model} --image ${path to image}\n" <<
+        "Usage: posenet-sample --image ${path to image}\n" <<
         "       <Optional> --useArmNN \"backends:CpuRef,CpuAcc;logging-severity:info\"\n"<<
         "Example:\n" <<
-        "    posenet-sample --model models/posenet_mobilenet_v1_075_353_481_quant_decoder.tflite " <<
-                            "--image images/surf.jpg --useArmNN " <<
+        "    posenet-sample --image images/person.jpg --useArmNN " <<
                             "\"backends:CpuRef,CpuAcc;logging-severity:info\"\n";
 }
 
 bool validateParams(int argc, char* argv[], bool& useArmNN, std::string& armnnOptions)
 {
-    if (argc < 5) {
+    if (argc < 3) {
         printUsage();
         return false;
     }
 
     useArmNN = false;
 
-    if (std::strcmp(argv[1], "--model") || std::strcmp(argv[3], "--image"))
+    if (std::strcmp(argv[1], "--image"))
     {
         printUsage();
         return false;
     }
 
-    if (argc >= 6)
+#ifdef USE_ARMNN
+    if (argc >= 4)
     {
-        if (!std::strcmp(argv[5], "--useArmNN"))
+        if (!std::strcmp(argv[3], "--useArmNN"))
         {
             useArmNN = true;
-            if (argc == 7) {
-                armnnOptions = argv[6];
+            if (argc == 5) {
+                armnnOptions = argv[4];
             }
             return true;
         }
@@ -92,6 +87,7 @@ bool validateParams(int argc, char* argv[], bool& useArmNN, std::string& armnnOp
             return false;
         }
     }
+#endif
 
     return true;
 }
@@ -104,26 +100,21 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    const std::string model_path = argv[2];
-    const std::string image_path = argv[4];
+    const std::string image_path = argv[2];
 
     std::cout << "imagefile: " << image_path << std::endl;
 
     if (useArmnn) {
-        //armnnOptions = "backends:CpuAcc;logging-severity:info";
+        DETECTOR_NAME = "posenet_mobilenet_armnn";
         std::cout << "armnnOptions: " << armnnOptions << std::endl;
-        posenetDetector = aif::DetectorFactory::get().getDetector(DETECTOR_NAME);
+        posenetDetector = aif::DetectorFactory::get().getDetector(DETECTOR_NAME, armnnOptions);
     } else {
+        DETECTOR_NAME = "posenet_mobilenet_cpu";
         posenetDetector = aif::DetectorFactory::get().getDetector(DETECTOR_NAME);
     }
 
     if (posenetDetector == nullptr) {
         std::cerr << "posenetDetector create error!" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    if (posenetDetector->init() != kAifOk) {
-        std::cerr << "posenetDetector init error!" << std::endl;
         return EXIT_FAILURE;
     }
 

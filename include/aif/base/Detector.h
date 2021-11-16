@@ -19,13 +19,14 @@ public:
     Detector(const std::string& modelPath, const std::shared_ptr<DetectorParam>& param);
 
     virtual ~Detector();
-    virtual t_aif_status init();
+    virtual t_aif_status init(const std::string& options = "");
     virtual t_aif_status detectFromImage(
         const std::string& imagePath, std::shared_ptr<Descriptor>& descriptor);
     virtual t_aif_status detectFromBase64(
         const std::string& base64image, std::shared_ptr<Descriptor>& descriptor);
     virtual t_aif_status detect(
         const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor);
+    virtual t_aif_status setOptions(const std::string& options) { return kAifOk; };
 
     std::string getModelPath() const { return m_modelPath; }
     t_aif_modelinfo getModelInfo() const { return m_modelInfo; }

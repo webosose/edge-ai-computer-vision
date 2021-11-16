@@ -28,7 +28,7 @@ t_aif_status DetectorFactory::registerGenerator(
     return kAifOk;
 }
 
-std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id)
+std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, const std::string& options)
 {
     try {
         if (m_detectors.find(id) == m_detectors.end() &&
@@ -39,7 +39,9 @@ std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id)
             return m_detectors[id];
         }
         m_detectors[id] = m_detectorGenerators[id]();
-        m_detectors[id]->init();
+        if (m_detectors[id]->init(options) != kAifOk) {
+            throw std::runtime_error("detector init error");
+        }
         return m_detectors[id]; 
     
     } catch (const std::exception& e) {
