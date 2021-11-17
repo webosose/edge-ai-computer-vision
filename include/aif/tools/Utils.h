@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <exception>
+#include <cmath>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -140,6 +141,11 @@ t_aif_status fillInputTensor(
         Loge(__func__, "Error: Unknow exception occured!!");
         return kAifError;
     }
+}
+
+template<typename T>
+T sigmoid(T value) {
+    return 1 / (1 + std::exp(-value));
 }
 
 } // end of namespace aif
