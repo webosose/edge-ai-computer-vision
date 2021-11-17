@@ -6,7 +6,6 @@
 #include <rapidjson/stringbuffer.h>
 
 #include <aif/base/DetectorFactory.h>
-#include <aif/selfie/SelfieDetectorFactory.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/log/Logger.h>
 
