@@ -19,10 +19,6 @@ public:
     ArmNNDelegatePtr createArmNNDelegate();
 
 private:
-    std::vector<std::string> splitString(const std::string& str,
-                                         const char delim);
-
-private:
     armnnDelegate::DelegateOptions m_delegateOptions;
 };
 

@@ -1,4 +1,5 @@
 #include <aif/delegate/ArmNNDelegate.h>
+#include <aif/tools/Utils.h>
 
 namespace aif {
 
@@ -11,19 +12,6 @@ ArmNNDelegate::~ArmNNDelegate()
 {
 }
 
-std::vector<std::string> ArmNNDelegate::splitString(
-                                        const std::string& str,
-                                        const char delim)
-{
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream ss(str);
-    while (std::getline(ss, token, delim)) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
 t_aif_status ArmNNDelegate::setArmNNDelegateOptions(
                             const std::string& armnnOptions)
 {
@@ -32,11 +20,11 @@ t_aif_status ArmNNDelegate::setArmNNDelegateOptions(
         return kAifOk;
     }
 
-    const std::vector<std::string> options = splitString(armnnOptions, ';');
+    const std::vector<std::string> options = aif::splitString(armnnOptions, ';');
     std::vector<std::string> keys, values;
 
     for (const auto& option: options) {
-        auto key_value = splitString(option, ':');
+        auto key_value = aif::splitString(option, ':');
         if (key_value.size() != 2) {
             std::cout << "option string is wrong!!" << std::endl;
             return kAifError;
@@ -49,7 +37,7 @@ t_aif_status ArmNNDelegate::setArmNNDelegateOptions(
 	std::cout << "key:" << keys[i] << ", value:" << values[i] << std::endl;
         if (keys[i] == std::string("backends")) {
             std::vector<armnn::BackendId> backends;
-            auto backendsStr = splitString(values[i], ',');
+            auto backendsStr = aif::splitString(values[i], ',');
             for (const auto& backend : backendsStr) {
                 backends.push_back(backend);
             }

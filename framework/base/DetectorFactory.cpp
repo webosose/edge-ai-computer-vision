@@ -16,10 +16,10 @@ t_aif_status DetectorFactory::registerGenerator(
             throw std::runtime_error(id + " descriptor generator is already registered");
         }
     } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+        std::cerr << __func__ << " Error: " << e.what() << std::endl;
         return kAifError;
     } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+        std::cerr << __func__ << " Error: Unknown exception occured!!\n";
         return kAifError;
     }
 

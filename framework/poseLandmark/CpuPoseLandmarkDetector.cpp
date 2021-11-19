@@ -16,11 +16,19 @@ CpuPoseLandmarkDetector::CpuPoseLandmarkDetector(
         const std::string& modelPath,
         const std::shared_ptr<DetectorParam>& param)
     : PoseLandmarkDetector(modelPath, param)
+    , m_delegateProvider(std::make_unique<XnnpackDelegate>())
+    , m_useXnnpack(true)
+    , m_numThreads(0)
 {
 }
 
 CpuPoseLandmarkDetector::~CpuPoseLandmarkDetector()
 {
+}
+
+t_aif_status CpuPoseLandmarkDetector::setOptions(const std::string& options) /* override */
+{
+    return m_delegateProvider->setXnnpackDelegateOptions(options, m_useXnnpack, m_numThreads);
 }
 
 t_aif_status CpuPoseLandmarkDetector::compileModel()/* override*/
@@ -35,8 +43,14 @@ t_aif_status CpuPoseLandmarkDetector::compileModel()/* override*/
         }
 
         TfLiteStatus res = kTfLiteError;
-        tflite::ops::builtin::BuiltinOpResolver resolver;
-        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+        std::unique_ptr<tflite::OpResolver> resolver;
+        if (m_useXnnpack) {
+            resolver = std::make_unique<tflite::ops::builtin::BuiltinOpResolver>();
+        } else {
+            resolver = std::make_unique<tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates>();
+        }
+
+        res = tflite::InterpreterBuilder(*m_model.get(), *resolver.get())(&m_interpreter, m_numThreads);
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("tflite interpreter build failed!!");
         }

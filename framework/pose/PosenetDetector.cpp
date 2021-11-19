@@ -10,7 +10,6 @@ PosenetDetector::PosenetDetector(
     const std::shared_ptr<DetectorParam>& param)
     : Detector(modelPath, param)
 {
-    Logger::init(aif::LogLevel::TRACE1);
 }
 
 PosenetDetector::~PosenetDetector()

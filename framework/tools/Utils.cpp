@@ -309,5 +309,19 @@ t_aif_status getCvImageFromBase64(
     return (cvImg.rows > 0 && cvImg.cols > 0) ? kAifOk : kAifError;
 }
 
+std::vector<std::string> splitString(
+    const std::string& str,
+    const char delim)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream ss(str);
+    while (std::getline(ss, token, delim)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+
 
 } // end of namespace aif

@@ -63,6 +63,10 @@ t_aif_status getCvImageFromBase64(
     const std::string& base64image,
     cv::Mat& cvImg);
 
+std::vector<std::string> splitString(
+    const std::string& str,
+    const char delim);
+
 template<typename TensorDataType, typename CvDataType>
 t_aif_status fillInputTensor(
     tflite::Interpreter* interpreter,

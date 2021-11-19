@@ -5,6 +5,7 @@
 #include <aif/poseLandmark/PoseLandmarkDescriptor.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DetectorFactoryRegistrations.h>
+#include <aif/delegate/XnnpackDelegate.h>
 
 namespace aif {
 
@@ -17,8 +18,13 @@ public:
     virtual ~CpuPoseLandmarkDetector();
 
 protected:
+    t_aif_status setOptions(const std::string& options);
     t_aif_status compileModel() override;
 
+private:
+    std::unique_ptr<XnnpackDelegate> m_delegateProvider;
+    bool m_useXnnpack;
+    int m_numThreads;
 };
 
 
