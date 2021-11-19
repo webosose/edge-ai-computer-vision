@@ -1,13 +1,20 @@
 cmake_minimum_required(VERSION 2.8.7)
 
 set(DELEGATE_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(DELEGATE_SRC
+)
 
 IF(WITH_ARMNN)
-set(DELEGATE_SRC
-    ${DELEGATE_SRC_DIR}/ArmNNDelegate.cpp
-    ${DELEGATE_SRC_DIR}/XnnpackDelegate.cpp
-)
+    set(ARMNN_DELEGATE_SRC
+        ${DELEGATE_SRC_DIR}/ArmNNDelegate.cpp
+    )
 ENDIF(WITH_ARMNN)
 
+IF(WITH_XNNPACK)
+    set(XNNPACK_DELEGATE_SRC
+        ${DELEGATE_SRC_DIR}/XnnpackDelegate.cpp
+    )
+ENDIF(WITH_XNNPACK)
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${DELEGATE_SRC_DIR})
-target_sources(${PROJECT_NAME} PRIVATE ${DELEGATE_SRC})
+target_sources(${PROJECT_NAME} PRIVATE ${DELEGATE_SRC} ${ARMNN_DELEGATE_SRC} ${XNNPACK_DELEGATE_SRC})
