@@ -5,15 +5,19 @@
 
 namespace aif {
 
-BodypixDetector::BodypixDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+BodypixDetector::BodypixDetector(const std::string& modelPath)
+    : Detector(modelPath)
 {
 }
 
 BodypixDetector::~BodypixDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> BodypixDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<BodypixParam>();
+    return param;
 }
 
 t_aif_status BodypixDetector::fillInputTensor(const cv::Mat& img)/* override*/

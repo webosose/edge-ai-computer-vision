@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 #include <ostream>
 
 namespace aif {
@@ -12,21 +13,7 @@ namespace aif {
 class FaceParam : public DetectorParam
 {
 public:
-    FaceParam(
-        const std::vector<int>& strides = {8, 16, 16, 16},
-        const std::vector<float>& optAspectRatios = {1.0f},
-        float interpolatedScaleAspectRatio = 1.0f,
-        float anchorOffsetX = 0.5,
-        float anchorOffsetY = 0.5,
-        float minScale = 0.1484375,
-        float maxScale = 0.75,
-        bool  reduceBoxesInLowestLayer = false,
-        float scoreThreshold = 0.7f,
-        float iouThreshold = 0.2f,
-        int   maxOutputSize = 100,
-        float updateThreshold = 0.3f
-    );
-
+    FaceParam();
     FaceParam(const FaceParam& other);
     FaceParam(FaceParam&& other) noexcept;
 
@@ -39,6 +26,9 @@ public:
     // debug
     friend std::ostream& operator<<(std::ostream& os, const FaceParam& fp);
     void trace();
+
+
+    t_aif_status fromJson(const std::string& param) override;
 
 public:
     // for anchor

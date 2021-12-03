@@ -322,6 +322,16 @@ std::vector<std::string> splitString(
     return tokens;
 }
 
+std::string jsonObjectToString(const rj::Value& object)
+{
+    rj::StringBuffer strbuf;
+    strbuf.Clear();
+
+    rj::Writer<rj::StringBuffer> writer(strbuf);
+    object.Accept(writer);
+    return strbuf.GetString();
+}
+
 
 
 } // end of namespace aif

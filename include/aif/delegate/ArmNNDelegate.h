@@ -3,24 +3,25 @@
 
 #include <armnn/delegate/armnn_delegate.hpp>
 #include <armnn/delegate/DelegateOptions.hpp>
-#include <aif/base/Types.h>
-#include <string>
-#include <vector>
+#include <aif/base/Delegate.h>
+#include <aif/base/DelegateFactory.h>
+#include <aif/base/DelegateFactoryRegistrations.h>
 
 namespace aif {
 
-using ArmNNDelegatePtr = std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>;
-class ArmNNDelegate {
+class ArmNNDelegate : public Delegate {
 public:
-    ArmNNDelegate();
+    ArmNNDelegate(const std::string& option);
     virtual ~ArmNNDelegate();
 
-    t_aif_status setArmNNDelegateOptions(const std::string& armnnOptions);
-    ArmNNDelegatePtr createArmNNDelegate();
+    TfLiteDelegatePtr getTfLiteDelegate() const override;
 
 private:
+    void parseOption();
     armnnDelegate::DelegateOptions m_delegateOptions;
 };
+
+DelegateFactoryRegistration<ArmNNDelegate> armnn_delegate("armnn_delegate");
 
 } // end of namespace aif
 

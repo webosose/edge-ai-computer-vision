@@ -10,10 +10,10 @@ namespace aif {
 class PosenetDetector : public Detector
 {
 public:
-    PosenetDetector(
-            const std::string& modelPath,
-            const std::shared_ptr<DetectorParam>& param);
+    PosenetDetector(const std::string& modelPath);
     virtual ~PosenetDetector();
+
+    std::shared_ptr<DetectorParam> createParam() override;
 
 protected:
     t_aif_status fillInputTensor(const cv::Mat& img) override;

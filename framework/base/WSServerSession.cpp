@@ -72,7 +72,6 @@ void WSServerSession::onInit()
 void WSServerSession::onRun()
 {
     try {
-
         onInit();
 
         // Set suggested timeout settings for the websocket
@@ -94,6 +93,8 @@ void WSServerSession::onRun()
             beast::bind_front_handler(
                 &WSServerSession::onAccept,
                 shared_from_this()));
+
+
     } catch(beast::system_error const& se) {
         if(se.code() == websocket::error::closed) {
             Logi(__func__, "[", se.code() , "] ", se.code().message());

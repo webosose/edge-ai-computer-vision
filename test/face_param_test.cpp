@@ -45,20 +45,34 @@ TEST_F(FaceParamTest, faceparam01_constructor_test)
     FaceParam fp;
     fp.trace();
 
-    FaceParam fp2
-    {
-        {8, 16, 16, 16},
-        {1.0f},
-        1.0f,
-        0.5,
-        0.5,
-        0.1484375,
-        0.75,
-        false,
-        0.7f,
-        0.2f,
-        100
-    };
+    FaceParam fp2;
+    fp2.fromJson("{ \
+        strides: [8, 16, 16, 16], \
+        optAspectRatios: [1.0], \
+        interpolatedScaleAspectRatio: 1.0, \
+        anchorOffsetX: 0.5, \
+        anchorOffsetY: 0.5, \
+        minScale: 0.1484375, \
+        maxScale: 0.75, \
+        reduceBoxesInLowestLayer: false, \
+        scoreThreshold: 0.7, \
+        iouThreshold: 0.2, \
+        maxOutputSize: 100, \
+        updateThreshold: 0.3f \
+    }");
+//    {
+//        {8, 16, 16, 16},
+//        {1.0f},
+//        1.0f,
+//        0.5,
+//        0.5,
+//        0.1484375,
+//        0.75,
+//        false,
+//        0.7f,
+//        0.2f,
+//        100
+//    };
     fp2.trace();
 
     EXPECT_EQ(fp, fp2);

@@ -1,138 +1,75 @@
-#include <aif/base/DetectorFactory.h>
+#include <aif/sample/Sample.h>
+#include <aif/poseLandmark/PoseLandmarkDescriptor.h>
 
-#include <aif/tools/Utils.h>
-#include <aif/log/Logger.h>
-
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc.hpp>
-
-#include <iostream>
-#include <vector>
-
-using namespace aif;
 namespace rj = rapidjson;
 
-namespace {
+namespace aif {
 
-static int s_width = 0;
-static int s_height = 0;
-static int s_bpp = 0;
-
-static std::shared_ptr<aif::Detector> poselandmarkDetector = nullptr;
-static std::string DETECTOR_NAME = "";
-
-} // anonymous namespace
-
-void DetectPoselandmark(const std::string& image_path, std::vector<cv::Rect>& poseRects)
+class PoseLandmarkDetectSample : public ImageSample
 {
-    std::shared_ptr<aif::Descriptor> descriptor = aif::DetectorFactory::get().getDescriptor(DETECTOR_NAME);
-    poselandmarkDetector->detectFromImage(image_path, descriptor);
+public:
+    PoseLandmarkDetectSample(
+            const std::string& configPath,
+            const std::string& defaultConfig = "")
+        :ImageSample(configPath, defaultConfig, false) {}
+    virtual ~PoseLandmarkDetectSample() {}
 
-    //std::cout << descriptor->toStr() << std::endl;
-    rj::Document json;
-    json.Parse(descriptor->toStr());
-    const rj::Value& poses = json["poses"];
-    for (rj::SizeType i = 0; i < poses.Size(); i++) {
-        const rj::Value& landmark = poses[i]["landmarks"];
-        std::cout << "landmarks: " << std::endl;
+protected:
+    virtual void onResult(std::shared_ptr<Descriptor>& descriptor)
+    {
+        std::shared_ptr<PoseLandmarkDescriptor> poseDescriptor = 
+            std::dynamic_pointer_cast<PoseLandmarkDescriptor>(descriptor);
+        
+        rj::Document json;
+        json.Parse(poseDescriptor->toStr());
+        const rj::Value& poses = json["poses"];
+        for (rj::SizeType i = 0; i < poses.Size(); i++) {
+            const rj::Value& landmark = poses[i]["landmarks"];
+            std::cout << "landmarks: " << std::endl;
 
-        for (rj::SizeType j = 0; j < landmark.Size(); j++) {
-            for (rj::SizeType k = 0; k < landmark[j].Size(); k++) {
-                std::cout << landmark[j][k].GetDouble() << ", ";
+            for (rj::SizeType j = 0; j < landmark.Size(); j++) {
+                for (rj::SizeType k = 0; k < landmark[j].Size(); k++) {
+                    std::cout << landmark[j][k].GetDouble() << ", ";
+                }
+                std::cout << "\n";
             }
-            std::cout << "\n";
         }
     }
-}
+};
 
-void printUsage()
-{
-    std::cerr <<
-        "Usage: poselandmark-sample --image ${path to image} ${lite/full/heavy}\n" <<
-        "       <Optional> --useXnnpack=${true or false} ${numThreads}\n" <<
-        "Example:\n" <<
-        "    poselandmark-sample --image images/person.jpg lite \n" <<
-        "                   --useXnnpack=true 4\n";
-}
-
-bool validateParams(int argc, char* argv[], std::string& options)
-{
-    if (argc < 4) {
-        printUsage();
-        return false;
-    }
-
-    if (std::strcmp(argv[1], "--image"))
-    {
-        printUsage();
-        return false;
-    }
-
-
-    if (argc >= 5)
-    {
-#ifdef USE_XNNPACK
-        if (std::strstr(argv[4], "--useXnnpack") != nullptr)
-        {
-            auto key_value = aif::splitString(argv[4], '=');
-            if (key_value.size() != 2) {
-                printUsage();
-                return false;
-            }
-
-            options.append(key_value[1]);
-            if (argc == 6) {
-                options.append(";");
-                options.append(argv[5]);
-            }
-
-            return true;
-        }
-#endif
-        printUsage();
-        return false;
-    }
-
-    return true;
 }
 
 int main(int argc, char* argv[])
 {
-    Logger::init(aif::LogLevel::TRACE1);
-
-    std::string options("");
-    if (!validateParams(argc, argv, options)) {
-        return EXIT_FAILURE;
+    std::string defaultConfig(
+        "{\n"
+        "    \"LogLevel\" : \"TRACE4\",\n"
+        "    \"ImagePath\" : \"./images/person.jpg\",\n"
+        "    \"model\" : \"poselandmark_lite_cpu\",\n"
+        "    \"param\" : { \n"
+        "        \"common\" : {\n"
+        "            \"useXnnpack\": true,\n"
+        "            \"numThreads\": 4\n"
+        "        }\n"
+        "    }\n"
+        "}"
+    );
+    
+    std::string configPath;
+    if (argc == 2) {
+        if (!std::strcmp(argv[1], "--h") || !std::strcmp(argv[1], "--help")) {
+            std::cout << "Usage: poselandmark-sample <config-file-path>" << std::endl;
+            std::cout << "Example: poselandmark-sample ./poselandmark.json" << std::endl;
+            std::cout << "Example Config Json: " << std::endl << defaultConfig << std::endl;;
+            return 0;
+        } 
+        configPath = argv[1];
     }
-
-    const std::string image_path = argv[2];
-    const std::string modelType = argv[3];
-
-    std::cout << "imagefile: " << image_path << std::endl;
-    std::cout << "modelType: " << modelType << std::endl;
-
-    std::cout << "Options: " << options << std::endl;
-
-    if (!modelType.compare("lite")){
-        DETECTOR_NAME = "poselandmark_lite_cpu";
-    } else if (!modelType.compare("full")){
-        DETECTOR_NAME = "poselandmark_full_cpu";
-    } else if (!modelType.compare("heavy")){
-        DETECTOR_NAME = "poselandmark_heavy_cpu";
-    } else {
-        std::cerr << "Wrong model Type...: " << modelType << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    poselandmarkDetector = aif::DetectorFactory::get().getDetector(DETECTOR_NAME, options);
-
-    if (poselandmarkDetector == nullptr) {
-        std::cerr << "poselandmarkDetector create error!" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    std::vector<cv::Rect> poselandmarks;
-    DetectPoselandmark(image_path, poselandmarks);
-
-    return EXIT_SUCCESS;
+    
+    aif::PoseLandmarkDetectSample sample(configPath, defaultConfig);
+    sample.init();
+    sample.run();
+ 
+    return 0;
 }
+

@@ -10,12 +10,11 @@ namespace aif {
 class BodypixDetector : public Detector
 {
 public:
-    BodypixDetector(
-            const std::string& modelPath,
-            const std::shared_ptr<DetectorParam>& param);
+    BodypixDetector( const std::string& modelPath);
     virtual ~BodypixDetector();
 
 protected:
+    std::shared_ptr<DetectorParam> createParam() override;
     t_aif_status fillInputTensor(const cv::Mat& img) override;
     t_aif_status preProcessing() override;
     t_aif_status postProcessing(const cv::Mat& img,

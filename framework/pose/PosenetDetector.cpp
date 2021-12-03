@@ -5,15 +5,19 @@
 
 namespace aif {
 
-PosenetDetector::PosenetDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+PosenetDetector::PosenetDetector(const std::string& modelPath)
+    : Detector(modelPath)
 {
 }
 
 PosenetDetector::~PosenetDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> PosenetDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<PosenetParam>();
+    return param;
 }
 
 t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
@@ -31,7 +35,6 @@ t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("tflite interpreter not initialized!!");
         }
 
-        std::cout<<"modelPath is...." << m_modelPath << std::endl;
         t_aif_status res;
         if (m_modelPath.find("quant")!=std::string::npos) {
             res = aif::fillInputTensor<uint8_t, cv::Vec3b>(

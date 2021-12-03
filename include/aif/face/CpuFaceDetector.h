@@ -15,10 +15,7 @@ namespace aif {
 class CpuFaceDetector : public FaceDetector
 {
 public:
-    CpuFaceDetector(
-        const std::string& modelPath,
-        const std::shared_ptr<DetectorParam>& param);
-
+    CpuFaceDetector(const std::string& modelPath);
     virtual ~CpuFaceDetector();
 
 protected:
@@ -37,6 +34,9 @@ public:
     ShortRangeFaceDetector();
 
     virtual ~ShortRangeFaceDetector();
+
+protected:
+    std::shared_ptr<DetectorParam> createParam() override;
 };
 
 DetectorFactoryRegistration<ShortRangeFaceDetector, FaceDescriptor>
@@ -51,6 +51,9 @@ public:
     FullRangeFaceDetector();
 
     virtual ~FullRangeFaceDetector();
+
+protected:
+    std::shared_ptr<DetectorParam> createParam() override;
 };
 
 DetectorFactoryRegistration<FullRangeFaceDetector, FaceDescriptor>

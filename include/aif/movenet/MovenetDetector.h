@@ -11,12 +11,11 @@ namespace aif {
 class MovenetDetector : public Detector
 {
 public:
-    MovenetDetector(
-            const std::string& modelPath,
-            const std::shared_ptr<DetectorParam>& param);
+    MovenetDetector(const std::string& modelPath);
     virtual ~MovenetDetector();
 
 protected:
+    std::shared_ptr<DetectorParam> createParam() override;
     t_aif_status fillInputTensor(const cv::Mat& img) override;
     t_aif_status preProcessing() override;
     t_aif_status postProcessing(const cv::Mat& img,

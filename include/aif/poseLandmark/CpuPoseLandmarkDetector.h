@@ -12,19 +12,11 @@ namespace aif {
 class CpuPoseLandmarkDetector : public PoseLandmarkDetector
 {
 public:
-    CpuPoseLandmarkDetector(
-            const std::string& modelPath,
-            const std::shared_ptr<DetectorParam>& param);
+    CpuPoseLandmarkDetector(const std::string& modelPath);
     virtual ~CpuPoseLandmarkDetector();
 
 protected:
-    t_aif_status setOptions(const std::string& options);
     t_aif_status compileModel() override;
-
-private:
-    std::unique_ptr<XnnpackDelegate> m_delegateProvider;
-    bool m_useXnnpack;
-    int m_numThreads;
 };
 
 

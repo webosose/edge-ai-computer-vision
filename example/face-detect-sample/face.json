@@ -1,0 +1,12 @@
+{
+    "LogLevel" : "TRACE4",
+    "ImagePath" : "./images/mona.jpg",
+    "model" : "face_short_range_cpu",
+    "param" : {
+        "common" : {
+            "useXnnpack": true,
+            "numThreads": 4
+        }
+    }
+}
+

@@ -5,15 +5,19 @@
 
 namespace aif {
 
-SelfieDetector::SelfieDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+SelfieDetector::SelfieDetector(const std::string& modelPath)
+    : Detector(modelPath)
 {
 }
 
 SelfieDetector::~SelfieDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> SelfieDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<SelfieParam>();
+    return param;
 }
 
 t_aif_status SelfieDetector::fillInputTensor(const cv::Mat& img)/* override*/
@@ -86,7 +90,7 @@ t_aif_status SelfieDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
 
     std::shared_ptr<SelfieDescriptor> selfieDescriptor = std::dynamic_pointer_cast<SelfieDescriptor>(descriptor);
     selfieDescriptor->addMaskData(width, height, data);
- 
+
     return kAifOk;
 }
 

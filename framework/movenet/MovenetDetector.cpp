@@ -5,15 +5,19 @@
 
 namespace aif {
 
-MovenetDetector::MovenetDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+MovenetDetector::MovenetDetector(const std::string& modelPath)
+    : Detector(modelPath)
 {
 }
 
 MovenetDetector::~MovenetDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> MovenetDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<MovenetParam>();
+    return param;
 }
 
 t_aif_status MovenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
@@ -77,11 +81,11 @@ t_aif_status MovenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
     float* keyPoints = reinterpret_cast<float*>(output->data.data);
-    
+
     std::shared_ptr<MovenetDescriptor> movenetDescriptor = std::dynamic_pointer_cast<MovenetDescriptor>(descriptor);
     float scaleX = (float)img.size().width / (float)m_modelInfo.width;
     float scaleY = (float)img.size().height / (float)m_modelInfo.height;
- 
+
     TRACE("movenet img size: ", img.size());
     TRACE("movenet model size: ", m_modelInfo.width, m_modelInfo.height);
     TRACE("scale x: ", scaleX);

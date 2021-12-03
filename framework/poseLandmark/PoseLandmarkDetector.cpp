@@ -5,15 +5,19 @@
 
 namespace aif {
 
-PoseLandmarkDetector::PoseLandmarkDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+PoseLandmarkDetector::PoseLandmarkDetector(const std::string& modelPath)
+    : Detector(modelPath )
 {
 }
 
 PoseLandmarkDetector::~PoseLandmarkDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> PoseLandmarkDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<PoseLandmarkParam>();
+    return param;
 }
 
 t_aif_status PoseLandmarkDetector::fillInputTensor(const cv::Mat& img)/* override*/

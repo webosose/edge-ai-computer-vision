@@ -16,11 +16,11 @@ IF(WITH_EDGETPU)
     )
 ENDIF(WITH_EDGETPU)
 
-IF(WITH_ARMNN)
-    set(POSENET_ARMNN_SRC
-        ${POSENET_SRC_DIR}/ArmNNPosenetDetector.cpp
-    )
-ENDIF(WITH_ARMNN)
+#IF(WITH_ARMNN)
+#    set(POSENET_ARMNN_SRC
+#        ${POSENET_SRC_DIR}/ArmNNPosenetDetector.cpp
+#    )
+#ENDIF(WITH_ARMNN)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${POSENET_SRC_DIR})

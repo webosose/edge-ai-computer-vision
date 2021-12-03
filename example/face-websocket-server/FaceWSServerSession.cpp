@@ -5,8 +5,10 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+#include <aif/base/DelegateFactory.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/tools/Stopwatch.h>
+#include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
 using namespace aif;
@@ -27,6 +29,11 @@ FaceWSServerSession::~FaceWSServerSession()/* override*/
 
 void FaceWSServerSession::onInit()/* override*/
 {
+    Logi("---------------- session init -------------------");
+    DelegateFactory::get().clear();
+    DetectorFactory::get().clear();
+
+
 //    Stopwatch sw;
 //    for (auto& detector : m_detectors) {
 //        sw.start();
@@ -48,6 +55,11 @@ void FaceWSServerSession::onHandleMessage(const std::string& message)/* override
         std::string model = payload["model"].GetString();
         std::string base64Image = payload["arg"]["input"].GetString();
 
+        std::string param;
+        if (payload.HasMember("param")) {
+            param = jsonObjectToString(payload["param"]);
+        }
+
         Stopwatch sw;
         int base64ImageSize = base64Image.size();
         TRACE("base64ImageSize is ", base64ImageSize);
@@ -60,7 +72,7 @@ void FaceWSServerSession::onHandleMessage(const std::string& message)/* override
             throw std::runtime_error(std::string("createDescriptor failed: ") + model);
         }
 
-        std::shared_ptr<Detector> detector = DetectorFactory::get().getDetector(model);
+        std::shared_ptr<Detector> detector = DetectorFactory::get().getDetector(model, param);
         if (detector == nullptr) {
             throw std::runtime_error(std::string("getDetector failed: ") + model);
         }

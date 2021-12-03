@@ -1,19 +1,20 @@
 #include <aif/base/Detector.h>
+#include <aif/base/DelegateFactory.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
+
+#include <tensorflow/lite/kernels/register.h>
 
 using aif::Stopwatch;
 
 namespace aif {
 
-Detector::Detector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : m_model(nullptr)
+Detector::Detector( const std::string& modelPath)
+    : m_modelPath(modelPath)
+    , m_model(nullptr)
     , m_interpreter(nullptr)
-    , m_modelPath(modelPath)
-    , m_param(param)
+    , m_param(nullptr)
 {
 }
 
@@ -21,24 +22,25 @@ Detector::~Detector()
 {
 }
 
-t_aif_status Detector::init(const std::string& options)
+t_aif_status Detector::init(const std::string& param)
 {
     std::stringstream errlog;
     try {
         Stopwatch sw;
-        // compile model
         sw.start();
-        if (!options.empty() && (setOptions(options) != kAifOk)) {
+        m_param = createParam();
+        if (!param.empty() && m_param->fromJson(param) != kAifOk) {
             errlog.clear();
-            errlog << "set option failed: " << options << std::endl;
+            errlog << "failed to read param from json: " << m_modelPath << "\n" << param;
             throw std::runtime_error(errlog.str());
         }
-        if (compileModel() != kAifOk) {
+
+        if (compile() != kAifOk) {
             errlog.clear();
             errlog << "tflite model compile failed: " << m_modelPath;
             throw std::runtime_error(errlog.str());
         }
-        TRACE("compileModel(): ", sw.getMs(), "ms");
+        TRACE("compile(): ", sw.getMs(), "ms");
         sw.stop();
         return preProcessing();
     } catch(const std::exception& e) {
@@ -49,6 +51,109 @@ t_aif_status Detector::init(const std::string& options)
         return kAifError;
     }
 }
+
+t_aif_status Detector::compile()
+{
+    std::stringstream errlog;
+    try {
+        m_model = tflite::FlatBufferModel::BuildFromFile(m_modelPath.c_str());
+        if (m_model == nullptr) {
+            errlog.clear();
+            errlog << "Can't get tflite model: " << m_modelPath;
+            throw std::runtime_error(errlog.str());
+        }
+
+        if (compileModel() != kAifOk) {
+            errlog.clear();
+            errlog << "tflite model compile failed: " << m_modelPath;
+            throw std::runtime_error(errlog.str());
+        }
+
+        if (compileDelegates() != kAifOk) {
+            errlog.clear();
+            errlog << "tflite model compile delegates failed: " << m_modelPath;
+            throw std::runtime_error(errlog.str());
+        }
+
+        m_interpreter->SetNumThreads(m_param->getNumThreads());
+
+        TfLiteStatus res = kTfLiteError;
+        res = m_interpreter->AllocateTensors();
+        if (res != kTfLiteOk) {
+            throw std::runtime_error("tflite allocate tensors failed!!");
+        }
+
+        const std::vector<int> &t_inputs = m_interpreter->inputs();
+        TfLiteTensor* tensor_input = m_interpreter->tensor(t_inputs[0]);
+        if (tensor_input == nullptr || tensor_input->dims == nullptr) {
+            throw std::runtime_error("tflite tensor_input invalid!!");
+        }
+
+        if (tensor_input->dims == nullptr) {
+            throw std::runtime_error("invalid tensor_input dimension!");
+        }
+
+        m_modelInfo.inputSize = tensor_input->dims->size;
+        if (m_modelInfo.inputSize != 4) {
+            throw std::runtime_error("this model input require 4 tensors");
+        }
+
+        m_modelInfo.batchSize = tensor_input->dims->data[0];
+        m_modelInfo.height = tensor_input->dims->data[1];
+        m_modelInfo.width = tensor_input->dims->data[2];
+        m_modelInfo.channels = tensor_input->dims->data[3];
+
+        TRACE("input_size: ", m_modelInfo.inputSize);
+        TRACE("batch_size: ", m_modelInfo.batchSize);
+        TRACE("height:", m_modelInfo.height);
+        TRACE("width: ", m_modelInfo.width);
+        TRACE("channels: ", m_modelInfo.channels);
+
+        return kAifOk;
+    } catch(const std::exception& e) {
+        Loge(__func__,"Error: ", e.what());
+        return kAifError;
+    } catch(...) {
+        Loge(__func__,"Error: Unknown exception occured!!");
+        return kAifError;
+    }
+}
+
+t_aif_status Detector::compileDelegates()
+{
+    auto& delegates = m_param->getDelegates();
+    for (auto& delegate : delegates) {
+        m_delegates.push_back(DelegateFactory::get().getDelegate(
+                    delegate.first, delegate.second));
+        Logi("delegate: ", delegate.first, "/ option: ", delegate.second);
+    }
+
+    if (m_delegates.size() == 0) {
+        return kAifOk;
+    }
+
+    try {
+        TfLiteStatus res = kTfLiteError;
+        for (auto& delegate : m_delegates) {
+            res = m_interpreter->ModifyGraphWithDelegate(delegate->getTfLiteDelegate());
+            if (res == kTfLiteOk) {
+                Logi("selected delegate: ", delegate->getName());
+                return kAifOk;
+            } else {
+                Logw(__func__, "Error: modify graph failed with " + delegate->getName());
+            }
+        }
+        throw std::runtime_error("tflite Modifyfailed failed");
+        return kAifError;
+    } catch(const std::exception& e) {
+        Loge(__func__,"Error: ", e.what());
+        return kAifError;
+    } catch(...) {
+        Loge(__func__,"Error: Unknown exception occured!!");
+        return kAifError;
+    }
+}
+
 
 t_aif_status Detector::detectFromImage(
     const std::string& imagePath, std::shared_ptr<Descriptor>& descriptor)

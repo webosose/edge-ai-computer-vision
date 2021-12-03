@@ -9,8 +9,12 @@ namespace aif {
 class ConfigReader
 {
 public:
-    ConfigReader(const std::string& fileName);
+    ConfigReader(const std::string& fileName,
+                 const std::string& defaultConfig = "");
+
+    bool loadFromString(const std::string& config);
     std::string getOption(const std::string& optionName);
+    std::string getOptionObject(const std::string& optionName);
 
 private:
     rapidjson::Document m_document;

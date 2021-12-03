@@ -28,7 +28,7 @@ t_aif_status DetectorFactory::registerGenerator(
     return kAifOk;
 }
 
-std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, const std::string& options)
+std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, const std::string& param)
 {
     try {
         if (m_detectors.find(id) == m_detectors.end() &&
@@ -39,17 +39,17 @@ std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, co
             return m_detectors[id];
         }
         m_detectors[id] = m_detectorGenerators[id]();
-        if (m_detectors[id]->init(options) != kAifOk) {
+        if (m_detectors[id]->init(param) != kAifOk) {
             throw std::runtime_error("detector init error");
         }
-        return m_detectors[id]; 
-    
+        return m_detectors[id];
+
     } catch (const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
-        return nullptr; 
+        return nullptr;
     } catch (...) {
         Loge(__func__,"Error: Unknown exception occured!!");
-        return nullptr; 
+        return nullptr;
     }
 }
 

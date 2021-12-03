@@ -23,12 +23,10 @@ public:
             const std::string& id,
             const DetectorGenerator& detectorGenerator,
             const DescriptorGenerator& descriptorGenerator);
-    std::shared_ptr<Detector> getDetector(const std::string& id, const std::string& options = "");
+    std::shared_ptr<Detector> getDetector(const std::string& id, const std::string& param = "");
     std::shared_ptr<Descriptor> getDescriptor(const std::string& id);
     void clear() {
         m_detectors.clear();
-        m_detectorGenerators.clear();
-        m_descriptorGenerators.clear();
     }
 
 private:

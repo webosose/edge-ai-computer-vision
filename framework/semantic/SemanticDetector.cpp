@@ -4,15 +4,19 @@
 
 namespace aif {
 
-SemanticDetector::SemanticDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+SemanticDetector::SemanticDetector(const std::string& modelPath)
+    : Detector(modelPath)
 {
 }
 
 SemanticDetector::~SemanticDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> SemanticDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<SemanticParam>();
+    return param;
 }
 
 t_aif_status SemanticDetector::fillInputTensor(const cv::Mat& img)/* override*/

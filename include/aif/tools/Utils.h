@@ -12,6 +12,11 @@
 #include <opencv2/imgproc.hpp>
 #include <tensorflow/lite/interpreter.h>
 
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+
+namespace rj = rapidjson;
 namespace aif {
 
 bool floatEquals(
@@ -151,6 +156,8 @@ template<typename T>
 T sigmoid(T value) {
     return 1 / (1 + std::exp(-value));
 }
+
+std::string jsonObjectToString(const rj::Value& object);
 
 } // end of namespace aif
 

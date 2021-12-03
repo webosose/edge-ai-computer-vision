@@ -1,61 +1,54 @@
 #include <aif/delegate/ArmNNDelegate.h>
 #include <aif/tools/Utils.h>
 
+#include <rapidjson/document.h>
+namespace rj = rapidjson;
+
 namespace aif {
 
-ArmNNDelegate::ArmNNDelegate()
-    : m_delegateOptions(armnn::Compute::CpuRef)
+ArmNNDelegate::ArmNNDelegate(const std::string& option)
+    : Delegate("ArmNNDelegate", option)
+    , m_delegateOptions(armnn::Compute::CpuAcc)
 {
+    m_delegateOptions.SetBackends({"CpuAcc"});
+    m_delegateOptions.SetLoggingSeverity("info");
+
+    parseOption();
 }
 
 ArmNNDelegate::~ArmNNDelegate()
 {
 }
 
-t_aif_status ArmNNDelegate::setArmNNDelegateOptions(
-                            const std::string& armnnOptions)
+void ArmNNDelegate::parseOption()
 {
-    if (armnnOptions.empty()) {
-        std::cout << "ArmnnOptions empty, Apply default options...\n";
-        return kAifOk;
+    if (m_option.empty()) {
+        Logi("ArmnnOptions empty, Apply default options");
+        return;
     }
 
-    const std::vector<std::string> options = aif::splitString(armnnOptions, ';');
-    std::vector<std::string> keys, values;
-
-    for (const auto& option: options) {
-        auto key_value = aif::splitString(option, ':');
-        if (key_value.size() != 2) {
-            std::cout << "option string is wrong!!" << std::endl;
-            return kAifError;
+    Logi("Armnn delegate option: ", m_option);
+    rj::Document payload;
+    payload.Parse(m_option.c_str());
+    if (payload.HasMember("backends")) {
+        std::vector<armnn::BackendId> backends;
+        for (auto& backend : payload["backends"].GetArray()) {
+            backends.push_back(backend.GetString());
+            Logi("backend: ", backend.GetString());
         }
-        keys.emplace_back(key_value[0]);
-        values.emplace_back(key_value[1]);
     }
 
-    for (auto i=0; i < options.size(); i++) {
-	std::cout << "key:" << keys[i] << ", value:" << values[i] << std::endl;
-        if (keys[i] == std::string("backends")) {
-            std::vector<armnn::BackendId> backends;
-            auto backendsStr = aif::splitString(values[i], ',');
-            for (const auto& backend : backendsStr) {
-                backends.push_back(backend);
-            }
-            m_delegateOptions.SetBackends(backends);
-        }
-        if (keys[i] == std::string("logging-severity")) {
-            m_delegateOptions.SetLoggingSeverity(values[i]);
-        }
-        // TODO: other options....
+    if (payload.HasMember("logging_severity")) {
+        m_delegateOptions.SetLoggingSeverity(payload["logging_severity"].GetString());
+        Logi("logging_serverity: ", payload["logging_severity"].GetString());
     }
-
-    return kAifOk;
 }
 
-ArmNNDelegatePtr ArmNNDelegate::createArmNNDelegate()
+TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
 {
-    return ArmNNDelegatePtr(armnnDelegate::TfLiteArmnnDelegateCreate(m_delegateOptions),
-                            armnnDelegate::TfLiteArmnnDelegateDelete);
+    return TfLiteDelegatePtr(
+            armnnDelegate::TfLiteArmnnDelegateCreate(m_delegateOptions),
+            armnnDelegate::TfLiteArmnnDelegateDelete);
 }
 
 } // end of namespace aif

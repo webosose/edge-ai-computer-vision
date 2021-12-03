@@ -13,15 +13,19 @@ using aif::Stopwatch;
 
 namespace aif {
 
-FaceDetector::FaceDetector(
-    const std::string& modelPath,
-    const std::shared_ptr<DetectorParam>& param)
-    : Detector(modelPath, param)
+FaceDetector::FaceDetector(const std::string& modelPath)
+    : Detector(modelPath)
 {
 }
 
 FaceDetector::~FaceDetector()
 {
+}
+
+std::shared_ptr<DetectorParam> FaceDetector::createParam()
+{
+    std::shared_ptr<DetectorParam> param = std::make_shared<FaceParam>();
+    return param;
 }
 
 t_aif_status FaceDetector::preProcessing()

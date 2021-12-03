@@ -6,6 +6,8 @@ set(BASE_SRC
     ${BASE_SRC_DIR}/DetectorParam.cpp
     ${BASE_SRC_DIR}/Detector.cpp
     ${BASE_SRC_DIR}/DetectorFactory.cpp
+    ${BASE_SRC_DIR}/Delegate.cpp
+    ${BASE_SRC_DIR}/DelegateFactory.cpp
     ${BASE_SRC_DIR}/WSServer.cpp
     ${BASE_SRC_DIR}/WSServerSession.cpp
     ${BASE_SRC_DIR}/WSClient.cpp

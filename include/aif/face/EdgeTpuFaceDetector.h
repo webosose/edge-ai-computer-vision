@@ -15,9 +15,7 @@ namespace aif {
 class EdgeTpuFaceDetector : public FaceDetector
 {
 public:
-    EdgeTpuFaceDetector(
-        const std::string& modelPath,
-        const std::shared_ptr<DetectorParam>& param);
+    EdgeTpuFaceDetector(const std::string& modelPath);
 
     virtual ~EdgeTpuFaceDetector();
 
@@ -40,6 +38,9 @@ public:
     EdgeTpuShortRangeFaceDetector();
 
     virtual ~EdgeTpuShortRangeFaceDetector();
+
+protected:
+    std::shared_ptr<DetectorParam> createParam() override;
 };
 
 DetectorFactoryRegistration<EdgeTpuShortRangeFaceDetector, FaceDescriptor>

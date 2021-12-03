@@ -5,41 +5,31 @@
 #include <sstream>
 #include <algorithm>
 
+#include <rapidjson/document.h>
+namespace rj = rapidjson;
+
 namespace {
 static const char TAG[] = "<FPARAM>";
 } // anonymous namespace
 
 namespace aif {
 
-FaceParam::FaceParam(
-        const std::vector<int>& _strides,
-        const std::vector<float>& _optAspectRatios,
-        float _interpolatedScaleAspectRatio,
-        float _anchorOffsetX,
-        float _anchorOffsetY,
-        float _minScale,
-        float _maxScale,
-        bool  _reduceBoxesInLowestLayer,
-        float _scoreThreshold,
-        float _iouThreshold,
-        int   _maxOutputSize,
-        float _updateThreshold
-    )
-    : DetectorParam()
-    , strides{_strides}
-    , optAspectRatios{_optAspectRatios}
-    , interpolatedScaleAspectRatio{_interpolatedScaleAspectRatio}
-    , anchorOffsetX{_anchorOffsetX}
-    , anchorOffsetY{_anchorOffsetY}
-    , minScale{_minScale}
-    , maxScale{_maxScale}
-    , reduceBoxesInLowestLayer{_reduceBoxesInLowestLayer}
-    , scoreThreshold{_scoreThreshold}
-    , iouThreshold{_iouThreshold}
-    , maxOutputSize{_maxOutputSize}
-    , updateThreshold{_updateThreshold}
+FaceParam::FaceParam()
+    : strides{8, 16, 16, 16}
+    , optAspectRatios{1.0f}
+    , interpolatedScaleAspectRatio(1.0f)
+    , anchorOffsetX(0.5)
+    , anchorOffsetY(0.5)
+    , minScale(0.1484375)
+    , maxScale(0.75)
+    , reduceBoxesInLowestLayer(false)
+    , scoreThreshold(0.7f)
+    , iouThreshold(0.2f)
+    , maxOutputSize(100)
+    , updateThreshold(0.3f)
 {
 }
+
 
 FaceParam::FaceParam(const FaceParam& other)
     : strides{other.strides}
@@ -186,6 +176,60 @@ void FaceParam::trace()
     std::stringstream ss;
     ss << *this;
     TRACE(TAG, ss.str());
+}
+
+t_aif_status FaceParam::fromJson(const std::string& param)
+{
+    t_aif_status res = DetectorParam::fromJson(param);
+    rj::Document payload;
+    payload.Parse(param.c_str());
+    if (payload.HasMember("modelParam")) {
+        rj::Value& modelParam = payload["modelParam"];
+        if (modelParam.HasMember("strides")) {
+            strides.clear();
+            for (auto& stride : modelParam["strides"].GetArray()) {
+                strides.push_back(stride.GetInt());
+            }
+        }
+
+        if (modelParam.HasMember("optAspectRatios")) {
+            optAspectRatios.clear();
+            for (auto& optAspectRatio : modelParam["optAspectRatios"].GetArray()) {
+                optAspectRatios.push_back(optAspectRatio.GetInt());
+            }
+        }
+
+        if (modelParam.HasMember("interpolatedScaleAspectRatio"))
+            interpolatedScaleAspectRatio = modelParam["interpolatedScaleAspectRatio"].GetFloat();
+
+        if (modelParam.HasMember("anchorOffsetX"))
+            anchorOffsetX = modelParam["anchorOffsetX"].GetFloat();
+
+        if (modelParam.HasMember("anchorOffsetY"))
+            anchorOffsetY = modelParam["anchorOffsetY"].GetFloat();
+
+        if (modelParam.HasMember("minScale"))
+            minScale = modelParam["minScale"].GetFloat();
+
+        if (modelParam.HasMember("maxScale"))
+            maxScale = modelParam["maxScale"].GetFloat();
+
+        if (modelParam.HasMember("reduceBoxesInLowestLayer"))
+            reduceBoxesInLowestLayer = modelParam["reduceBoxesInLowestLayer"].GetBool();
+
+        if (modelParam.HasMember("scoreThreshold"))
+            scoreThreshold = modelParam["scoreThreshold"].GetFloat();
+
+        if (modelParam.HasMember("iouThreshold"))
+            iouThreshold = modelParam["iouThreshold"].GetFloat();
+
+        if (modelParam.HasMember("maxOutputSize"))
+            maxOutputSize = modelParam["maxOutputSize"].GetInt();
+
+        if (modelParam.HasMember("updateThreshold"))
+            updateThreshold = modelParam["updateThreshold"].GetFloat();
+    }
+    return res;
 }
 
 } // end of namespace aif

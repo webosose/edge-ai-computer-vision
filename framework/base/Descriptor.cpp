@@ -29,6 +29,7 @@ void Descriptor::addReturnCode(int returnCode)
     m_root.AddMember("returnCode", returnCode, m_root.GetAllocator());
 }
 
+
 std::string Descriptor::toStr()
 {
     rj::StringBuffer buffer;
