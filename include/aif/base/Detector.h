@@ -28,9 +28,10 @@ public:
     virtual t_aif_status detect(
         const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor);
 
-    std::string getModelPath() const { return m_modelPath; }
-    t_aif_modelinfo getModelInfo() const { return m_modelInfo; }
+    const std::string& getModelPath() const { return m_modelPath; }
+    const t_aif_modelinfo& getModelInfo() const { return m_modelInfo; }
     std::shared_ptr<DetectorParam> getParam() const { return m_param; }
+    size_t getNumDelegates() const { return m_delegates.size(); }
 
 protected:
     virtual std::shared_ptr<DetectorParam> createParam() = 0;

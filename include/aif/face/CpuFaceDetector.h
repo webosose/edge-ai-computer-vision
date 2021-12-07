@@ -14,14 +14,12 @@ namespace aif {
 //------------------------------------------------------
 class CpuFaceDetector : public FaceDetector
 {
-public:
+protected:
     CpuFaceDetector(const std::string& modelPath);
     virtual ~CpuFaceDetector();
 
 protected:
-
     t_aif_status compileModel() override;
-
     t_aif_status fillInputTensor(const cv::Mat& img) override;
 };
 
@@ -30,9 +28,11 @@ protected:
 //------------------------------------------------------
 class ShortRangeFaceDetector : public CpuFaceDetector
 {
-public:
+private:
     ShortRangeFaceDetector();
 
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~ShortRangeFaceDetector();
 
 protected:
@@ -47,9 +47,11 @@ face_short_range_cpu("face_short_range_cpu");
 //------------------------------------------------------
 class FullRangeFaceDetector : public CpuFaceDetector
 {
-public:
+private:
     FullRangeFaceDetector();
 
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~FullRangeFaceDetector();
 
 protected:

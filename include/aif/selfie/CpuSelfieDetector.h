@@ -10,8 +10,11 @@ namespace aif {
 
 class CpuSelfieDetector : public SelfieDetector
 {
-public:
+private:
     CpuSelfieDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~CpuSelfieDetector();
 
 protected:

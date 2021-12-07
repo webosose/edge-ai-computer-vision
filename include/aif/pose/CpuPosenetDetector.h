@@ -10,8 +10,11 @@ namespace aif {
 
 class CpuPosenetDetector : public PosenetDetector
 {
-public:
+private:
     CpuPosenetDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~CpuPosenetDetector();
 
 protected:

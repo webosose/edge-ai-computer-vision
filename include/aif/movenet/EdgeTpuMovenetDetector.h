@@ -11,8 +11,11 @@ namespace aif {
 
 class EdgeTpuMovenetDetector : public MovenetDetector
 {
-public:
+private:
     EdgeTpuMovenetDetector();
+
+public:    
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~EdgeTpuMovenetDetector();
 
 protected:

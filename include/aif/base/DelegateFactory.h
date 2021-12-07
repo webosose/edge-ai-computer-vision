@@ -22,6 +22,8 @@ public:
             const std::string& id,
             const DelegateGenerator& DelegateGenerator);
     std::shared_ptr<Delegate> getDelegate(const std::string& id, const std::string& options = "");
+    
+    size_t getNumDelegates() const { return m_delegates.size(); }
     void clear() {
         m_delegates.clear();
     }

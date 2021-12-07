@@ -10,8 +10,11 @@ namespace aif {
 
 class CpuSemanticDetector : public SemanticDetector
 {
-public:
+private:
     CpuSemanticDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~CpuSemanticDetector();
 
 protected:

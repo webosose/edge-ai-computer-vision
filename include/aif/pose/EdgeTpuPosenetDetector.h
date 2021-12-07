@@ -11,8 +11,11 @@ namespace aif {
 
 class EdgeTpuPosenetDetector : public PosenetDetector
 {
-public:
+private:
     EdgeTpuPosenetDetector();
+
+public:    
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~EdgeTpuPosenetDetector();
 
 protected:

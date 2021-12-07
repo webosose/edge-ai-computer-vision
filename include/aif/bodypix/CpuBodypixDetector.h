@@ -10,8 +10,11 @@ namespace aif {
 
 class CpuBodypixDetector : public BodypixDetector
 {
-public:
+private:
     CpuBodypixDetector();
+
+public:    
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~CpuBodypixDetector();
 
 protected:

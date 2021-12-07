@@ -12,8 +12,11 @@ namespace aif {
 
 class EdgeTpuSemanticDetector : public SemanticDetector
 {
-public:
+private:
     EdgeTpuSemanticDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~EdgeTpuSemanticDetector();
 
 protected:

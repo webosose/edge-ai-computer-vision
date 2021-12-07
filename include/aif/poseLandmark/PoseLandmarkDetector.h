@@ -9,8 +9,10 @@ namespace aif {
 
 class PoseLandmarkDetector : public Detector
 {
-public:
+protected:
     PoseLandmarkDetector(const std::string& modelPath);
+
+public:    
     virtual ~PoseLandmarkDetector();
 
 protected:

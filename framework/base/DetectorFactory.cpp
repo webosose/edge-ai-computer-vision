@@ -1,4 +1,5 @@
 #include <aif/base/DetectorFactory.h>
+#include <aif/base/DelegateFactory.h>
 #include <aif/log/Logger.h>
 
 namespace aif {
@@ -67,5 +68,11 @@ std::shared_ptr<Descriptor> DetectorFactory::getDescriptor(const std::string& id
         return nullptr;
     }
 }
+
+void DetectorFactory::clear()
+{
+    DelegateFactory::get().clear();
+    m_detectors.clear();
+} 
 
 } // end of idspace aif

@@ -10,8 +10,11 @@
 namespace aif {
 
 class ArmNNDelegate : public Delegate {
-public:
+private:
     ArmNNDelegate(const std::string& option);
+
+public:
+    template<typename T> friend class DelegateFactoryRegistration;
     virtual ~ArmNNDelegate();
 
     TfLiteDelegatePtr getTfLiteDelegate() const override;

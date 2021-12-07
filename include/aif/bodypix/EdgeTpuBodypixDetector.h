@@ -12,8 +12,11 @@ namespace aif {
 
 class EdgeTpuBodypixDetector : public BodypixDetector
 {
-public:
+private:
     EdgeTpuBodypixDetector();
+
+public:    
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~EdgeTpuBodypixDetector();
 
 protected:

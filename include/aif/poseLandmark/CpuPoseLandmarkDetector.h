@@ -11,8 +11,10 @@ namespace aif {
 
 class CpuPoseLandmarkDetector : public PoseLandmarkDetector
 {
-public:
+protected:
     CpuPoseLandmarkDetector(const std::string& modelPath);
+
+public:
     virtual ~CpuPoseLandmarkDetector();
 
 protected:
@@ -22,8 +24,11 @@ protected:
 
 class LiteCpuPoseLandmarkDetector : public CpuPoseLandmarkDetector
 {
-public:
+private:
     LiteCpuPoseLandmarkDetector();
+
+public: 
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~LiteCpuPoseLandmarkDetector() {}
 };
 DetectorFactoryRegistration<LiteCpuPoseLandmarkDetector, PoseLandmarkDescriptor>
@@ -32,8 +37,11 @@ poseLandmark_lite_cpu("poselandmark_lite_cpu");
 
 class HeavyCpuPoseLandmarkDetector : public CpuPoseLandmarkDetector
 {
-public:
+private:
     HeavyCpuPoseLandmarkDetector();
+
+public:    
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~HeavyCpuPoseLandmarkDetector() {}
 };
 DetectorFactoryRegistration<HeavyCpuPoseLandmarkDetector, PoseLandmarkDescriptor>
@@ -42,8 +50,11 @@ poseLandmark_heavy_cpu("poselandmark_heavy_cpu");
 
 class FullCpuPoseLandmarkDetector : public CpuPoseLandmarkDetector
 {
-public:
+private:
     FullCpuPoseLandmarkDetector();
+
+public:    
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~FullCpuPoseLandmarkDetector() {}
 };
 DetectorFactoryRegistration<FullCpuPoseLandmarkDetector, PoseLandmarkDescriptor>

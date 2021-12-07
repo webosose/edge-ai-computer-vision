@@ -11,8 +11,11 @@ namespace aif {
 
 class EdgeTpuPoseLandmarkDetector : public PoseLandmarkDetector
 {
-public:
+private:
     EdgeTpuPoseLandmarkDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~EdgeTpuPoseLandmarkDetector();
 
 protected:

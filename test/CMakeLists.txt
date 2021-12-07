@@ -73,6 +73,11 @@ link_directories(
 # Source Files
 
 set(SRC_FILES
+    ${SRC_DIR}/detector_test.cpp
+    ${SRC_DIR}/descriptor_test.cpp
+    ${SRC_DIR}/delegate_factory_test.cpp
+    ${SRC_DIR}/detector_factory_test.cpp
+    ${SRC_DIR}/detector_param_test.cpp
     ${SRC_DIR}/logger_test.cpp
     ${SRC_DIR}/stopwatch_test.cpp
     ${SRC_DIR}/websocket_test.cpp
