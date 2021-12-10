@@ -98,6 +98,7 @@ set(SRC_FILES
     ${SRC_DIR}/semantic_detector_test.cpp
     ${SRC_DIR}/poselandmark_descriptor_test.cpp
     ${SRC_DIR}/poselandmark_detector_test.cpp
+    ${SRC_DIR}/armnn_delegate_test.cpp
     ${GTEST_DIR}/gtest-all.cc
     ${GTEST_DIR}/test_main.cpp
 )

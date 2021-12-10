@@ -6,6 +6,9 @@ Delegate::Delegate(const::std::string& name, const std::string& option)
     : m_name(name)
     , m_option(option)
 {
+    if (m_option.empty()) {
+        m_option = "{}";
+    }
 }
 
 Delegate::~Delegate()

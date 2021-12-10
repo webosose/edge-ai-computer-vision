@@ -10,9 +10,7 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
     : Delegate("ArmNNDelegate", option)
     , m_delegateOptions(armnn::Compute::CpuAcc)
 {
-    m_delegateOptions.SetBackends({"CpuAcc"});
     m_delegateOptions.SetLoggingSeverity("info");
-
     parseOption();
 }
 
@@ -36,11 +34,12 @@ void ArmNNDelegate::parseOption()
             backends.push_back(backend.GetString());
             Logi("backend: ", backend.GetString());
         }
+        m_delegateOptions.SetBackends(backends);
     }
 
     if (payload.HasMember("logging_severity")) {
         m_delegateOptions.SetLoggingSeverity(payload["logging_severity"].GetString());
-        Logi("logging_serverity: ", payload["logging_severity"].GetString());
+        Logi("logging_severity: ", payload["logging_severity"].GetString());
     }
 }
 
@@ -49,6 +48,11 @@ TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
     return TfLiteDelegatePtr(
             armnnDelegate::TfLiteArmnnDelegateCreate(m_delegateOptions),
             armnnDelegate::TfLiteArmnnDelegateDelete);
+}
+
+const armnnDelegate::DelegateOptions& ArmNNDelegate::getDelegateOptions() const
+{
+    return m_delegateOptions;
 }
 
 } // end of namespace aif

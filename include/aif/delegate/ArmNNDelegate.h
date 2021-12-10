@@ -18,6 +18,7 @@ public:
     virtual ~ArmNNDelegate();
 
     TfLiteDelegatePtr getTfLiteDelegate() const override;
+    const armnnDelegate::DelegateOptions& getDelegateOptions() const;
 
 private:
     void parseOption();
