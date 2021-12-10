@@ -18,9 +18,6 @@ namespace aif {
 SemanticDescriptor::SemanticDescriptor()
     : Descriptor()
 {
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value segments(rj::kArrayType);
-    m_root.AddMember("segments", segments, allocator);
 }
 
 SemanticDescriptor::~SemanticDescriptor()
@@ -29,18 +26,22 @@ SemanticDescriptor::~SemanticDescriptor()
 
 void SemanticDescriptor::addMaskData(int width, int height, int64_t* mask)
 {
-    std::string maskData;
-    int j = 0;
-    for (int i = 0; i < width * height; i++) {
-        if (mask[j++] == 15){
-            maskData.push_back('1');
-        }
-        else {
-            maskData.push_back('0');
-        }
-    }
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("segments")) {
+        rj::Value segments(rj::kArrayType);
+        m_root.AddMember("segments", segments, allocator);
+    }
+
+    int j = 0;
     rj::Value segment(rj::kObjectType);
+    rj::Value maskData(rj::kArrayType);
+    for (int i = 0; i < width * height; i++) {
+        if (mask[j++] == 15)
+            maskData.PushBack(1, allocator);
+        else
+            maskData.PushBack(0, allocator);
+    }
+
     segment.AddMember("width", width, allocator);
     segment.AddMember("height", height, allocator);
     segment.AddMember("mask", maskData, allocator);

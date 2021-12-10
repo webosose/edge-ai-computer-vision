@@ -68,14 +68,13 @@ protected:
     }
 };
 
-
-TEST_F(DetectorTest, detector_getModelPath_test)
+TEST_F(DetectorTest, 01_getModelPath)
 {
     TestDetector td;
     EXPECT_EQ(td.getModelPath(), "/usr/share/aif/model/face_detection_short_range.tflite");
 }
 
-TEST_F(DetectorTest, detector_init_test)
+TEST_F(DetectorTest, 02_init)
 {
     TestDetector td;
     EXPECT_FALSE(td.isCalledCreateParam);
@@ -92,7 +91,7 @@ TEST_F(DetectorTest, detector_init_test)
     EXPECT_FALSE(td.isCalledPostProcessing);
 }
 
-TEST_F(DetectorTest, detector_getModelInfo_test)
+TEST_F(DetectorTest, 03_getModelInfo)
 {
     TestDetector td;
     EXPECT_EQ(td.init(), kAifOk);
@@ -102,7 +101,7 @@ TEST_F(DetectorTest, detector_getModelInfo_test)
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
-TEST_F(DetectorTest, detector_detect_test)
+TEST_F(DetectorTest, 04_detect)
 {
     TestDetector td;
     EXPECT_EQ(td.init(), kAifOk);

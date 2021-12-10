@@ -16,9 +16,6 @@ namespace aif {
 BodypixDescriptor::BodypixDescriptor()
     : Descriptor()
 {
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value segments(rj::kArrayType);
-    m_root.AddMember("segments", segments, allocator);
 }
 
 BodypixDescriptor::~BodypixDescriptor()
@@ -28,6 +25,10 @@ BodypixDescriptor::~BodypixDescriptor()
 void BodypixDescriptor::addMaskData(int width, int height, uint8_t* mask)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("segments")) {
+        rj::Value segments(rj::kArrayType);
+        m_root.AddMember("segments", segments, allocator);
+    }
     rj::Value segment(rj::kObjectType);
     rj::Value maskData(rj::kArrayType);
     for (int i = 0; i < width * height; i++) {

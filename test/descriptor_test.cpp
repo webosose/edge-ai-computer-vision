@@ -25,7 +25,7 @@ protected:
 };
 
 
-TEST_F(DescriptorTest, descriptor_addResponseName_test)
+TEST_F(DescriptorTest, 01_addResponseName)
 {
     Descriptor ds;
     ds.addResponseName("response", "testid");
@@ -34,7 +34,7 @@ TEST_F(DescriptorTest, descriptor_addResponseName_test)
             "{\"response\":\"response\",\"id\":\"testid\"}");
 }
 
-TEST_F(DescriptorTest, descriptor_addReturnCode_test)
+TEST_F(DescriptorTest, 02_addReturnCode)
 {
     Descriptor ds;
     ds.addResponseName("response", "testid");
@@ -42,4 +42,15 @@ TEST_F(DescriptorTest, descriptor_addReturnCode_test)
 
     EXPECT_EQ(ds.toStr(),
             "{\"response\":\"response\",\"id\":\"testid\",\"returnCode\":104}");
+}
+
+TEST_F(DescriptorTest, 03_hasMember)
+{
+    Descriptor ds;
+    ds.addResponseName("response", "testid");
+    ds.addReturnCode(104);
+
+    EXPECT_TRUE(ds.hasMember("response"));
+    EXPECT_TRUE(ds.hasMember("id"));
+    EXPECT_TRUE(ds.hasMember("returnCode"));
 }

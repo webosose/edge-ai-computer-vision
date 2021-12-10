@@ -18,12 +18,7 @@ namespace aif {
 PoseLandmarkDescriptor::PoseLandmarkDescriptor()
     : Descriptor()
 {
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value poses(rj::kArrayType);
-    m_root.AddMember("poses", poses, allocator);
-    rj::Value segments(rj::kArrayType);
-    m_root.AddMember("segments", segments, allocator);
-}
+ }
 
 PoseLandmarkDescriptor::~PoseLandmarkDescriptor()
 {
@@ -31,18 +26,23 @@ PoseLandmarkDescriptor::~PoseLandmarkDescriptor()
 
 void PoseLandmarkDescriptor::addMaskData(int width, int height, float* mask)
 {
-    std::string maskData;
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("segments")) {
+        rj::Value segments(rj::kArrayType);
+        m_root.AddMember("segments", segments, allocator);
+    }
+ 
+    rj::Value segment(rj::kObjectType);
+    rj::Value maskData(rj::kArrayType);
     int j = 0;
     for (int i = 0; i < width * height; i++) {
         if (sigmoid<float>(mask[j++]) > 0.1f){
-            maskData.push_back('1');
+            maskData.PushBack(1, allocator);
         }
         else {
-            maskData.push_back('0');
+            maskData.PushBack(0, allocator);
         }
     }
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value segment(rj::kObjectType);
     segment.AddMember("width", width, allocator);
     segment.AddMember("height", height, allocator);
     segment.AddMember("mask", maskData, allocator);
@@ -52,6 +52,10 @@ void PoseLandmarkDescriptor::addMaskData(int width, int height, float* mask)
 void PoseLandmarkDescriptor::addLandmarks(float* landmarks)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poses")) {
+        rj::Value poses(rj::kArrayType);
+        m_root.AddMember("poses", poses, allocator);
+    }
     rj::Value person(rj::kObjectType);
     rj::Value points(rj::kArrayType);
     for (int i = 0; i < LANDMARK_TYPES::LANDMARK_TYPE_COUNT; i++) {

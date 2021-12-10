@@ -19,6 +19,8 @@ public:
     virtual void addReturnCode(int returnCode);
     std::string toStr();
 
+    bool hasMember(const std::string& member) const;
+
 protected:
     rapidjson::Document m_root;
 };

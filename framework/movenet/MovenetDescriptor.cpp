@@ -17,9 +17,6 @@ namespace aif {
 MovenetDescriptor::MovenetDescriptor()
     : Descriptor()
 {
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value poses(rj::kArrayType);
-    m_root.AddMember("poses", poses, allocator);
 }
 
 MovenetDescriptor::~MovenetDescriptor()
@@ -31,8 +28,11 @@ void MovenetDescriptor::addKeyPoints(
             const std::vector<float>& keyPointsScores)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poses")) {
+        rj::Value poses(rj::kArrayType);
+        m_root.AddMember("poses", poses, allocator);
+    }
     rj::Value person(rj::kObjectType);
-    
     rj::Value points(rj::kArrayType);
     for (int j = 0; j < 17; j++) {
         rj::Value point(rj::kArrayType);

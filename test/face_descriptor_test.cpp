@@ -24,21 +24,19 @@ protected:
     }
 };
 
-TEST_F(FaceDescriptorTest, jsonfacedesc01_constructor_test)
+TEST_F(FaceDescriptorTest, 01_constructor)
 {
     FaceDescriptor jfd;
     auto json = jfd.toStr();
-    std::cout << json << std::endl;
+    Logd(json);
 
     rj::Document d;
     d.Parse(json.c_str());
 
     EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("faces"));
-    EXPECT_TRUE(d["faces"].IsArray());
 }
 
-TEST_F(FaceDescriptorTest, jsonfacedesc02_addface_one_test)
+TEST_F(FaceDescriptorTest, 02_addface_one)
 {
     FaceDescriptor jfd;
 
@@ -48,7 +46,7 @@ TEST_F(FaceDescriptorTest, jsonfacedesc02_addface_one_test)
                 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f);
 
     auto json = jfd.toStr();
-    std::cout << json << std::endl;
+    Logd(json);
 
     rj::Document d;
     d.Parse(json.c_str());
@@ -99,7 +97,7 @@ TEST_F(FaceDescriptorTest, jsonfacedesc02_addface_one_test)
     EXPECT_TRUE(d["faces"][0]["rightear"][1].GetDouble() == 17.0);
 }
 
-TEST_F(FaceDescriptorTest, jsonfacedesc03_addface_two_test)
+TEST_F(FaceDescriptorTest, 03_addface_two)
 {
     FaceDescriptor jfd;
 
@@ -113,7 +111,7 @@ TEST_F(FaceDescriptorTest, jsonfacedesc03_addface_two_test)
                 28.0f, 29.0f, 30.0f, 31.0f, 32.0f, 33.0f, 34.0f);
 
     auto json = jfd.toStr();
-    std::cout << json << std::endl;
+    Logd(json);
 
     rj::Document d;
     d.Parse(json.c_str());
@@ -124,7 +122,7 @@ TEST_F(FaceDescriptorTest, jsonfacedesc03_addface_two_test)
     EXPECT_TRUE(d["faces"].Size() == 2);
 }
 
-TEST_F(FaceDescriptorTest, jsonfacedesc04_add_response_and_returncode)
+TEST_F(FaceDescriptorTest, 04_add_response_and_returncode)
 {
     FaceDescriptor jfd;
 
@@ -137,7 +135,7 @@ TEST_F(FaceDescriptorTest, jsonfacedesc04_add_response_and_returncode)
                 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f);
 
     auto json = jfd.toStr();
-    std::cout << json << std::endl;
+    Logd(json);
 
     rj::Document d;
     d.Parse(json.c_str());

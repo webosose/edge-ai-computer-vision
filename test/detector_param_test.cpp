@@ -85,13 +85,13 @@ protected:
 };
 
 
-TEST_F(DetectorParamTest, detector_param_fromJson_test)
+TEST_F(DetectorParamTest, 01_fromJson)
 {
     DetectorParam param;
     EXPECT_EQ(param.fromJson(param_xnnpack_on), kAifOk);
 }
 
-TEST_F(DetectorParamTest, detector_param_getUseXnnpack_test)
+TEST_F(DetectorParamTest, 02_getUseXnnpack)
 {
     DetectorParam param;
     EXPECT_FALSE(param.getUseXnnpack());
@@ -103,7 +103,7 @@ TEST_F(DetectorParamTest, detector_param_getUseXnnpack_test)
     EXPECT_FALSE(param2.getUseXnnpack());
 }
 
-TEST_F(DetectorParamTest, detector_param_getNumThreads_test)
+TEST_F(DetectorParamTest, 03_getNumThreads)
 {
     DetectorParam param;
     EXPECT_EQ(param.getNumThreads(), 1);
@@ -111,7 +111,7 @@ TEST_F(DetectorParamTest, detector_param_getNumThreads_test)
     EXPECT_EQ(param.getNumThreads(), 4);
 }
 
-TEST_F(DetectorParamTest, detector_param_getDelegates)
+TEST_F(DetectorParamTest, 04_getDelegates)
 {
     DetectorParam param;
     EXPECT_EQ(param.getDelegates().size(), 0);

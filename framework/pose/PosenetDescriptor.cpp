@@ -37,9 +37,6 @@ PosenetDescriptor::PosenetDescriptor()
 //    edges.push_back(make_pair(KeyPointType::LEFT_KNEE, KeyPointType::LEFT_ANKLE));
 //    edges.push_back(make_pair(KeyPointType::RIGHT_KNEE, KeyPointType::RIGHT_ANKLE));
 
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value poses(rj::kArrayType);
-    m_root.AddMember("poses", poses, allocator);
 }
 
 PosenetDescriptor::~PosenetDescriptor()
@@ -119,9 +116,13 @@ float PosenetDescriptor::getScore(const std::vector<float>& scores, KeyPointType
 
 std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev)
 {
-    std::vector<std::vector<cv::Rect2f>> current;
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poses")) {
+        rj::Value poses(rj::kArrayType);
+        m_root.AddMember("poses", poses, allocator);
+    }
 
+    std::vector<std::vector<cv::Rect2f>> current;
     for (int i = 0; i < m_keyPoints.size(); i++) {
         auto& keyPoints = m_keyPoints[i];
         auto& scores = m_keyPointsScores[i];

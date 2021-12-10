@@ -143,7 +143,7 @@ t_aif_status Detector::compileDelegates()
                 Logw(__func__, "Error: modify graph failed with " + delegate->getName());
             }
         }
-        throw std::runtime_error("tflite Modifyfailed failed");
+        throw std::runtime_error("tflite Modify failed");
         return kAifError;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());

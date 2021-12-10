@@ -20,11 +20,6 @@ CpuPoseLandmarkDetector::CpuPoseLandmarkDetector(const std::string& modelPath)
 CpuPoseLandmarkDetector::~CpuPoseLandmarkDetector()
 {
 }
-//
-//t_aif_status CpuPoseLandmarkDetector::setOptions(const std::string& options) /* override */
-//{
-//    return m_delegateProvider->setXnnpackDelegateOptions(options, m_useXnnpack, m_numThreads);
-//}
 
 t_aif_status CpuPoseLandmarkDetector::compileModel()/* override*/
 {
@@ -33,9 +28,11 @@ t_aif_status CpuPoseLandmarkDetector::compileModel()/* override*/
     try {
         TfLiteStatus res = kTfLiteError;
         if (!m_param->getUseXnnpack()) {
+            Logi("Not use xnnpack: BuiltinOpResolverWithoutDefaultDelegates");
             tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
             res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         } else {
+            Logi("Use xnnpack: BuiltinOpResolver");
             tflite::ops::builtin::BuiltinOpResolver resolver;
             res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         } 

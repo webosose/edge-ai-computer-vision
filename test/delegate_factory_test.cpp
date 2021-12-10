@@ -47,8 +47,7 @@ protected:
     }
 };
 
-
-TEST_F(DelegateFactoryTest, delegate_factory_getDelegate_test)
+TEST_F(DelegateFactoryTest, 01_getDelegate)
 {
     DelegateFactory* factory = &DelegateFactory::get();
     EXPECT_TRUE(factory != nullptr);
@@ -63,7 +62,7 @@ TEST_F(DelegateFactoryTest, delegate_factory_getDelegate_test)
     EXPECT_EQ(factory->getNumDelegates(), 2);
 }
 
-TEST_F(DelegateFactoryTest, delegate_factory_clear_test)
+TEST_F(DelegateFactoryTest, 02_clear)
 {
     DelegateFactory* factory = &DelegateFactory::get();
     EXPECT_TRUE(factory != nullptr);

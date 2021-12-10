@@ -38,4 +38,10 @@ std::string Descriptor::toStr()
     return buffer.GetString();
 }
 
+bool Descriptor::hasMember(const std::string& member) const
+{
+    return m_root.HasMember(member);
+}
+
+
 } // end of namespace aif

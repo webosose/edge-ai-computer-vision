@@ -30,7 +30,7 @@ protected:
     }
 };
 
-TEST_F(FaceDetectorTest, fd01_short_range_init)
+TEST_F(FaceDetectorTest, 01_short_range_init)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -41,7 +41,7 @@ TEST_F(FaceDetectorTest, fd01_short_range_init)
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
-TEST_F(FaceDetectorTest, fd02_short_range_detect_faces_from_mona)
+TEST_F(FaceDetectorTest, 02_short_range_detect_faces_from_mona)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -51,7 +51,7 @@ TEST_F(FaceDetectorTest, fd02_short_range_detect_faces_from_mona)
     EXPECT_EQ(foundFaces->size(), 1);
 }
 
-TEST_F(FaceDetectorTest, fd03_short_range_detect_faces_from_bts)
+TEST_F(FaceDetectorTest, 03_short_range_detect_faces_from_bts)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -61,7 +61,7 @@ TEST_F(FaceDetectorTest, fd03_short_range_detect_faces_from_bts)
     EXPECT_EQ(foundFaces->size(), 7);
 }
 
-TEST_F(FaceDetectorTest, fd04_short_range_detect_faces_from_blackpink)
+TEST_F(FaceDetectorTest, 04_short_range_detect_faces_from_blackpink)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -72,7 +72,7 @@ TEST_F(FaceDetectorTest, fd04_short_range_detect_faces_from_blackpink)
 }
 
 #if 0
-TEST_F(FaceDetectorTest, fd05_short_range_detect_faces_from_doctors)
+TEST_F(FaceDetectorTest, 05_short_range_detect_faces_from_doctors)
 {
     ShortRangeFaceDetector fd;
     auto faceParam = fd->getFaceParam();
@@ -86,7 +86,7 @@ TEST_F(FaceDetectorTest, fd05_short_range_detect_faces_from_doctors)
 }
 #endif
 
-TEST_F(FaceDetectorTest, fd06_full_range_load_model)
+TEST_F(FaceDetectorTest, 06_full_range_load_model)
 {
     auto fd = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -98,7 +98,7 @@ TEST_F(FaceDetectorTest, fd06_full_range_load_model)
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
-TEST_F(FaceDetectorTest, fd07_full_range_detect_faces_from_mona)
+TEST_F(FaceDetectorTest, 07_full_range_detect_faces_from_mona)
 {
     auto fd = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -108,7 +108,7 @@ TEST_F(FaceDetectorTest, fd07_full_range_detect_faces_from_mona)
     EXPECT_EQ(foundFaces->size(), 1);
 }
 
-TEST_F(FaceDetectorTest, fd08_full_range_detect_faces_from_bts)
+TEST_F(FaceDetectorTest, 08_full_range_detect_faces_from_bts)
 {
     auto fd = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -118,7 +118,7 @@ TEST_F(FaceDetectorTest, fd08_full_range_detect_faces_from_bts)
     EXPECT_EQ(foundFaces->size(), 7);
 }
 
-TEST_F(FaceDetectorTest, fd09_full_range_detect_faces_from_blackpink)
+TEST_F(FaceDetectorTest, 09_full_range_detect_faces_from_blackpink)
 {
     auto fd = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -128,7 +128,7 @@ TEST_F(FaceDetectorTest, fd09_full_range_detect_faces_from_blackpink)
     EXPECT_EQ(foundFaces->size(), 4);
 }
 
-TEST_F(FaceDetectorTest, fd11_short_range_detect_faces_from_base64mona)
+TEST_F(FaceDetectorTest, 10_short_range_detect_faces_from_base64_mona)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
@@ -141,7 +141,7 @@ TEST_F(FaceDetectorTest, fd11_short_range_detect_faces_from_base64mona)
 }
 
 #ifdef USE_EDGETPU
-TEST_F(FaceDetectorTest, edgetpu01_short_range_detect_faces_from_base64mona)
+TEST_F(FaceDetectorTest, 11_edgetpu_short_range_detect_faces_from_base64mona)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_edgetpu");
     EXPECT_TRUE(fd.get() != nullptr);

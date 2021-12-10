@@ -63,7 +63,7 @@ protected:
 };
 
 
-TEST_F(DetectorFactoryTest, detector_factory_getDetector_test)
+TEST_F(DetectorFactoryTest, 01_getDetector)
 {
     DetectorFactory* factory = &DetectorFactory::get();
     EXPECT_TRUE(factory != nullptr);
@@ -74,7 +74,7 @@ TEST_F(DetectorFactoryTest, detector_factory_getDetector_test)
     EXPECT_EQ(factory->getNumDetectors(), 2);
 }
 
-TEST_F(DetectorFactoryTest, detector_factory_clear_test)
+TEST_F(DetectorFactoryTest, 02_clear)
 {
     DetectorFactory* factory = &DetectorFactory::get();
     EXPECT_TRUE(factory != nullptr);

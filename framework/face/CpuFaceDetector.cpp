@@ -37,9 +37,11 @@ t_aif_status CpuFaceDetector::compileModel()/* override*/
     try {
         TfLiteStatus res = kTfLiteError;
         if (!m_param->getUseXnnpack()) {
+            Logi("Not use xnnpack: BuiltinOpResolverWithoutDefaultDelegates");
             tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
             res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         } else {
+            Logi("Use xnnpack: BuiltinOpResolver");
             tflite::ops::builtin::BuiltinOpResolver resolver;
             res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         }

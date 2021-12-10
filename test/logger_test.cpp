@@ -23,7 +23,7 @@ protected:
     }
 };
 
-TEST_F(LoggerTest, Logger_test)
+TEST_F(LoggerTest, 01_Logger)
 {
     AIF_FATAL << "AIF_FATAL";
     AIF_ERROR << "AIF_ERROR";

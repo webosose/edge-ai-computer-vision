@@ -1,4 +1,4 @@
-#include <aif/pose/PosenetDescriptor.h>
+#include <aif/movenet/MovenetDescriptor.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -10,11 +10,11 @@ using namespace aif;
 
 namespace rj = rapidjson;
 
-class PosenetDescriptorTest : public ::testing::Test
+class MovenetDescriptorTest : public ::testing::Test
 {
 protected:
-    PosenetDescriptorTest() = default;
-    ~PosenetDescriptorTest() = default;
+    MovenetDescriptorTest() = default;
+    ~MovenetDescriptorTest() = default;
 
     void SetUp() override
     {
@@ -25,10 +25,11 @@ protected:
     }
 };
 
-TEST_F(PosenetDescriptorTest, 01_constructor)
+TEST_F(MovenetDescriptorTest, 01_constructor)
 {
-    PosenetDescriptor jpd;
-    auto json = jpd.toStr();
+    MovenetDescriptor descriptor;
+    auto json = descriptor.toStr();
+    Logd(json);
 
     rj::Document d;
     d.Parse(json.c_str());
@@ -36,20 +37,19 @@ TEST_F(PosenetDescriptorTest, 01_constructor)
     EXPECT_TRUE(d.IsObject());
 }
 
-TEST_F(PosenetDescriptorTest, 02_addKeyPoints_one)
+TEST_F(MovenetDescriptorTest, 02_addKeyPoints_one)
 {
-    PosenetDescriptor jpd;
+    MovenetDescriptor descriptor;
 
     std::vector<cv::Point2f> keypoints;
     for (int i = 0; i < 17; i++) {
         keypoints.emplace_back(cv::Point2f(1.1 * i, 1.1 * i));
     }
     std::vector<float> scores(17);
-    jpd.addKeyPoints(0.5, keypoints, scores);
+    descriptor.addKeyPoints(keypoints, scores);
     std::vector<std::vector<cv::Rect2f>> prev;
-    jpd.makeBodyParts(prev);
 
-    auto json = jpd.toStr();
+    auto json = descriptor.toStr();
     Logd(json);
 
     rj::Document d;
@@ -58,31 +58,28 @@ TEST_F(PosenetDescriptorTest, 02_addKeyPoints_one)
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("poses"));
     EXPECT_TRUE(d["poses"].IsArray());
-    EXPECT_TRUE(d["poses"].Size() == 1);
     EXPECT_TRUE(d["poses"][0].IsObject());
-    EXPECT_TRUE(d["poses"][0].HasMember("face"));
-    EXPECT_TRUE(d["poses"][0].HasMember("body"));
-    EXPECT_TRUE(d["poses"][0].HasMember("upperBody"));
+    EXPECT_TRUE(d["poses"][0].HasMember("keyPoints"));
+    EXPECT_TRUE(d["poses"][0]["keyPoints"].IsArray());
 }
 
-TEST_F(PosenetDescriptorTest, 03_addPosenet_two)
+TEST_F(MovenetDescriptorTest, 03_addKeyPoints_two)
 {
-    PosenetDescriptor jpd;
+    MovenetDescriptor descriptor;
     std::vector<cv::Point2f> keypoints1, keypoints2;
     for (int i = 0; i < 17; i++) {
         keypoints1.emplace_back(cv::Point2f(1.1 * i, 1.1 * i));
     }
     std::vector<float> scores(17);
-    jpd.addKeyPoints(0.5, keypoints1, scores);
+    descriptor.addKeyPoints(keypoints1, scores);
 
     for (int i = 0; i < 17; i++) {
         keypoints2.emplace_back(cv::Point2f(2.1 * i, 2.1 * i));
     }
-    jpd.addKeyPoints(0.5, keypoints2, scores);
+    descriptor.addKeyPoints(keypoints2, scores);
     std::vector<std::vector<cv::Rect2f>> prev;
-    jpd.makeBodyParts(prev);
 
-    auto json = jpd.toStr();
+    auto json = descriptor.toStr();
     Logd(json);
 
     rj::Document d;
@@ -94,23 +91,22 @@ TEST_F(PosenetDescriptorTest, 03_addPosenet_two)
     EXPECT_TRUE(d["poses"].Size() == 2);
 }
 
-TEST_F(PosenetDescriptorTest, 04_add_response_and_returncode)
+TEST_F(MovenetDescriptorTest, 04_add_response_and_returncode)
 {
-    PosenetDescriptor jpd;
+    MovenetDescriptor descriptor;
 
     std::vector<cv::Point2f> keypoints;
     for (int i = 0; i < 17; i++) {
         keypoints.emplace_back(cv::Point2f(1.1 * i, 1.1 * i));
     }
     std::vector<float> scores(17);
-    jpd.addKeyPoints(0.5, keypoints, scores);
+    descriptor.addKeyPoints(keypoints, scores);
     std::vector<std::vector<cv::Rect2f>> prev;
-    jpd.makeBodyParts(prev);
 
-    jpd.addResponseName("face_detect");
-    jpd.addReturnCode(kAifOk);
+    descriptor.addResponseName("face_detect");
+    descriptor.addReturnCode(kAifOk);
 
-    auto json = jpd.toStr();
+    auto json = descriptor.toStr();
     Logd(json);
 
     rj::Document d;

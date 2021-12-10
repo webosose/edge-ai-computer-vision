@@ -39,7 +39,7 @@ FaceParam(
         int   maxOutputSize = 100
     );
 */
-TEST_F(FaceParamTest, faceparam01_constructor_test)
+TEST_F(FaceParamTest, 01_constructor)
 {
     // default constructor
     FaceParam fp;
@@ -78,7 +78,7 @@ TEST_F(FaceParamTest, faceparam01_constructor_test)
     EXPECT_EQ(fp, fp2);
 }
 
-TEST_F(FaceParamTest, faseparam02_copy_constructors)
+TEST_F(FaceParamTest, 02_copy_constructors)
 {
     // constructor 1
     FaceParam fp1;
@@ -94,7 +94,7 @@ TEST_F(FaceParamTest, faseparam02_copy_constructors)
     ASSERT_EQ(fp3, fp1);
 }
 
-TEST_F(FaceParamTest, faceparam03_move_constructors)
+TEST_F(FaceParamTest, 03_move_constructors)
 {
     // constructor 1
     FaceParam fp1;

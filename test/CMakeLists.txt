@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(ai-framework-test CXX)
 
-OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
+OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" ON)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
 
 #set(BOOST_ROOT /home/worker)
@@ -75,9 +75,9 @@ link_directories(
 set(SRC_FILES
     ${SRC_DIR}/detector_test.cpp
     ${SRC_DIR}/descriptor_test.cpp
+    ${SRC_DIR}/detector_param_test.cpp
     ${SRC_DIR}/delegate_factory_test.cpp
     ${SRC_DIR}/detector_factory_test.cpp
-    ${SRC_DIR}/detector_param_test.cpp
     ${SRC_DIR}/logger_test.cpp
     ${SRC_DIR}/stopwatch_test.cpp
     ${SRC_DIR}/websocket_test.cpp
@@ -88,6 +88,16 @@ set(SRC_FILES
     ${SRC_DIR}/face_param_test.cpp
     ${SRC_DIR}/posenet_descriptor_test.cpp
     ${SRC_DIR}/posenet_detector_test.cpp
+    ${SRC_DIR}/movenet_descriptor_test.cpp
+    ${SRC_DIR}/movenet_detector_test.cpp
+    ${SRC_DIR}/bodypix_descriptor_test.cpp
+    ${SRC_DIR}/bodypix_detector_test.cpp
+    ${SRC_DIR}/selfie_descriptor_test.cpp
+    ${SRC_DIR}/selfie_detector_test.cpp
+    ${SRC_DIR}/semantic_descriptor_test.cpp
+    ${SRC_DIR}/semantic_detector_test.cpp
+    ${SRC_DIR}/poselandmark_descriptor_test.cpp
+    ${SRC_DIR}/poselandmark_detector_test.cpp
     ${GTEST_DIR}/gtest-all.cc
     ${GTEST_DIR}/test_main.cpp
 )

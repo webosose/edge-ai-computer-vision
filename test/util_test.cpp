@@ -41,13 +41,13 @@ TEST_F(UtilTest, util01_base64_encode)
 
     auto encoded_size = base64::encoded_size(length);
     std::vector<char> buffer(encoded_size);
-    std::cout << "encoded_size: " << encoded_size << std::endl;
+    Logd("encoded_size: ", encoded_size);
 
     auto result = base64::encode(buffer.data(), image_data.data(), length);
     EXPECT_TRUE(result > 0);
     std::string encoded_str(buffer.begin(), buffer.end());
-    std::cout << encoded_str << std::endl;
-    std::cout << "result: " << result << std::endl;
+    Logd("encoded_str: ", encoded_str);
+    Logd("result: ", result);
 
 
     fin.close();
@@ -63,16 +63,16 @@ TEST_F(UtilTest, util02_base64_decode)
     // fin.close();
 
     auto encoded_str = aif::fileToStr("/usr/share/aif/images/mona_base64.txt");
-    std::cout << encoded_str << std::endl;
+    Logd(encoded_str);
 
     auto decoded_size = base64::decoded_size(encoded_str.size());
-    std::cout << "decoded_size: " << decoded_size << std::endl;
+    Logd("decoded_size: ", decoded_size);
 
     std::vector<char> buffer(decoded_size);
     auto result = base64::decode(buffer.data(), encoded_str.data(), encoded_str.size());
 
-    std::cout << "out.len: " << result.first << std::endl;
-    std::cout << "input.len: " << result.second << std::endl;
+    Logd("out.len: ", result.first);
+    Logd("input.len: ", result.second);
     EXPECT_LE(result.first, buffer.size());
 
     // std::ofstream imgFile("images/mona_decoded.jpg", std::ios::out| std::ios::binary);
@@ -87,7 +87,7 @@ TEST_F(UtilTest, util03_base64Encode_to_string)
 {
     std::string base64str = aif::base64Encode("/usr/share/aif/images/mona.jpg");
     EXPECT_TRUE(base64str.size() > 0);
-    std::cout << base64str << std::endl;
+    Logd(base64str); 
 }
 
 TEST_F(UtilTest, util04_base64Encode_to_file)
@@ -100,7 +100,7 @@ TEST_F(UtilTest, util05_base64Decode_to_buffer)
 {
     std::string base64str = aif::base64Encode("/usr/share/aif/images/mona.jpg");
     EXPECT_TRUE(base64str.size() > 0);
-    //std::cout << base64str << std::endl;
+    //Logd(base64str);
 
     int dataSize = 0;
     auto data = aif::base64Decode(base64str, dataSize);
@@ -123,7 +123,7 @@ TEST_F(UtilTest, util06_base64Decode_to_file)
         std::string base64str = aif::base64Encode(f.first);
         EXPECT_TRUE(base64str.size() > 0);
 
-        //std::cout << base64str << std::endl;
+        //Logd(base64str);
 
         bool result = aif::base64Decode(base64str, f.second);
         EXPECT_TRUE(result);
