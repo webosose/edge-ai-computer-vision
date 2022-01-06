@@ -1,0 +1,12 @@
+{
+  "LogLevel" : "TRACE4",
+  "ImagePath" : "./images/hand_right.jpg",
+  "model" : "handlandmark_lite_cpu",
+  "param" : {
+    "common" : {
+      "useXnnpack": true,
+      "numThreads": 4
+    }
+  }
+}
+
