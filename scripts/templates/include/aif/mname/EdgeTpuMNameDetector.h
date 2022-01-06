@@ -11,8 +11,11 @@ namespace aif {
 
 class EdgeTpuMNameDetector : public MNameDetector
 {
-public:
+private:
     EdgeTpuMNameDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~EdgeTpuMNameDetector();
 
 protected:

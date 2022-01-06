@@ -10,8 +10,11 @@ namespace aif {
 
 class CpuMNameDetector : public MNameDetector
 {
-public:
+private:
     CpuMNameDetector();
+
+public:
+    template<typename T1, typename T2> friend class DetectorFactoryRegistration;
     virtual ~CpuMNameDetector();
 
 protected:
@@ -19,7 +22,7 @@ protected:
 
 };
 
-DetectorFactoryRegistration<CpuMNameDetector, MNameDescriptor> 
+DetectorFactoryRegistration<CpuMNameDetector, MNameDescriptor>
 mname_model_cpu("mname_model_cpu");
 
 } // end of namespace aif
