@@ -10,6 +10,7 @@ add_subdirectory(example/face-detect-sample)
 add_subdirectory(example/posenet-sample)
 add_subdirectory(example/poselandmark-sample)
 add_subdirectory(example/handlandmark-sample)
+add_subdirectory(example/palm-sample)
 
 add_dependencies(ai-framework-test ai-framework)
 add_dependencies(face-websocket-server ai-framework)

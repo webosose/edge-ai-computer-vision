@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.7)
-project(ai-framework-test CXX)
+project(palm-sample CXX)
 
-OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" ON)
-OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
+OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
+OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
+OPTION(WITH_XNNPACK "Enable XNNPack Delegate Support" ON)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
@@ -20,6 +21,11 @@ find_package(PkgConfig)
 pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
+
+
+IF(WITH_ARMNN)
+PKG_CHECK_MODULES(ARMNN-DELEGATE REQUIRED armnn-delegate)
+ENDIF(WITH_ARMNN)
 
 # include directories
 include_directories(
@@ -39,7 +45,7 @@ add_definitions(
     -std=c++14
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
-    -DLOG_CONTEXT="FACE"
+    -DLOG_CONTEXT="POSELANDMARK"
 )
 
 IF(WITH_EDGETPU)
@@ -50,21 +56,27 @@ IF(WITH_EDGETPU)
     ADD_DEFINITIONS(-DUSE_EDGETPU)
 ENDIF(WITH_EDGETPU)
 
+
 IF(WITH_ARMNN)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(ARMNN-DELEGATE REQUIRED armnn-delegate)
+    INCLUDE_DIRECTORIES(${ARMNN-DELEGATE_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${ARMNN-DELEGATE_LIBRARY_DIRS})
     ADD_DEFINITIONS(-DUSE_ARMNN)
 ENDIF(WITH_ARMNN)
 
-set(EXE_NAME ai-framework-test)
-set(HDR_DIR ${CMAKE_SOURCE_DIR}/test)
-set(SRC_DIR ${CMAKE_SOURCE_DIR}/test)
-set(GTEST_DIR ${CMAKE_SOURCE_DIR}/test/gtest)
+IF(WITH_XNNPACK)
+    ADD_DEFINITIONS(-DUSE_XNNPACK)
+ENDIF(WITH_XNNPACK)
+
+set(HDR_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Header Files
 include_directories(
     ${INCLUDE_DIR}
     ${HDR_DIR}
     ${SRC_DIR}
-    ${GTEST_DIR}
 )
 
 link_directories(
@@ -73,39 +85,7 @@ link_directories(
 # Source Files
 
 set(SRC_FILES
-    ${SRC_DIR}/detector_test.cpp
-    ${SRC_DIR}/descriptor_test.cpp
-    ${SRC_DIR}/detector_param_test.cpp
-    ${SRC_DIR}/delegate_factory_test.cpp
-    ${SRC_DIR}/detector_factory_test.cpp
-    ${SRC_DIR}/logger_test.cpp
-    ${SRC_DIR}/stopwatch_test.cpp
-    ${SRC_DIR}/websocket_test.cpp
-    ${SRC_DIR}/websocket_bigsize_data_test.cpp
-    ${SRC_DIR}/util_test.cpp
-    ${SRC_DIR}/face_descriptor_test.cpp
-    ${SRC_DIR}/face_detector_test.cpp
-    ${SRC_DIR}/face_param_test.cpp
-    ${SRC_DIR}/posenet_descriptor_test.cpp
-    ${SRC_DIR}/posenet_detector_test.cpp
-    ${SRC_DIR}/movenet_descriptor_test.cpp
-    ${SRC_DIR}/movenet_detector_test.cpp
-    ${SRC_DIR}/bodypix_descriptor_test.cpp
-    ${SRC_DIR}/bodypix_detector_test.cpp
-    ${SRC_DIR}/selfie_descriptor_test.cpp
-    ${SRC_DIR}/selfie_detector_test.cpp
-    ${SRC_DIR}/semantic_descriptor_test.cpp
-    ${SRC_DIR}/semantic_detector_test.cpp
-    ${SRC_DIR}/poselandmark_descriptor_test.cpp
-    ${SRC_DIR}/poselandmark_detector_test.cpp
-    ${SRC_DIR}/handlandmark_descriptor_test.cpp
-    ${SRC_DIR}/handlandmark_detector_test.cpp
-    ${SRC_DIR}/palm_descriptor_test.cpp
-    ${SRC_DIR}/palm_detector_test.cpp
-    ${SRC_DIR}/palm_param_test.cpp
-    ${SRC_DIR}/armnn_delegate_test.cpp
-    ${GTEST_DIR}/gtest-all.cc
-    ${GTEST_DIR}/test_main.cpp
+    ${SRC_DIR}/main.cpp
 )
 
 set(LIBS
@@ -130,12 +110,23 @@ IF(WITH_EDGETPU)
     )
 ENDIF(WITH_EDGETPU)
 
+IF(WITH_ARMNN)
+set(SRC_FILES
+        ${SRC_FILES}
+        ${ARMNN-DELEGATE_SRCS}
+    )
+set(LIBS
+        ${LIBS}
+        ${ARMNN-DELEGATE_LIBRARIES}
+    )
+ENDIF(WITH_ARMNN)
+
 add_executable(
-    ${EXE_NAME}
+    ${PROJECT_NAME}
     ${SRC_FILES}
 )
 
-target_link_libraries(${EXE_NAME}
+target_link_libraries(${PROJECT_NAME}
     ${LIBS}
 )
 
