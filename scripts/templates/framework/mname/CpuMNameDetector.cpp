@@ -14,7 +14,7 @@ namespace aif {
 
 CpuMNameDetector::CpuMNameDetector()
     : MNameDetector(
-            "/usr/share/aif/model/mname_single_pose_thunder_ptq.cpu_model_name")
+            "/usr/share/aif/model/cpu_model_name")
 {
 }
 
@@ -30,12 +30,12 @@ t_aif_status CpuMNameDetector::compileModel()/* override*/
         TfLiteStatus res = kTfLiteError;
         if (!m_param->getUseXnnpack()) {
             Logi("Not use xnnpack: BuiltinOpResolverWithoutDefaultDelegates");
-            cpu_model_name::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
-            res = cpu_model_name::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         } else {
             Logi("Use xnnpack: BuiltinOpResolver");
-            cpu_model_name::ops::builtin::BuiltinOpResolver resolver;
-            res = cpu_model_name::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            tflite::ops::builtin::BuiltinOpResolver resolver;
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         }
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("cpu_model_name interpreter build failed!!");

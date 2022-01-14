@@ -58,7 +58,7 @@ TEST_F(HandLandmarkDetectorTest, 02_cpu_from_hand)
     EXPECT_TRUE(d["hands"][0]["presence"].GetFloat() > 0.5);
 }
 
-TEST_F(HandLandmarkDetectorTest, 02_cpu_from_no_hand)
+TEST_F(HandLandmarkDetectorTest, 03_cpu_from_no_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_lite_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -76,7 +76,7 @@ TEST_F(HandLandmarkDetectorTest, 02_cpu_from_no_hand)
 }
 
 
-TEST_F(HandLandmarkDetectorTest, 03_cpu_from_multi_hand)
+TEST_F(HandLandmarkDetectorTest, 04_cpu_from_multi_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_lite_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -94,7 +94,7 @@ TEST_F(HandLandmarkDetectorTest, 03_cpu_from_multi_hand)
 }
 
 
-TEST_F(HandLandmarkDetectorTest, 04_cpu_from_right_hand)
+TEST_F(HandLandmarkDetectorTest, 05_cpu_from_right_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_lite_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -112,7 +112,7 @@ TEST_F(HandLandmarkDetectorTest, 04_cpu_from_right_hand)
     EXPECT_TRUE(d["hands"][0]["handedness"].GetFloat() > 0.5);
 }
 
-TEST_F(HandLandmarkDetectorTest, 05_cpu_from_left_hand)
+TEST_F(HandLandmarkDetectorTest, 06_cpu_from_left_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_lite_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -130,7 +130,7 @@ TEST_F(HandLandmarkDetectorTest, 05_cpu_from_left_hand)
     EXPECT_TRUE(d["hands"][0]["handedness"].GetFloat() < 0.5);
 }
 
-TEST_F(HandLandmarkDetectorTest, 05_cpu_full_from_hand)
+TEST_F(HandLandmarkDetectorTest, 07_cpu_full_from_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_full_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -147,7 +147,7 @@ TEST_F(HandLandmarkDetectorTest, 05_cpu_full_from_hand)
     EXPECT_TRUE(d["hands"][0]["presence"].GetFloat() > 0.5);
 }
 
-TEST_F(HandLandmarkDetectorTest, 02_cpu_full_from_no_hand)
+TEST_F(HandLandmarkDetectorTest, 08_cpu_full_from_no_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_full_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -165,7 +165,7 @@ TEST_F(HandLandmarkDetectorTest, 02_cpu_full_from_no_hand)
 }
 
 
-TEST_F(HandLandmarkDetectorTest, 03_cpu_full_from_multi_hand)
+TEST_F(HandLandmarkDetectorTest, 09_cpu_full_from_multi_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_full_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -183,7 +183,7 @@ TEST_F(HandLandmarkDetectorTest, 03_cpu_full_from_multi_hand)
 }
 
 
-TEST_F(HandLandmarkDetectorTest, 04_cpu_full_from_right_hand)
+TEST_F(HandLandmarkDetectorTest, 10_cpu_full_from_right_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_full_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
@@ -201,7 +201,7 @@ TEST_F(HandLandmarkDetectorTest, 04_cpu_full_from_right_hand)
     EXPECT_TRUE(d["hands"][0]["handedness"].GetFloat() > 0.5);
 }
 
-TEST_F(HandLandmarkDetectorTest, 05_cpu_full_from_left_hand)
+TEST_F(HandLandmarkDetectorTest, 11_cpu_full_from_left_hand)
 {
     auto pd = DetectorFactory::get().getDetector("handlandmark_full_cpu");
     EXPECT_TRUE(pd.get() != nullptr);

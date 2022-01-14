@@ -14,7 +14,7 @@ namespace aif {
 
 EdgeTpuMNameDetector::EdgeTpuMNameDetector()
     : MNameDetector(
-            "/usr/share/aif/model/mname_single_pose_thunder_ptq_edgetpu.cpu_model_name")
+            "/usr/share/aif/model/tpu_model_name")
 {
 }
 
@@ -31,7 +31,7 @@ t_aif_status EdgeTpuMNameDetector::compileModel()/* override*/
     std::stringstream errlog;
     try {
         TfLiteStatus res = kTfLiteError;
-        cpu_model_name::ops::builtin::BuiltinOpResolver resolver;
+        tflite::ops::builtin::BuiltinOpResolver resolver;
 
         // Sets up the edgetpu_context. available for any 1 TPU device.
         m_edgetpuContext = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
@@ -41,7 +41,7 @@ t_aif_status EdgeTpuMNameDetector::compileModel()/* override*/
 
         // Registers Edge TPU custom op handler with Tflite resolver.
         resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
-        res = cpu_model_name::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("cpu_model_name interpreter build failed!!");
         }
