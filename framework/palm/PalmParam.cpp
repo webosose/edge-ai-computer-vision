@@ -21,7 +21,7 @@ PalmParam::PalmParam()
     , minScale(0.1484375)
     , maxScale(0.75)
     , reduceBoxesInLowestLayer(false)
-    , scoreThreshold(0.7f)
+    , scoreThreshold(0.5f)
     , iouThreshold(0.2f)
     , maxOutputSize(100)
     , updateThreshold(0.3f)
@@ -59,7 +59,7 @@ PalmParam::PalmParam(PalmParam&& other) noexcept
     , minScale{std::exchange(other.minScale, 0.1484375)}
     , maxScale{std::exchange(other.maxScale, 0.75)}
     , reduceBoxesInLowestLayer{std::exchange(other.reduceBoxesInLowestLayer, false)}
-    , scoreThreshold{std::exchange(other.scoreThreshold, 0.7f)}
+    , scoreThreshold{std::exchange(other.scoreThreshold, 0.5f)}
     , iouThreshold{std::exchange(other.iouThreshold, 0.2f)}
     , maxOutputSize{std::exchange(other.maxOutputSize, 100)}
     , updateThreshold{std::exchange(other.updateThreshold, 0.3f)}
@@ -104,7 +104,7 @@ PalmParam& PalmParam::operator=(PalmParam&& other) noexcept
     minScale = std::exchange(other.minScale, 0.1484375);
     maxScale = std::exchange(other.maxScale, 0.75);
     reduceBoxesInLowestLayer = std::exchange(other.reduceBoxesInLowestLayer, false);
-    scoreThreshold = std::exchange(other.scoreThreshold, 0.7f);
+    scoreThreshold = std::exchange(other.scoreThreshold, 0.5f);
     iouThreshold = std::exchange(other.iouThreshold, 0.2f);
     maxOutputSize = std::exchange(other.maxOutputSize, 100);
     updateThreshold = std::exchange(other.updateThreshold, 0.3f);
