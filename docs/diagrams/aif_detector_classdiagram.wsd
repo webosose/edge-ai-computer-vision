@@ -1,0 +1,166 @@
+@@startuml aif_detector_classdiagram
+
+'--------------------------------------------
+' FRAMEWORK
+'--------------------------------------------
+package aif {
+
+package base {
+    class Descriptor {
+        + {abstract} addResponseName(responseName)
+        + {abstract} addReturnCode(returnCode)
+        + toStr(): string
+    }
+    abstract class Detector {
+        + Detector(modelPath, param:DetectorParam)
+        + getModelPath(): string
+        + getModelInfo(): t_aif_modelinfo
+        + getParam(): DetectorParam
+        + setParam(param)
+        -- virtual method --
+        + init()
+        + detectFromImage(imagePath, descriptor)
+        + detectFromBase64(base64image, descriptor)
+        + detect(img, descriptor)
+        # {abstract} compileMode()
+        # {abstract} fillInputTensor(img)
+        # {abstract} preProcessing()
+        # {abstract} postProcessing(img, descriptor)
+    }
+    class DetectorParam {
+
+    }
+}
+' end of base package
+
+'Relations
+Detector *--> DetectorParam
+Detector ..> Descriptor
+
+package face {
+    class FaceDescriptor {
+        + FaceDescriptor()
+        + addFace()
+        + size()
+        + clear()
+    }
+    abstract class FaceDetector {
+        + FaceDetector(modelPath, param)
+        # preProcessing()
+        # postProcessing(img, descriptor)
+        # generateAnchors(width, height)
+        # faceDetect(descriptor)
+        # calculateScale()
+        # checkUpdate()
+    }
+    class FaceParam {
+        + strides
+        + optAspectRatios
+        + interpolatedScaleAspectRatio
+        + anchorOffsetX
+        + anchorOffsetY
+        + minScale
+        + maxScale
+        + reduceBoxesInLowestLayer
+        + scoreThreshold
+        + iouThreshold
+        + maxOutpusSize
+        + updateTheshold
+    }
+    class CpuFaceDetector {
+        # compileMode()
+        # fillInputTensor(img)
+    }
+    class ShortRangeFaceDetector {
+        + ShortRangeFaceDetector()
+    }
+    class FullRangeFaceDetector {
+        + FullRangeFaceDetector()
+    }
+    class EdgeTpuFaceDetector {
+        # compileMode()
+        # fillInputTensor(img)
+    }
+    class EdgeTpuShortRangeFaceDetector {
+        + EdgeTpuShortRangeFaceDetector()
+    }
+    class FaceDetectorFactory {
+        + {static} create(name): FaceDetector*
+    }
+}
+'end of face package
+FaceDescriptor --|> Descriptor
+FaceParam --|> DetectorParam
+FaceDetector --|> Detector
+CpuFaceDetector --|> FaceDetector
+EdgeTpuFaceDetector --|> FaceDetector
+ShortRangeFaceDetector --|> CpuFaceDetector
+FullRangeFaceDetector --|> CpuFaceDetector
+EdgeTpuShortRangeFaceDetector --|> EdgeTpuFaceDetector
+FaceDetector ..> FaceDescriptor
+FaceDetector ..> FaceParam
+FaceDetectorFactory ..> ShortRangeFaceDetector
+FaceDetectorFactory ..> FullRangeFaceDetector
+FaceDetectorFactory ..> EdgeTpuShortRangeFaceDetector
+
+package pose {
+    class PosenetDescriptor {
+        + PosenetDescriptor()
+        + addKeyPoints()
+        + getFaceRect()
+        + getUpperBodyRect()
+        + getBodyRect()
+        + getPoseCount()
+        + makeBodyParts()
+        # getRect()
+        - m_keyPoints: vector<Point>
+    }
+    abstract class PosenetDetector {
+        + PosenetDescriptor(modelPath, param)
+        # fillInputTensor(img)
+        # preProcessing()
+        # postProcessing(img, descriptor)
+    }
+    class PosenetParam {
+
+    }
+    class CpuPosenetDetector {
+        + CpuPosenetDetector()
+        # compileMode()
+    }
+    class EdgeTpuPosenetDetector {
+        + EdgeTpuPosenetDetector()
+        # compileMode()
+    }
+    class PosenetDetectorFactory {
+        + create(name): PosenetDetector*
+    }
+}
+'end of pose package
+PosenetDescriptor --|> Descriptor
+PosenetParam --|> DetectorParam
+PosenetDetector --|> Detector
+CpuPosenetDetector --|> PosenetDetector
+EdgeTpuPosenetDetector --|> PosenetDetector
+PosenetDetector ..> PosenetDescriptor
+PosenetDetector ..> PosenetParam
+PosenetDetectorFactory ..> CpuPosenetDetector
+PosenetDetectorFactory ..> EdgeTpuPosenetDetector
+
+'package tools {
+'    class ConfigReader
+'    class Stopwatch
+'    class Utils
+'}
+'end of tools package
+
+'package log {
+'    class Logger
+'    class LogMessage
+'}
+'end of tools package
+
+}
+' end of aif package
+
+@@enduml

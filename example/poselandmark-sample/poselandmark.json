@@ -1,0 +1,12 @@
+{
+  "LogLevel" : "TRACE4",
+  "ImagePath" : "./images/person.jpg",
+  "model" : "poselandmark_lite_cpu",
+  "param" : {
+    "common" : {
+      "useXnnpack": true,
+      "numThreads": 4
+    }
+  }
+}
+
