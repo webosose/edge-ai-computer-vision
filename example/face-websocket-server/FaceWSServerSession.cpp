@@ -21,26 +21,18 @@ namespace rj = rapidjson;
 FaceWSServerSession::FaceWSServerSession(tcp::socket&& socket)
     : WSServerSession(std::move(socket))
 {
+    Logi("---------------- begin session -------------------");
 }
 
 FaceWSServerSession::~FaceWSServerSession()/* override*/
 {
+    DelegateFactory::get().clear();
+    DetectorFactory::get().clear();
+    Logi("---------------- end session -------------------");
 }
 
 void FaceWSServerSession::onInit()/* override*/
 {
-    Logi("---------------- session init -------------------");
-    DelegateFactory::get().clear();
-    DetectorFactory::get().clear();
-
-
-//    Stopwatch sw;
-//    for (auto& detector : m_detectors) {
-//        sw.start();
-//        detector.second->init();
-//        TRACE("[Session]Detector.init(): ", detector.first, " ", sw.getMs(), "ms");
-//        sw.stop();
-//    }
 }
 
 void FaceWSServerSession::onHandleMessage(const std::string& message)/* override*/

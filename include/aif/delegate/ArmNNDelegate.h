@@ -23,6 +23,8 @@ public:
 private:
     void parseOption();
     armnnDelegate::DelegateOptions m_delegateOptions;
+
+    bool updateCachedNetworkFile(const std::string& filepath) const;
 };
 
 DelegateFactoryRegistration<ArmNNDelegate> armnn_delegate("armnn_delegate");

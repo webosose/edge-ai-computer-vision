@@ -195,7 +195,7 @@ t_aif_status FaceParam::fromJson(const std::string& param)
         if (modelParam.HasMember("optAspectRatios")) {
             optAspectRatios.clear();
             for (auto& optAspectRatio : modelParam["optAspectRatios"].GetArray()) {
-                optAspectRatios.push_back(optAspectRatio.GetInt());
+                optAspectRatios.push_back(optAspectRatio.GetFloat());
             }
         }
 

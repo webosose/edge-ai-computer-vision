@@ -1,7 +1,8 @@
 #include <aif/delegate/ArmNNDelegate.h>
 #include <aif/tools/Utils.h>
-
 #include <rapidjson/document.h>
+
+#include <fstream>
 namespace rj = rapidjson;
 
 namespace aif {
@@ -10,43 +11,64 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
     : Delegate("ArmNNDelegate", option)
     , m_delegateOptions(armnn::Compute::CpuAcc)
 {
-    m_delegateOptions.SetLoggingSeverity("info");
-    parseOption();
 }
 
 ArmNNDelegate::~ArmNNDelegate()
 {
 }
 
-void ArmNNDelegate::parseOption()
+bool ArmNNDelegate::updateCachedNetworkFile(const std::string& filepath) const
 {
-    if (m_option.empty()) {
-        Logi("ArmnnOptions empty, Apply default options");
-        return;
+    if (FILE *file = fopen(filepath.c_str(), "r")) {
+        fclose(file);
+        Logi("use cached network file: ", filepath);
+        return false;
     }
 
-    Logi("Armnn delegate option: ", m_option);
-    rj::Document payload;
-    payload.Parse(m_option.c_str());
-    if (payload.HasMember("backends")) {
-        std::vector<armnn::BackendId> backends;
-        for (auto& backend : payload["backends"].GetArray()) {
-            backends.push_back(backend.GetString());
-            Logi("backend: ", backend.GetString());
-        }
-        m_delegateOptions.SetBackends(backends);
-    }
-
-    if (payload.HasMember("logging_severity")) {
-        m_delegateOptions.SetLoggingSeverity(payload["logging_severity"].GetString());
-        Logi("logging_severity: ", payload["logging_severity"].GetString());
-    }
+    std::ofstream ofs;
+    ofs.open(filepath, std::ofstream::out | std::ofstream::trunc);
+    ofs.close();
+    Logi("create empty cached network file: ", filepath);
+    return true;
 }
 
 TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
 {
+    rj::Document payload;
+    payload.Parse(m_option.c_str());
+    size_t numOptions = payload.Size();
+
+    std::map<std::string, std::string> optionMap;
+    for (auto& opt : payload.GetObject()) {
+        optionMap[opt.name.GetString()] = opt.value.GetString();
+    }
+
+    if (optionMap.find("save-cached-network") != optionMap.end() &&
+        optionMap["save-cached-network"] == "true") {
+        if (optionMap.find("cached-network-filepath") != optionMap.end()) {
+            if (!updateCachedNetworkFile(optionMap["cached-network-filepath"])) {
+                optionMap["save-cached-network"] = "false";
+            }
+        }
+    }
+
+    std::unique_ptr<const char*> keys =
+        std::unique_ptr<const char*>(new const char*[numOptions + 1]);
+    std::unique_ptr<const char*> values =
+        std::unique_ptr<const char*>(new const char*[numOptions + 1]);
+    int i = 0;
+    for (auto& opt : optionMap) {
+        Logi("armnn option: ", opt.first, " : ", opt.second);
+        keys.get()[i]   = opt.first.c_str();
+        values.get()[i] = opt.second.c_str();
+        i++;
+    }
+    armnnDelegate::DelegateOptions options(
+            keys.get(), values.get(), numOptions, nullptr);
+
+
     return TfLiteDelegatePtr(
-            armnnDelegate::TfLiteArmnnDelegateCreate(m_delegateOptions),
+            armnnDelegate::TfLiteArmnnDelegateCreate(options),
             armnnDelegate::TfLiteArmnnDelegateDelete);
 }
 
