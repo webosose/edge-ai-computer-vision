@@ -333,5 +333,41 @@ std::string jsonObjectToString(const rj::Value& object)
 }
 
 
+bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
+{
+    float A = cur.width * cur.height;
+    float B = prev.width * prev.height;
+    float x1, y1, w1, h1, x2, y2, w2, h2;
+    if (cur.x < prev.x) {
+        x1 = cur.x;
+        w1 = cur.width;
+        x2 = prev.x;
+        w2 = prev.width;
+    } else {
+        x2 = cur.x;
+        w2 = cur.width;
+        x1 = prev.x;
+        w1 = prev.width;
+    }
+
+    if (cur.y < prev.y) {
+        y1 = cur.y;
+        h1 = cur.height;
+        y2 = prev.y;
+        h2 = prev.height;
+    } else {
+        y2 = cur.y;
+        h2 = cur.height;
+        y1 = prev.y;
+        h1 = prev.height;
+    }
+
+    float A_and_B =
+        (std::min(x1 + w1, x2 + w2) - x2) *
+        (std::min(y1 + h1, y2 + h2) - y2);
+    float A_or_B = A + B - A_and_B;
+
+    return ((A_and_B / A_or_B) < (1.0f - threshold));
+}
 
 } // end of namespace aif

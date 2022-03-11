@@ -31,7 +31,8 @@ public:
         LEFT_KNEE = 13,
         RIGHT_KNEE = 14,
         LEFT_ANKLE = 15,
-        RIGHT_ANKLE = 16
+        RIGHT_ANKLE = 16,
+        NUM_KEYPOINT_TYPES = 17,
     };
     void addKeyPoints(float score,
             const std::vector<cv::Point2f>& points,
@@ -40,18 +41,17 @@ public:
     cv::Rect2f getUpperBodyRect(const std::vector<cv::Point2f>& keyPoints) const;
     cv::Rect2f getBodyRect(const std::vector<cv::Point2f>& keyPoints) const;
     size_t getPoseCount() const { return m_keyPoints.size(); }
-    std::vector<std::vector<cv::Rect2f>> makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev);
+    std::vector<std::vector<cv::Rect2f>>
+        makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, float iouThreshold);
 
 protected:
     cv::Rect2f getRect(const std::vector<KeyPointType>& types,
         const std::vector<cv::Point2f>& keyPoints) const;
     float getScore(const std::vector<float>& scores, KeyPointType begin, KeyPointType end) const;
-    bool isIOU(const cv::Rect2f& a, const cv::Rect2f& b, float threshold) const;
 private:
     std::vector<float> m_scores;
     std::vector<std::vector<cv::Point2f>> m_keyPoints;
     std::vector<std::vector<float>> m_keyPointsScores;
-    //std::vector<pair<KeyPointType, KeyPointType>> m_edges;
 };
 
 } // end of namespace aif

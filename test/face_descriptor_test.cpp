@@ -147,3 +147,21 @@ TEST_F(FaceDescriptorTest, 04_add_response_and_returncode)
     EXPECT_TRUE(d["faces"].IsArray());
     EXPECT_TRUE(d["faces"].Size() == 1);
 }
+
+TEST_F(FaceDescriptorTest, 05_empty_faces)
+{
+    FaceDescriptor jfd;
+
+    jfd.addResponseName("face_detect");
+    jfd.addReturnCode(kAifOk);
+
+    auto json = jfd.toStr();
+    Logd(json);
+
+    rj::Document d;
+    d.Parse(json.c_str());
+    EXPECT_TRUE(d.IsObject());
+    EXPECT_TRUE(d.HasMember("response"));
+    EXPECT_TRUE(d.HasMember("returnCode"));
+    EXPECT_TRUE(d.HasMember("faces"));
+}

@@ -7,6 +7,7 @@ namespace aif {
 
 PoseLandmarkDetector::PoseLandmarkDetector(const std::string& modelPath)
     : Detector(modelPath )
+    , m_iouThreshold(0.3f)
 {
 }
 
@@ -90,6 +91,7 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
     int width = segments->dims->data[2];
     TRACE("size : ", height, " x ", width);
     poseLandmarkDescriptor->addMaskData(width, height, segments->data.f);
+    m_prevPoses = poseLandmarkDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
 
     return kAifOk;
 }

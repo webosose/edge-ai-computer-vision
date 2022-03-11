@@ -1,11 +1,13 @@
 #include <aif/pose/PosenetDescriptor.h>
 #include <aif/log/Logger.h>
+#include <aif/tools/Utils.h>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
 #include <iostream>
 #include <limits>
+#include <cmath>
 
 namespace {
 } // anonymous namespace
@@ -17,26 +19,6 @@ namespace aif {
 PosenetDescriptor::PosenetDescriptor()
     : Descriptor()
 {
-//    edges.push_back(make_pair(KeyPointType::NOSE, KeyPointType::LEFT_EYE));
-//    edges.push_back(make_pair(KeyPointType::NOSE, KeyPointType::RIGHT_EYE));
-//    edges.push_back(make_pair(KeyPointType::NOSE, KeyPointType::LEFT_EAR));
-//    edges.push_back(make_pair(KeyPointType::NOSE, KeyPointType::RIGHT_EAR));
-//    edges.push_back(make_pair(KeyPointType::LEFT_EAR, KeyPointType::LEFT_EYE));
-//    edges.push_back(make_pair(KeyPointType::RIGHT_EAR, KeyPointType::RIGHT_EYE));
-//    edges.push_back(make_pair(KeyPointType::LEFT_EYE, KeyPointType::RIGHT_EYE));
-//    edges.push_back(make_pair(KeyPointType::LEFT_SHOULDER, KeyPointType::RIGHT_SHOULDER));
-//    edges.push_back(make_pair(KeyPointType::LEFT_SHOULDER, KeyPointType::LEFT_ELBOW));
-//    edges.push_back(make_pair(KeyPointType::LEFT_SHOULDER, KeyPointType::LEFT_HIP));
-//    edges.push_back(make_pair(KeyPointType::RIGHT_SHOULDER, KeyPointType::RIGHT_ELBOW));
-//    edges.push_back(make_pair(KeyPointType::RIGHT_SHOULDER, KeyPointType::RIGHT_HIP));
-//    edges.push_back(make_pair(KeyPointType::LEFT_ELBOW, KeyPointType::LEFT_WRIST));
-//    edges.push_back(make_pair(KeyPointType::RIGHT_ELBOW, KeyPointType::RIGHT_WRIST));
-//    edges.push_back(make_pair(KeyPointType::LEFT_HIP, KeyPointType::RIGHT_HIP));
-//    edges.push_back(make_pair(KeyPointType::LEFT_HIP, KeyPointType::LEFT_KNEE));
-//    edges.push_back(make_pair(KeyPointType::RIGHT_HIP, KeyPointType::RIGHT_KNEE));
-//    edges.push_back(make_pair(KeyPointType::LEFT_KNEE, KeyPointType::LEFT_ANKLE));
-//    edges.push_back(make_pair(KeyPointType::RIGHT_KNEE, KeyPointType::RIGHT_ANKLE));
-
 }
 
 PosenetDescriptor::~PosenetDescriptor()
@@ -114,7 +96,8 @@ float PosenetDescriptor::getScore(const std::vector<float>& scores, KeyPointType
     return score;
 }
 
-std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev)
+std::vector<std::vector<cv::Rect2f>>
+PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, float iouThreshold)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("poses")) {
@@ -130,7 +113,7 @@ std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vecto
         rj::Value person(rj::kObjectType);
         cv::Rect2f faceRect = getFaceRect(keyPoints);
 
-        if (i < prev.size() && !isIOU(faceRect, prev[i][0], 0.3)) {
+        if (i < prev.size() && !isIOU(faceRect, prev[i][0], iouThreshold)) {
             faceRect = prev[i][0];
         }
         rj::Value face(rj::kArrayType);
@@ -142,7 +125,7 @@ std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vecto
         person.AddMember("face_score", getScore(scores, NOSE, RIGHT_EAR), allocator);
 
         cv::Rect bodyRect = getBodyRect(keyPoints);
-        if (i < prev.size() && !isIOU(bodyRect, prev[i][1], 0.3)) {
+        if (i < prev.size() && !isIOU(bodyRect, prev[i][1], iouThreshold)) {
             bodyRect = prev[i][1];
         }
         rj::Value body(rj::kArrayType);
@@ -154,7 +137,7 @@ std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vecto
         person.AddMember("body_score", getScore(scores, NOSE, RIGHT_ANKLE), allocator);
 
         cv::Rect upperBodyRect = getUpperBodyRect(keyPoints);
-        if (i < prev.size() && !isIOU(upperBodyRect, prev[i][2], 0.3)) {
+        if (i < prev.size() && !isIOU(upperBodyRect, prev[i][2], iouThreshold)) {
             upperBodyRect = prev[i][2];
         }
         rj::Value upperBody(rj::kArrayType);
@@ -167,7 +150,7 @@ std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vecto
 
         person.AddMember("score", m_scores[i], allocator);
         rj::Value points(rj::kArrayType);
-        for (int j = 0; j < 17; j++) {
+        for (int j = 0; j < NUM_KEYPOINT_TYPES; j++) {
             rj::Value point(rj::kArrayType);
             point.PushBack(keyPoints[j].x, allocator);
             point.PushBack(keyPoints[j].y, allocator);
@@ -180,42 +163,6 @@ std::vector<std::vector<cv::Rect2f>> PosenetDescriptor::makeBodyParts(std::vecto
     }
 
     return current;
-}
-
-bool PosenetDescriptor::isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float updateThreshold) const
-{
-    float A = cur.width * cur.height;
-    float B = prev.width * prev.height;
-    float x1, y1, w1, h1, x2, y2, w2, h2;
-    if (cur.x < prev.x) {
-        x1 = cur.x;
-        w1 = cur.width;
-        x2 = prev.x;
-        w2 = prev.width;
-    } else {
-        x2 = cur.x;
-        w2 = cur.width;
-        x1 = prev.x;
-        w1 = prev.width;
-    }
-
-    if (cur.y < prev.y) {
-        y1 = cur.y;
-        h1 = cur.height;
-        y2 = prev.y;
-        h2 = prev.height;
-    } else {
-        y2 = cur.y;
-        h2 = cur.height;
-        y1 = prev.y;
-        h1 = prev.height;
-    }
-
-        float A_and_B =
-            (std::min(x1 + w1, x2 + w2) - x2) *
-            (std::min(y1 + h1, y2 + h2) - y2);
-        float A_or_B = A + B - A_and_B;
-        return (A_and_B / A_or_B) < (1.0f - updateThreshold) ? true : false;
 }
 
 }

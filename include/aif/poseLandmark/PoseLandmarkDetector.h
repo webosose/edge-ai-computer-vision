@@ -23,6 +23,8 @@ protected:
 
 private:
     void printOutput();
+    std::vector<std::vector<cv::Rect2f>> m_prevPoses;
+    float m_iouThreshold;
 };
 
 } // end of namespace aif

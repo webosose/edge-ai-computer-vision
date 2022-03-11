@@ -103,7 +103,6 @@ set(SRC_FILES
     ${SRC_DIR}/palm_descriptor_test.cpp
     ${SRC_DIR}/palm_detector_test.cpp
     ${SRC_DIR}/palm_param_test.cpp
-    ${SRC_DIR}/armnn_delegate_test.cpp
     ${GTEST_DIR}/gtest-all.cc
     ${GTEST_DIR}/test_main.cpp
 )
@@ -129,6 +128,13 @@ IF(WITH_EDGETPU)
         ${EDGETPU_LIBRARIES}
     )
 ENDIF(WITH_EDGETPU)
+
+IF(WITH_ARMNN)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${SRC_DIR}/armnn_delegate_test.cpp
+    )
+ENDIF(WITH_ARMNN)
 
 add_executable(
     ${EXE_NAME}

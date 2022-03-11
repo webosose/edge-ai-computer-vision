@@ -22,7 +22,8 @@ protected:
     
 private:
     void printOutput();
-    std::vector<std::vector<cv::Rect2f>> m_prev_poses;
+    std::vector<std::vector<cv::Rect2f>> m_prevPoses;
+    float m_iouThreshold;
 
 };
 

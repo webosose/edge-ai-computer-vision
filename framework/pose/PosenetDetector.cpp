@@ -7,6 +7,7 @@ namespace aif {
 
 PosenetDetector::PosenetDetector(const std::string& modelPath)
     : Detector(modelPath)
+    , m_iouThreshold(0.3f)
 {
 }
 
@@ -118,16 +119,16 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     for (int i = 0; i < *pose_count; i++ ) {
         std::vector<cv::Point2f> points;
         std::vector<float> scores;
-        for (int j = 0; j < 17; j++ ) {
+        for (int j = 0; j < PosenetDescriptor::NUM_KEYPOINT_TYPES; j++ ) {
             float height = keyPoints[k] * scaleY;
             float width = keyPoints[k+1] * scaleX;
             points.push_back(cv::Point2f(width, height));
             k = k + 2;
-            scores.push_back(keyPointsScore[i * 17 + j]);
+            scores.push_back(keyPointsScore[i * PosenetDescriptor::NUM_KEYPOINT_TYPES + j]);
         }
         posenetDescriptor->addKeyPoints(pose_score[i], points, scores);
     }
-    m_prev_poses = posenetDescriptor->makeBodyParts(m_prev_poses);
+    m_prevPoses = posenetDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
 
     return kAifOk;
 }

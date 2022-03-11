@@ -28,7 +28,7 @@ protected:
     int height{240};
     void initMaskData(float* mask, bool reverse = false) {
         for (int i = 0; i < width * height; i++) {
-            if (!reverse) 
+            if (!reverse)
                 mask[i] = (i%2 == 1) ? 1 : -10;
             else
                 mask[i] = (i%2 == 0) ? 1 : -10;
@@ -52,9 +52,10 @@ TEST_F(PoseLandmarkDescriptorTest, 02_addMaskData_one)
 {
     float mask[width * height];
     initMaskData(mask);
-    
+
     PoseLandmarkDescriptor descriptor;
     descriptor.addMaskData(width, height, mask);
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
@@ -83,10 +84,13 @@ TEST_F(PoseLandmarkDescriptorTest, 03_addMaskData_two)
     float mask2[width * height];
     initMaskData(mask1, false);
     initMaskData(mask2, true);
- 
+
     PoseLandmarkDescriptor descriptor;
     descriptor.addMaskData(width, height, mask1);
     descriptor.addMaskData(width, height, mask2);
+    std::vector<std::vector<cv::Rect2f>> prev;
+    descriptor.makeBodyParts(prev, 0.3f);
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
@@ -107,15 +111,17 @@ TEST_F(PoseLandmarkDescriptorTest, 03_addMaskData_two)
 TEST_F(PoseLandmarkDescriptorTest, 04_addLandmarks)
 {
     PoseLandmarkDescriptor descriptor;
-    float landmarks[PoseLandmarkDescriptor::LANDMARK_TYPE_COUNT * 
-        PoseLandmarkDescriptor::LANDMARK_ITEM_COUNT];
-    for (int i = 0; i < PoseLandmarkDescriptor::LANDMARK_TYPE_COUNT; i++) {
-        for (int j = 0; j < PoseLandmarkDescriptor::LANDMARK_ITEM_COUNT; j++) {
-            landmarks[i * PoseLandmarkDescriptor::LANDMARK_ITEM_COUNT + j] = i * 1.1;
+    float landmarks[PoseLandmarkDescriptor::NUM_LANDMARK_TYPES *
+        PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS];
+    for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
+        for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
+            landmarks[i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j] = i * 1.1;
         }
     }
     descriptor.addLandmarks(landmarks);
-   
+    std::vector<std::vector<cv::Rect2f>> prev;
+    descriptor.makeBodyParts(prev, 0.3f);
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
@@ -127,7 +133,7 @@ TEST_F(PoseLandmarkDescriptorTest, 04_addLandmarks)
     EXPECT_TRUE(d["poses"][0].IsObject());
     EXPECT_TRUE(d["poses"][0].HasMember("landmarks"));
     EXPECT_TRUE(d["poses"][0]["landmarks"].IsArray());
-    EXPECT_EQ(PoseLandmarkDescriptor::LANDMARK_TYPE_COUNT,
+    EXPECT_EQ(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES,
             d["poses"][0]["landmarks"].Size());
 
 }
@@ -136,23 +142,25 @@ TEST_F(PoseLandmarkDescriptorTest, 05_add_response_and_returncode)
 {
     float mask[width * height];
     initMaskData(mask, false);
- 
+
     PoseLandmarkDescriptor descriptor;
     descriptor.addMaskData(width, height, mask);
- 
-    float landmarks[PoseLandmarkDescriptor::LANDMARK_TYPE_COUNT * 
-        PoseLandmarkDescriptor::LANDMARK_ITEM_COUNT];
-    for (int i = 0; i < PoseLandmarkDescriptor::LANDMARK_TYPE_COUNT; i++) {
-        for (int j = 0; j < PoseLandmarkDescriptor::LANDMARK_ITEM_COUNT; j++) {
-            landmarks[i * PoseLandmarkDescriptor::LANDMARK_ITEM_COUNT + j] = i * 1.1;
+
+    float landmarks[PoseLandmarkDescriptor::NUM_LANDMARK_TYPES *
+        PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS];
+    for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
+        for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
+            landmarks[i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j] = i * 1.1;
         }
     }
- 
 
     descriptor.addLandmarks(landmarks);
+    std::vector<std::vector<cv::Rect2f>> prev;
+    descriptor.makeBodyParts(prev, 0.3f);
+
     descriptor.addResponseName("poselandmark_detect");
     descriptor.addReturnCode(kAifOk);
-   
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());

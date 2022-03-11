@@ -159,6 +159,9 @@ T sigmoid(T value) {
 
 std::string jsonObjectToString(const rj::Value& object);
 
+
+bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
+
 } // end of namespace aif
 
 #endif // AIF_UTILS_H

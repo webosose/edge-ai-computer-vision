@@ -17,6 +17,9 @@ FaceDescriptor::FaceDescriptor()
     : Descriptor()
     , m_faceCount(0)
 {
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    rj::Value faces(rj::kArrayType);
+    m_root.AddMember("faces", faces, allocator);
 }
 
 FaceDescriptor::~FaceDescriptor()
