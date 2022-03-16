@@ -108,20 +108,13 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     TRACE("poses count: ", *pose_count);
 
     std::shared_ptr<PosenetDescriptor> posenetDescriptor = std::dynamic_pointer_cast<PosenetDescriptor>(descriptor);
-    float scaleX = (float)img.size().width / (float)m_modelInfo.width;
-    float scaleY = (float)img.size().height / (float)m_modelInfo.height;
-
-    TRACE("posenet img size: ", img.size());
-    TRACE("scale x: ", scaleX);
-    TRACE("scale y: ", scaleY);
-
     int k = 0;
     for (int i = 0; i < *pose_count; i++ ) {
         std::vector<cv::Point2f> points;
         std::vector<float> scores;
         for (int j = 0; j < PosenetDescriptor::NUM_KEYPOINT_TYPES; j++ ) {
-            float height = keyPoints[k] * scaleY;
-            float width = keyPoints[k+1] * scaleX;
+            float height = keyPoints[k] / m_modelInfo.height;
+            float width = keyPoints[k+1] / m_modelInfo.width;
             points.push_back(cv::Point2f(width, height));
             k = k + 2;
             scores.push_back(keyPointsScore[i * PosenetDescriptor::NUM_KEYPOINT_TYPES + j]);

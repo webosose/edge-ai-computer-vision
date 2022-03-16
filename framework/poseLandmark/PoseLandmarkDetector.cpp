@@ -84,13 +84,30 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
 
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *landmarks = m_interpreter->tensor(outputs[0]);
-    poseLandmarkDescriptor->addLandmarks(landmarks->data.f);
-
     TfLiteTensor *segments = m_interpreter->tensor(outputs[2]);
     int height = segments->dims->data[1];
     int width = segments->dims->data[2];
     TRACE("size : ", height, " x ", width);
     poseLandmarkDescriptor->addMaskData(width, height, segments->data.f);
+
+    std::vector<std::vector<float>> outLandmarks(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES);
+    for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
+        for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
+            int index = i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j;
+            float data = landmarks->data.f[index];
+            if (j == PoseLandmarkDescriptor::COOD_X) {
+                data = data / 255.0f;
+            } else if (j == PoseLandmarkDescriptor::COOD_Y) {
+                data = data / 255.0f;
+            } else if (j == PoseLandmarkDescriptor::VISIBILITY ||
+                       j == PoseLandmarkDescriptor::PRESENCE) {
+                data = sigmoid<float>(data);    // sigmoid
+            }
+            outLandmarks[i].emplace_back(data);
+        }
+    }
+
+    poseLandmarkDescriptor->addLandmarks(outLandmarks);
     m_prevPoses = poseLandmarkDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
 
     return kAifOk;

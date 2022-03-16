@@ -86,6 +86,7 @@ TEST_F(PosenetDetectorTest, 02_cpu_from_person)
     
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
     EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }
@@ -98,6 +99,7 @@ TEST_F(PosenetDetectorTest, 03_cpu_from_people)
     
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
     EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/people.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 5);
 }
@@ -110,6 +112,7 @@ TEST_F(PosenetDetectorTest, 04_cpu_posenet_from_base64_person)
     auto base64image = aif::fileToStr("/usr/share/aif/images/mona_base64.txt"); // 128 x 128
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
     EXPECT_TRUE(pd->detectFromBase64(base64image, descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }
@@ -122,6 +125,7 @@ TEST_F(PosenetDetectorTest, 05_edgetpu_from_person)
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
     EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }
@@ -137,6 +141,7 @@ TEST_F(PosenetDetectorTest, 06_armnn_posenet_from_person_default)
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
     EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }
@@ -149,6 +154,7 @@ TEST_F(PosenetDetectorTest, 07_armnn_posenet_from_person_cpuAcc)
 
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
+    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
     EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
 }

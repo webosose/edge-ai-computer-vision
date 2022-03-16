@@ -37,17 +37,19 @@ public:
     void addKeyPoints(float score,
             const std::vector<cv::Point2f>& points,
             const std::vector<float>& keyPointsScore);
-    cv::Rect2f getFaceRect(const std::vector<cv::Point2f>& keyPoints) const;
-    cv::Rect2f getUpperBodyRect(const std::vector<cv::Point2f>& keyPoints) const;
-    cv::Rect2f getBodyRect(const std::vector<cv::Point2f>& keyPoints) const;
     size_t getPoseCount() const { return m_keyPoints.size(); }
     std::vector<std::vector<cv::Rect2f>>
         makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, float iouThreshold);
 
 protected:
-    cv::Rect2f getRect(const std::vector<KeyPointType>& types,
-        const std::vector<cv::Point2f>& keyPoints) const;
-    float getScore(const std::vector<float>& scores, KeyPointType begin, KeyPointType end) const;
+    cv::Rect2f getRect(
+            const std::vector<cv::Point2f>& keyPoints,
+            KeyPointType beginType,
+            KeyPointType endType) const;
+    float getScore(
+            const std::vector<float>& scores,
+            KeyPointType begin,
+            KeyPointType end) const;
 private:
     std::vector<float> m_scores;
     std::vector<std::vector<cv::Point2f>> m_keyPoints;

@@ -18,7 +18,11 @@ namespace aif {
 PoseLandmarkDescriptor::PoseLandmarkDescriptor()
     : Descriptor()
     , m_landmarks(NUM_LANDMARK_TYPES)
+    , m_poseCount(0)
 {
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    rj::Value poses(rj::kArrayType);
+    m_root.AddMember("poses", poses, allocator);
 }
 
 PoseLandmarkDescriptor::~PoseLandmarkDescriptor()
@@ -50,27 +54,17 @@ void PoseLandmarkDescriptor::addMaskData(int width, int height, float* mask)
     m_root["segments"].PushBack(segment, allocator);
 }
 
-void PoseLandmarkDescriptor::addLandmarks(float* landmarks)
+void PoseLandmarkDescriptor::addLandmarks(const std::vector<std::vector<float>>& landmarks)
 {
-    for (int i = 0; i < LandmarkType::NUM_LANDMARK_TYPES; i++) {
-        for (int j = 0; j < NUM_LANDMARK_ITEMS; j++) {
-            int index = i * NUM_LANDMARK_ITEMS + j;
-            float data = landmarks[index];
-            if (j <= LandmarkOutput::COOD_Z) {
-                data = data / 256;              // normalize
-            } else {
-                data = sigmoid<float>(data);    // sigmoid
-            }
-            m_landmarks[i].emplace_back(data);
-        }
-    }
+    m_landmarks = landmarks;
+    m_poseCount++;
 }
 
 std::vector<std::vector<cv::Rect2f>>
 PoseLandmarkDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, float iouThreshold)
 {
     if (!m_landmarks[0].size()) {
-        return {{}};
+        return {{ cv::Rect2f(0, 0, 0, 0)}};
     }
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
@@ -78,9 +72,9 @@ PoseLandmarkDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev,
         rj::Value poses(rj::kArrayType);
         m_root.AddMember("poses", poses, allocator);
     }
+
     rj::Value person(rj::kObjectType);
     rj::Value points(rj::kArrayType);
-
     for (int i = 0; i < m_landmarks.size(); i++) {
         rj::Value point(rj::kArrayType);
         for (int j = 0; j < m_landmarks[i].size(); j++) {
@@ -90,43 +84,50 @@ PoseLandmarkDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev,
     }
     person.AddMember("landmarks", points, allocator);
 
-
     int i = 0;
-    cv::Rect2f faceRect = getRect(NOSE, MOUTH_RIGHT);
+    cv::Rect2f faceRect = getRect(NOSE, RIGHT_MOUTH);
     if (i < prev.size() && !isIOU(faceRect, prev[i][0], iouThreshold)) {
         faceRect = prev[i][0];
     }
-    rj::Value face(rj::kArrayType);
-    face.PushBack(faceRect.x, allocator)
+    rj::Value face(rj::kObjectType);
+    rj::Value faceRegion(rj::kArrayType);
+    faceRegion.PushBack(faceRect.x, allocator)
         .PushBack(faceRect.y, allocator)
         .PushBack(faceRect.width, allocator)
         .PushBack(faceRect.height, allocator);
+    face.AddMember("region", faceRegion, allocator);
+    face.AddMember("score", getScore(NOSE, RIGHT_MOUTH), allocator);
     person.AddMember("face", face, allocator);
-    person.AddMember("face_score", getScore(NOSE, MOUTH_RIGHT), allocator);
+
 
     cv::Rect2f bodyRect = getRect(NOSE, RIGHT_FOOT_INDEX);
     if (i < prev.size() && !isIOU(bodyRect, prev[i][1], iouThreshold)) {
         bodyRect = prev[i][1];
     }
-    rj::Value body(rj::kArrayType);
-    body.PushBack(bodyRect.x, allocator)
+    rj::Value body(rj::kObjectType);
+    rj::Value bodyRegion(rj::kArrayType);
+    bodyRegion.PushBack(bodyRect.x, allocator)
         .PushBack(bodyRect.y, allocator)
         .PushBack(bodyRect.width, allocator)
         .PushBack(bodyRect.height, allocator);
+    body.AddMember("region", bodyRegion, allocator);
+    body.AddMember("score", getScore(NOSE, RIGHT_FOOT_INDEX), allocator);
     person.AddMember("body", body, allocator);
-    person.AddMember("body_score", getScore(NOSE, RIGHT_FOOT_INDEX), allocator);
 
     cv::Rect2f upperBodyRect = getRect(NOSE, RIGHT_HIP);
     if (i < prev.size() && !isIOU(upperBodyRect, prev[i][2], iouThreshold)) {
         upperBodyRect = prev[i][2];
     }
-    rj::Value upperBody(rj::kArrayType);
-    upperBody.PushBack(upperBodyRect.x, allocator)
+    rj::Value upperBody(rj::kObjectType);
+    rj::Value upperRegion(rj::kArrayType);
+    upperRegion.PushBack(upperBodyRect.x, allocator)
         .PushBack(upperBodyRect.y, allocator)
         .PushBack(upperBodyRect.width, allocator)
         .PushBack(upperBodyRect.height, allocator);
+    upperBody.AddMember("region", upperRegion, allocator);
+    upperBody.AddMember("score", getScore(NOSE, RIGHT_HIP), allocator);
     person.AddMember("upperBody", upperBody, allocator);
-    person.AddMember("upperBody_score", getScore(NOSE, RIGHT_HIP), allocator);
+
     m_root["poses"].PushBack(person, allocator);
 
     return {{faceRect, bodyRect, upperBodyRect}};

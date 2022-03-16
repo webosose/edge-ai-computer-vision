@@ -330,8 +330,8 @@ t_aif_status FaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
                 selected_scores[i],
                 m_prev_faces[i][0],
                 m_prev_faces[i][1],
-                m_prev_faces[i][2],
-                m_prev_faces[i][3],
+                m_prev_faces[i][2] - m_prev_faces[i][0],
+                m_prev_faces[i][3] - m_prev_faces[i][1],
                 m_prev_faces[i][4],  // lefteye_x
                 m_prev_faces[i][5],  // lefteye_y
                 m_prev_faces[i][6],  // righteye_x

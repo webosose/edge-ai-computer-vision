@@ -48,9 +48,10 @@ TEST_F(PoseLandmarkDetectorTest, 02_cpu_from_person)
     
     PoseLandmarkDescriptor* poselandmarkDescriptor = new PoseLandmarkDescriptor();
     std::shared_ptr<Descriptor> descriptor(poselandmarkDescriptor);
-    EXPECT_FALSE(descriptor->hasMember("poses"));
-    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("poses"));
+    EXPECT_EQ(poselandmarkDescriptor->getPoseCount(), 0);
+    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(poselandmarkDescriptor->getPoseCount(), 1);
 }
 
 
@@ -61,9 +62,10 @@ TEST_F(PoseLandmarkDetectorTest, 03_cpu_from_people)
     
     PoseLandmarkDescriptor* poselandmarkDescriptor = new PoseLandmarkDescriptor();
     std::shared_ptr<Descriptor> descriptor(poselandmarkDescriptor);
-    EXPECT_FALSE(descriptor->hasMember("poses"));
-    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/people.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("poses"));
+    EXPECT_EQ(poselandmarkDescriptor->getPoseCount(), 0);
+    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/people.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(poselandmarkDescriptor->getPoseCount(), 1);
 }
 
 TEST_F(PoseLandmarkDetectorTest, 04_cpu_poselandmark_from_base64_mona)
@@ -74,7 +76,8 @@ TEST_F(PoseLandmarkDetectorTest, 04_cpu_poselandmark_from_base64_mona)
     auto base64image = aif::fileToStr("/usr/share/aif/images/mona_base64.txt"); // 128 x 128
     PoseLandmarkDescriptor* poselandmarkDescriptor = new PoseLandmarkDescriptor();
     std::shared_ptr<Descriptor> descriptor(poselandmarkDescriptor);
-    EXPECT_FALSE(descriptor->hasMember("poses"));
-    EXPECT_TRUE(pd->detectFromBase64(base64image, descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("poses"));
+    EXPECT_EQ(poselandmarkDescriptor->getPoseCount(), 0);
+    EXPECT_TRUE(pd->detectFromBase64(base64image, descriptor) == aif::kAifOk);
+    EXPECT_EQ(poselandmarkDescriptor->getPoseCount(), 1);
 }

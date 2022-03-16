@@ -111,13 +111,13 @@ TEST_F(PoseLandmarkDescriptorTest, 03_addMaskData_two)
 TEST_F(PoseLandmarkDescriptorTest, 04_addLandmarks)
 {
     PoseLandmarkDescriptor descriptor;
-    float landmarks[PoseLandmarkDescriptor::NUM_LANDMARK_TYPES *
-        PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS];
+    std::vector<std::vector<float>> landmarks(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES);
     for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
         for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
-            landmarks[i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j] = i * 1.1;
+            landmarks[i].emplace_back(i * 1.1);
         }
     }
+
     descriptor.addLandmarks(landmarks);
     std::vector<std::vector<cv::Rect2f>> prev;
     descriptor.makeBodyParts(prev, 0.3f);
@@ -146,11 +146,10 @@ TEST_F(PoseLandmarkDescriptorTest, 05_add_response_and_returncode)
     PoseLandmarkDescriptor descriptor;
     descriptor.addMaskData(width, height, mask);
 
-    float landmarks[PoseLandmarkDescriptor::NUM_LANDMARK_TYPES *
-        PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS];
+    std::vector<std::vector<float>> landmarks(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES);
     for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
         for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
-            landmarks[i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j] = i * 1.1;
+            landmarks[i].emplace_back(i * 1.1);
         }
     }
 

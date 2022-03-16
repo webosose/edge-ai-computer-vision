@@ -34,6 +34,7 @@ std::string Descriptor::toStr()
 {
     rj::StringBuffer buffer;
     rj::Writer<rj::StringBuffer> writer(buffer);
+    writer.SetMaxDecimalPlaces(4);
     m_root.Accept(writer);
     return buffer.GetString();
 }

@@ -15,10 +15,12 @@ public:
     PoseLandmarkDescriptor();
     virtual ~PoseLandmarkDescriptor();
 
-    void addLandmarks(float* landmarks);
+    void addLandmarks(const std::vector<std::vector<float>>& landmarks);
     void addMaskData(int width, int height, float* mask);
     std::vector<std::vector<cv::Rect2f>>
         makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, float iouThreshold);
+
+    size_t getPoseCount() const { return m_poseCount; }
 public:
     /*
      * 33x5 array corresponding to (x, y, z, visibility, presence).
@@ -63,8 +65,8 @@ public:
         RIGHT_EYE_OUTER = 6,
         LEFT_EAR = 7,
         RIGHT_EAR = 8,
-        MOUTH_LEFT = 9,
-        MOUTH_RIGHT = 10,
+        LEFT_MOUTH = 9,
+        RIGHT_MOUTH = 10,
         LEFT_SHOULDER = 11,
         RIGHT_SHOULDER = 12,
         LEFT_ELBOW = 13,
@@ -98,6 +100,7 @@ private:
     std::vector<int> m_mask;
     std::vector<std::vector<float>> m_landmarks;
     std::vector<std::vector<cv::Rect2f>> m_prevPoses;
+    size_t m_poseCount;
 };
 
 } // end of namespace aif
