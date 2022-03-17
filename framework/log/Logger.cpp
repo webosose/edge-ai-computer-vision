@@ -4,6 +4,8 @@
 #include <thread>
 #include <map>
 
+#define PMLOG_CONTEXT_NAME "edgeai-vision"
+
 namespace aif {
 
 std::unique_ptr<Logger> Logger::s_instance;
@@ -17,6 +19,7 @@ void Logger::init(LogLevel loglevel)
     //auto itsLogger = Logger::getInstance();
     s_logLevel = loglevel;
     AIF_INFO << "Log Level: " + Logger::logLevelToStr(loglevel);
+
 }
 
 Logger& Logger::getInstance()
@@ -72,77 +75,135 @@ std::string Logger::logLevelToStr(LogLevel level)
     return levelMap[level];
 }
 
+PmLogContext Logger::getPmLogContext() {
+    static PmLogContext logContext = nullptr;
+    PmLogErr logErr = kPmLogErr_None;
+    if (logContext == nullptr) {
+        PmLogGetContext(PMLOG_CONTEXT_NAME, &logContext);
+    }
+    return logContext;
+}
+
 template<>
 void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    PmLogCritical(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::FATAL) return;
     AIF_FATAL << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    PmLogError(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::ERROR) return;
     AIF_ERROR << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    PmLogWarning(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::WARNING) return;
     AIF_WARNING << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::INFO>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    PmLogInfo(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::INFO) return;
     AIF_INFO << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::DEBUG>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    std::string logStr =
+        std::string(fileName) +
+        " [" + std::string(functionName) + ":" + std::to_string(line) + "] " +
+        msg.str();
+    PmLogDebug(getPmLogContext(), logStr.c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::DEBUG) return;
     AIF_DEBUG << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::VERBOSE>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    PmLogDebug(getPmLogContext(), msg.str().c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::VERBOSE) return;
     AIF_VERBOSE << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::TRACE1>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    PmLogDebug(getPmLogContext(), msg.str().c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE1) return;
     AIF_TRACE1 << msg.str();
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::TRACE2>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    std::ostringstream ss;
+    ss << std::this_thread::get_id();
+    std::string logStr = "(tid:" + ss.str() + ")" + msg.str();
+    PmLogDebug(getPmLogContext(), logStr.c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE2) return;
-    std::thread::id threadId = std::this_thread::get_id();
-    AIF_TRACE2 << "(" << std::hex << threadId << ") " << std::dec << msg.str();
+    AIF_TRACE1 << logStr;
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::TRACE3>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    std::string logStr =
+        std::string(fileName) +
+        "[" + std::string(functionName) + ":" + std::to_string(line) + "]" +
+        msg.str();
+    PmLogDebug(getPmLogContext(), logStr.c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE3) return;
-    AIF_TRACE1 << msg.str() << " <at " << functionName << ":" << fileName << ":" << line << ">";
+    AIF_TRACE1 << logStr;
+#endif
 }
 
 template<>
 void Logger::writer<LogLevel::TRACE4>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
 {
+    std::ostringstream ss;
+    ss << std::this_thread::get_id();
+    std::string logStr =
+        std::string(fileName) +
+        "[" + std::string(functionName) + ":" + std::to_string(line) + "]" +
+        "(tid:" + ss.str() + ")" +
+        msg.str();
+
+    PmLogDebug(getPmLogContext(), logStr.c_str());
+#ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE4) return;
-    std::thread::id threadId = std::this_thread::get_id();
-    AIF_TRACE2 << "(" << std::hex << threadId << ") " << std::dec << msg.str()
-                << " <at " << functionName << ":" << fileName << ":" << line << ">";
+    AIF_TRACE1 << logStr;
+#endif
 }
 
 #if 0

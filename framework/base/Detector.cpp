@@ -214,7 +214,7 @@ t_aif_status Detector::detect(
         if (fillInputTensor(img) != kAifOk) {
             throw std::runtime_error("fill input tensor failed!!");
         }
-        TRACE("\tfillInputTensor(): ", sw.getMs(), "ms");
+        TRACE("fillInputTensor(): ", sw.getMs(), "ms");
         sw.stop();
 
         // start to inference
@@ -223,7 +223,7 @@ t_aif_status Detector::detect(
         if (res != kTfLiteOk) {
             throw std::runtime_error("tflite interpreter invoke failed!!");
         }
-        TRACE("\tm_interpreter->Invoke(): ", sw.getMs(), "ms");
+        TRACE("m_interpreter->Invoke(): ", sw.getMs(), "ms");
         sw.stop();
         return postProcessing(img, descriptor);
 

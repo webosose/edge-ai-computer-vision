@@ -21,12 +21,14 @@ find_package(PkgConfig)
 pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
+pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
 
 # include directories
 include_directories(
     ${TFLITE_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIRS}
     ${RAPIDJSON_INCLUDE_DIRS}
+    ${PMLOGLIB_INCLUDE_DIRS}
 )
 
 # link directories
@@ -34,6 +36,7 @@ link_directories(
     ${TFLITE_LIBRARY_DIRS}
     ${OPENCV_LIBRARY_DIRS}
     ${RAPIDJSON_LIBRARY_DIRS}
+    ${PMLOGLIB_LIBRARY_DIRS}
 )
 
 add_definitions(
@@ -89,6 +92,7 @@ set(LIBS
     ${TFLITE_LIBRARIES}
     ${OPENCV_LIBRARIES}
     ${RAPIDJSON_LIBRARIES}
+    ${PMLOGLIB_LDFLAGS}
     pthread
 )
 

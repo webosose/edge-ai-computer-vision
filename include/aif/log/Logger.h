@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include <aif/log/LogMessage.h>
+#include <PmLogLib.h>
 
 namespace aif {
 
@@ -18,6 +19,7 @@ public:
     static Logger& getInstance();
     static LogLevel strToLogLevel(const std::string& str);
     static std::string logLevelToStr(LogLevel level);
+    static PmLogContext getPmLogContext();
 
     //Logger() = default;
 
