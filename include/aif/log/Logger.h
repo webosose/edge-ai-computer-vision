@@ -17,10 +17,10 @@ public:
 
 //    static std::shared_ptr<Logger> get();
     static Logger& getInstance();
+    static aif::LogLevel getLogLevel();
     static LogLevel strToLogLevel(const std::string& str);
     static std::string logLevelToStr(LogLevel level);
     static PmLogContext getPmLogContext();
-
     //Logger() = default;
 
     //~Logger();
@@ -43,6 +43,7 @@ public:
 
     template<LogLevel loglevel>
     void writer(const char* functioName, const char* fileName, int line, std::ostringstream& msg);
+
 
 private:
     static std::unique_ptr<Logger> s_instance;

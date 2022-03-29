@@ -107,7 +107,7 @@ t_aif_status EdgeTpuFaceDetector::fillInputTensor(const cv::Mat& img)/* override
 // EdgeTpuShortRangeFaceDetector
 //------------------------------------------------------
 EdgeTpuShortRangeFaceDetector::EdgeTpuShortRangeFaceDetector()
-    : EdgeTpuFaceDetector("/usr/share/aif/model/face-detector-quantized_edgetpu.tflite")
+    : EdgeTpuFaceDetector("face-detector-quantized_edgetpu.tflite")
 {
 }
 

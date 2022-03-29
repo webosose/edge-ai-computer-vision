@@ -2,7 +2,9 @@
 #define AIF_DESCRIPTOR_H
 
 #include <aif/base/Types.h>
+#ifndef RAPIDJSON_HAS_STDSTRING
 #define RAPIDJSON_HAS_STDSTRING 1
+#endif
 #include <rapidjson/document.h>
 
 namespace aif {

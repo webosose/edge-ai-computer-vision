@@ -37,7 +37,7 @@ t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
         }
 
         t_aif_status res;
-        if (m_modelPath.find("quant")!=std::string::npos) {
+        if (m_modelName.find("quant")!=std::string::npos) {
             res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
                 m_interpreter.get(),
                 img,

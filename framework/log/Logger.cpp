@@ -31,6 +31,11 @@ Logger& Logger::getInstance()
     return *(s_instance.get());
 }
 
+LogLevel Logger::getLogLevel()
+{
+    return s_logLevel;
+}
+
 LogLevel Logger::strToLogLevel(const std::string& str)
 {
     // TODO: fix to set automatically

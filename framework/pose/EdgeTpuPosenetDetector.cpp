@@ -14,8 +14,7 @@
 namespace aif {
 
 EdgeTpuPosenetDetector::EdgeTpuPosenetDetector()
-    : PosenetDetector(
-            "/usr/share/aif/model/posenet_mobilenet_v1_075_353_481_quant_decoder_edgetpu.tflite")
+    : PosenetDetector("posenet_mobilenet_v1_075_353_481_quant_decoder_edgetpu.tflite")
 {
 }
 

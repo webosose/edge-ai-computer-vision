@@ -12,7 +12,7 @@
         "name": "armnn_delegate",
         "option": {
           "backends": ["CpuAcc"],
-          "logging_severity": "info"
+          "logging-severity": "info"
         }
       }
     ]

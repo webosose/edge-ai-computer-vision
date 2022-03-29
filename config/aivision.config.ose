@@ -1,0 +1,4 @@
+{
+"LogLevel" : "INFO",
+"BasePath" : "/usr/share/aif"
+}

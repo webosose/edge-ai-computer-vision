@@ -17,7 +17,7 @@ namespace aif {
 class Detector
 {
 public:
-    Detector(const std::string& modelPath);
+    Detector(const std::string& modelName);
     virtual ~Detector();
 
     virtual t_aif_status init(const std::string& param = "");
@@ -28,7 +28,7 @@ public:
     virtual t_aif_status detect(
         const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor);
 
-    const std::string& getModelPath() const { return m_modelPath; }
+    const std::string& getModelName() const { return m_modelName; }
     const t_aif_modelinfo& getModelInfo() const { return m_modelInfo; }
     std::shared_ptr<DetectorParam> getParam() const { return m_param; }
     size_t getNumDelegates() const { return m_delegates.size(); }
@@ -46,7 +46,7 @@ protected:
     virtual t_aif_status compileDelegates();
 
 protected:
-    std::string m_modelPath;
+    std::string m_modelName;
     t_aif_modelinfo m_modelInfo;
     std::unique_ptr<tflite::FlatBufferModel> m_model;
     std::unique_ptr<tflite::Interpreter> m_interpreter;

@@ -14,8 +14,7 @@
 namespace aif {
 
 EdgeTpuBodypixDetector::EdgeTpuBodypixDetector()
-    : BodypixDetector(
-            "/usr/share/aif/model/bodypix_mobilenet_v1_075_512_512_16_quant_decoder_edgetpu.tflite")
+    : BodypixDetector("bodypix_mobilenet_v1_075_512_512_16_quant_decoder_edgetpu.tflite")
 {
 }
 

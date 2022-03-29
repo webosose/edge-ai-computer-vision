@@ -1,4 +1,5 @@
 #include <aif/base/DelegateFactory.h>
+#include <aif/base/AIVision.h>
 #include <aif/log/Logger.h>
 
 namespace aif {
@@ -25,6 +26,11 @@ t_aif_status DelegateFactory::registerGenerator(
 
 std::shared_ptr<Delegate> DelegateFactory::getDelegate(const std::string& id, const std::string& option)
 {
+
+    if (!AIVision::isInitialized()) {
+        Loge(__func__, "AIVision is not initialized");
+        return nullptr;
+    }
     try {
         if (m_delegates.find(id) == m_delegates.end() &&
             m_delegateGenerators.find(id) == m_delegateGenerators.end()) {

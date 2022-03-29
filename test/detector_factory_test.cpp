@@ -1,3 +1,4 @@
+#include <aif/base/AIVision.h>
 #include <aif/base/Detector.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DetectorFactoryRegistrations.h>
@@ -12,7 +13,7 @@ using namespace aif;
 class TestDetector1 : public Detector
 {
 public:
-    TestDetector1() : Detector("/usr/share/aif/model/face_detection_short_range.tflite") {}
+    TestDetector1() : Detector("face_detection_short_range.tflite") {}
 
     t_aif_status init(const std::string& param) override {
         return kAifOk;
@@ -52,6 +53,16 @@ class DetectorFactoryTest : public ::testing::Test
 protected:
     DetectorFactoryTest() = default;
     ~DetectorFactoryTest() = default;
+
+    static void SetUpTestCase()
+    {
+        AIVision::init();
+    }
+
+    static void TearDownTestCase()
+    {
+        AIVision::deinit();
+    }
 
     void SetUp() override
     {

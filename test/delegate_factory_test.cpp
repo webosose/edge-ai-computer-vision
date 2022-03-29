@@ -1,6 +1,7 @@
 #include <aif/base/Delegate.h>
 #include <aif/base/DelegateFactory.h>
 #include <aif/base/DelegateFactoryRegistrations.h>
+#include <aif/base/AIVision.h>
 
 #include <gtest/gtest.h>
 #include <iostream>
@@ -9,7 +10,7 @@ using namespace aif;
 
 class TestDelegate1 : public Delegate
 {
-public:    
+public:
     TestDelegate1( const std::string& name, const std::string& option = "")
         : Delegate(name, option) {}
 
@@ -21,7 +22,7 @@ DelegateFactoryRegistration<TestDelegate1> test_delegate1("test_delegate1");
 
 class TestDelegate2 : public Delegate
 {
-public:    
+public:
     TestDelegate2( const std::string& name, const std::string& option = "")
         : Delegate(name, option) {}
 
@@ -37,6 +38,16 @@ class DelegateFactoryTest : public ::testing::Test
 protected:
     DelegateFactoryTest() = default;
     ~DelegateFactoryTest() = default;
+
+    static void SetUpTestCase()
+    {
+        AIVision::init();
+    }
+
+    static void TearDownTestCase()
+    {
+        AIVision::deinit();
+    }
 
     void SetUp() override
     {

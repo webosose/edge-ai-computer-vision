@@ -1,3 +1,4 @@
+#include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/semantic/SemanticDescriptor.h>
 
@@ -16,17 +17,31 @@ using namespace aif;
 class SemanticDetectorTest : public ::testing::Test
 {
 protected:
-    SemanticDetectorTest() = default; 
+    SemanticDetectorTest() = default;
     ~SemanticDetectorTest() = default;
+
+    static void SetUpTestCase()
+    {
+        AIVision::init();
+    }
+
+    static void TearDownTestCase()
+    {
+        AIVision::deinit();
+    }
+
 
     void SetUp() override
     {
         DetectorFactory::get().clear();
+        basePath = AIVision::getBasePath();
     }
 
     void TearDown() override
     {
     }
+
+    std::string basePath;
 };
 
 
@@ -34,8 +49,8 @@ TEST_F(SemanticDetectorTest, 01_getModelInfo)
 {
     auto dt = DetectorFactory::get().getDetector("semantic_deeplabv3_cpu");
     EXPECT_TRUE(dt.get() != nullptr);
-    EXPECT_EQ(dt->getModelPath(), 
-            "/usr/share/aif/model/deeplabv3_mnv2_dm05_pascal_quant.tflite");
+    EXPECT_EQ(dt->getModelName(),
+            "deeplabv3_mnv2_dm05_pascal_quant.tflite");
     auto modelInfo = dt->getModelInfo();
     EXPECT_EQ(modelInfo.height, 513);
     EXPECT_EQ(modelInfo.width, 513);
@@ -46,11 +61,11 @@ TEST_F(SemanticDetectorTest, 02_detect)
 {
     auto dt = DetectorFactory::get().getDetector("semantic_deeplabv3_cpu");
     EXPECT_TRUE(dt.get() != nullptr);
-    
+
     SemanticDescriptor* semanticDescriptor = new SemanticDescriptor();
     std::shared_ptr<Descriptor> descriptor(semanticDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
-    EXPECT_TRUE(dt->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("segments"));
 }
 
@@ -60,7 +75,7 @@ TEST_F(SemanticDetectorTest, 03_detect_base64)
     auto dt = DetectorFactory::get().getDetector("semantic_deeplabv3_cpu");
     EXPECT_TRUE(dt.get() != nullptr);
 
-    auto base64image = aif::fileToStr("/usr/share/aif/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
     SemanticDescriptor* semanticDescriptor = new SemanticDescriptor();
     std::shared_ptr<Descriptor> descriptor(semanticDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
@@ -77,7 +92,7 @@ TEST_F(SemanticDetectorTest, 04_edgetpu_detect)
     SemanticDescriptor* semanticDescriptor = new SemanticDescriptor();
     std::shared_ptr<Descriptor> descriptor(semanticDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
-    EXPECT_TRUE(dt->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("segments"));
 }
 #endif

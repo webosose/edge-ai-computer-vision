@@ -103,6 +103,8 @@ set(SRC_FILES
     ${SRC_DIR}/palm_descriptor_test.cpp
     ${SRC_DIR}/palm_detector_test.cpp
     ${SRC_DIR}/palm_param_test.cpp
+    ${SRC_DIR}/ai_vision_test.cpp
+    ${SRC_DIR}/config_reader_test.cpp
     ${GTEST_DIR}/gtest-all.cc
     ${GTEST_DIR}/test_main.cpp
 )

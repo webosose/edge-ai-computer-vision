@@ -1,3 +1,4 @@
+#include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DelegateFactory.h>
 #include <aif/movenet/MovenetDescriptor.h>
@@ -20,15 +21,28 @@ protected:
     MovenetDetectorTest() = default;
     ~MovenetDetectorTest() = default;
 
+    static void SetUpTestCase()
+    {
+        AIVision::init();
+    }
+
+    static void TearDownTestCase()
+    {
+        AIVision::deinit();
+    }
+
+
     void SetUp() override
     {
         DetectorFactory::get().clear();
+        basePath = AIVision::getBasePath();
     }
 
     void TearDown() override
     {
     }
 
+    std::string basePath;
     std::string armnn_delegate_param {
         "{"
         "  \"common\" : {"
@@ -40,7 +54,7 @@ protected:
         "      \"name\": \"armnn_delegate\","
         "      \"option\": {"
         "        \"backends\": [\"CpuAcc\"],"
-        "        \"logging_severity\": \"info\""
+        "        \"logging-severity\": \"info\""
         "      }"
         "    }"
         "  ]"
@@ -55,7 +69,7 @@ TEST_F(MovenetDetectorTest, 01_cpu_init)
 {
     auto pd = DetectorFactory::get().getDetector("movenet_thunder_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
-    EXPECT_EQ(pd->getModelPath(), "/usr/share/aif/model/movenet_single_pose_thunder_ptq.tflite");
+    EXPECT_EQ(pd->getModelName(), "movenet_single_pose_thunder_ptq.tflite");
     auto modelInfo = pd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 256);
     EXPECT_EQ(modelInfo.width, 256);
@@ -66,10 +80,10 @@ TEST_F(MovenetDetectorTest, 02_cpu_from_person)
 {
     auto pd = DetectorFactory::get().getDetector("movenet_thunder_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
-    
+
     MovenetDescriptor* movenetDescriptor = new MovenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(movenetDescriptor);
-    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     //EXPECT_EQ(movenetDescriptor->getPoseCount(), 1);
 }
 
@@ -78,11 +92,11 @@ TEST_F(MovenetDetectorTest, 03_cpu_from_people)
 {
     auto pd = DetectorFactory::get().getDetector("movenet_thunder_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
-    
+
     MovenetDescriptor* movenetDescriptor = new MovenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(movenetDescriptor);
     EXPECT_FALSE(descriptor->hasMember("poses"));
-    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/people.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("poses"));
 }
 
@@ -91,7 +105,7 @@ TEST_F(MovenetDetectorTest, 04_cpu_movenet_from_base64_mona)
     auto pd = DetectorFactory::get().getDetector("movenet_thunder_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
 
-    auto base64image = aif::fileToStr("/usr/share/aif/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
     MovenetDescriptor* movenetDescriptor = new MovenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(movenetDescriptor);
     EXPECT_FALSE(descriptor->hasMember("poses"));
@@ -108,7 +122,7 @@ TEST_F(MovenetDetectorTest, 05_edgetpu_from_person)
     MovenetDescriptor* movenetDescriptor = new MovenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(movenetDescriptor);
     EXPECT_FALSE(descriptor->hasMember("poses"));
-    EXPECT_TRUE(pd->detectFromImage("/usr/share/aif/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("poses"));
 }
 #endif

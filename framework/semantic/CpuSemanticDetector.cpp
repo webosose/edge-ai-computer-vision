@@ -13,8 +13,7 @@
 namespace aif {
 
 CpuSemanticDetector::CpuSemanticDetector()
-    : SemanticDetector(
-            "/usr/share/aif/model/deeplabv3_mnv2_dm05_pascal_quant.tflite")
+    : SemanticDetector("deeplabv3_mnv2_dm05_pascal_quant.tflite")
 {
 }
 

@@ -35,7 +35,7 @@ t_aif_status CpuPoseLandmarkDetector::compileModel()/* override*/
             Logi("Use xnnpack: BuiltinOpResolver");
             tflite::ops::builtin::BuiltinOpResolver resolver;
             res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
-        } 
+        }
 
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("tflite interpreter build failed!!");
@@ -52,21 +52,17 @@ t_aif_status CpuPoseLandmarkDetector::compileModel()/* override*/
 
 
 LiteCpuPoseLandmarkDetector::LiteCpuPoseLandmarkDetector()
-    : CpuPoseLandmarkDetector(
-            "/usr/share/aif/model/pose_landmark_lite.tflite")
+    : CpuPoseLandmarkDetector("pose_landmark_lite.tflite")
 {
 }
 
 HeavyCpuPoseLandmarkDetector::HeavyCpuPoseLandmarkDetector()
-    : CpuPoseLandmarkDetector(
-        "/usr/share/aif/model/pose_landmark_heavy.tflite")
+    : CpuPoseLandmarkDetector("pose_landmark_heavy.tflite")
 {
 }
 
 FullCpuPoseLandmarkDetector::FullCpuPoseLandmarkDetector()
-    : CpuPoseLandmarkDetector(
-        "/usr/share/aif/model/pose_landmark_full.tflite")
-{
+    : CpuPoseLandmarkDetector("pose_landmark_full.tflite") {
 }
 
 }   // end of namespace aif

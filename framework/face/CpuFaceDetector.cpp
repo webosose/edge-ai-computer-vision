@@ -101,7 +101,7 @@ t_aif_status CpuFaceDetector::fillInputTensor(const cv::Mat& img)/* override*/
 // ShortRangeFaceDetector
 //------------------------------------------------------
 ShortRangeFaceDetector::ShortRangeFaceDetector()
-    : CpuFaceDetector( "/usr/share/aif/model/face_detection_short_range.tflite")
+    : CpuFaceDetector("face_detection_short_range.tflite")
 {
 }
 
@@ -133,7 +133,7 @@ ShortRangeFaceDetector::~ShortRangeFaceDetector()
 // FullRangeFaceDetector
 //------------------------------------------------------
 FullRangeFaceDetector::FullRangeFaceDetector()
-    : CpuFaceDetector("/usr/share/aif/model/face_detection_full_range.tflite")
+    : CpuFaceDetector("face_detection_full_range.tflite")
 {
 }
 

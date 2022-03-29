@@ -28,13 +28,13 @@ protected:
     std::string options_cpuacc_info {
             "{"
             "  \"backends\": [\"CpuAcc\"],"
-            "   \"logging_severity\": \"info\""
+            "   \"logging-severity\": \"info\""
             "}"
     };
     std::string options_cpuref_debug{
             "{"
             "  \"backends\": [\"CpuRef\"],"
-            "  \"logging_severity\": \"debug\""
+            "  \"logging-severity\": \"debug\""
             "}"
     };
 };

@@ -1,7 +1,7 @@
 #include "FaceWSServer.h"
 
+#include <aif/base/AIVision.h>
 #include <aif/log/Logger.h>
-#include <aif/tools/ConfigReader.h>
 
 #include <iostream>
 
@@ -12,10 +12,7 @@ namespace {
 
 int main(int argc, char* argv[])
 {
-    ConfigReader reader("aif.config");
-    Logger::init(Logger::strToLogLevel(reader.getOption("LogLevel")));
-    Logd("**", argv[0], "**");
-    // Check command line arguments.
+    AIVision::init();
     if (argc != 4)
     {
         std::cerr <<

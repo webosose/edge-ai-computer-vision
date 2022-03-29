@@ -50,14 +50,12 @@ t_aif_status CpuPalmDetector::compileModel()/* override*/
 }
 
 LiteCpuPalmDetector::LiteCpuPalmDetector()
-    : CpuPalmDetector(
-            "/usr/share/aif/model/palm_detection_lite.tflite")
+    : CpuPalmDetector("palm_detection_lite.tflite")
 {
 }
 
 FullCpuPalmDetector::FullCpuPalmDetector()
-    : CpuPalmDetector(
-            "/usr/share/aif/model/palm_detection_full.tflite")
+    : CpuPalmDetector("palm_detection_full.tflite")
 {
 }
 

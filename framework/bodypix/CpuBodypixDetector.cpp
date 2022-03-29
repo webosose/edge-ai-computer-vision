@@ -14,8 +14,7 @@
 namespace aif {
 
 CpuBodypixDetector::CpuBodypixDetector()
-    : BodypixDetector(
-            "/usr/share/aif/model/bodypix_mobilenet_v1_075_512_512_16_quant_decoder.tflite")
+    : BodypixDetector("bodypix_mobilenet_v1_075_512_512_16_quant_decoder.tflite")
 {
 }
 

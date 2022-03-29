@@ -51,14 +51,12 @@ t_aif_status CpuHandLandmarkDetector::compileModel()/* override*/
 
 
 LiteCpuHandLandmarkDetector::LiteCpuHandLandmarkDetector()
-    : CpuHandLandmarkDetector(
-            "/usr/share/aif/model/hand_landmark_lite.tflite")
+    : CpuHandLandmarkDetector("hand_landmark_lite.tflite")
 {
 }
 
 FullCpuHandLandmarkDetector::FullCpuHandLandmarkDetector()
-    : CpuHandLandmarkDetector(
-            "/usr/share/aif/model/hand_landmark_full.tflite")
+    : CpuHandLandmarkDetector("hand_landmark_full.tflite")
 {
 }
 

@@ -13,8 +13,7 @@
 namespace aif {
 
 EdgeTpuMovenetDetector::EdgeTpuMovenetDetector()
-    : MovenetDetector(
-            "/usr/share/aif/model/movenet_single_pose_thunder_ptq_edgetpu.tflite")
+    : MovenetDetector("movenet_single_pose_thunder_ptq_edgetpu.tflite")
 {
 }
 

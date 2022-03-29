@@ -13,8 +13,7 @@
 namespace aif {
 
 EdgeTpuSemanticDetector::EdgeTpuSemanticDetector()
-    : SemanticDetector(
-            "/usr/share/aif/model/deeplabv3_mnv2_dm05_pascal_quant_edgetpu.tflite")
+    : SemanticDetector("deeplabv3_mnv2_dm05_pascal_quant_edgetpu.tflite")
 {
 }
 

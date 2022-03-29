@@ -1,4 +1,5 @@
 #include <aif/sample/Sample.h>
+#include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/log/Logger.h>
 
@@ -15,13 +16,13 @@ Sample::~Sample()
 
 void Sample::init()
 {
-    Logger::init(Logger::strToLogLevel(m_config.getOption("LogLevel")));
-
     m_model = m_config.getOption("model");
     m_param = m_config.getOptionObject("param");
 
     Logi("model: ", m_model);
     Logi("param: ", m_param);
+
+    AIVision::init();
     m_detector = aif::DetectorFactory::get().getDetector(m_model, m_param);
 }
 

@@ -13,8 +13,7 @@
 namespace aif {
 
 CpuMovenetDetector::CpuMovenetDetector()
-    : MovenetDetector(
-            "/usr/share/aif/model/movenet_single_pose_thunder_ptq.tflite")
+    : MovenetDetector("movenet_single_pose_thunder_ptq.tflite")
 {
 }
 

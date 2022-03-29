@@ -1,4 +1,5 @@
 #include <aif/base/DetectorFactory.h>
+#include <aif/base/AIVision.h>
 #include <aif/base/DelegateFactory.h>
 #include <aif/log/Logger.h>
 
@@ -31,6 +32,11 @@ t_aif_status DetectorFactory::registerGenerator(
 
 std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, const std::string& param)
 {
+    if (!AIVision::isInitialized()) {
+        Loge(__func__, "AIVision is not initialized");
+        return nullptr;
+    }
+ 
     try {
         if (m_detectors.find(id) == m_detectors.end() &&
             m_detectorGenerators.find(id) == m_detectorGenerators.end()) {

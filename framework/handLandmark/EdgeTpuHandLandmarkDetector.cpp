@@ -13,8 +13,7 @@
 namespace aif {
 
 EdgeTpuHandLandmarkDetector::EdgeTpuHandLandmarkDetector()
-    : HandLandmarkDetector(
-            "/usr/share/aif/model/hand_landmark_lite.tflite")
+    : HandLandmarkDetector( "hand_landmark_lite.tflite")
 {
 }
 

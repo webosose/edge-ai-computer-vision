@@ -14,8 +14,7 @@
 namespace aif {
 
 CpuSelfieDetector::CpuSelfieDetector()
-    : SelfieDetector(
-            "/usr/share/aif/model/selfie_segmentation.tflite")
+    : SelfieDetector("selfie_segmentation.tflite")
 {
 }
 

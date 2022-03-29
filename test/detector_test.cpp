@@ -1,3 +1,4 @@
+#include <aif/base/AIVision.h>
 #include <aif/base/Detector.h>
 #include <aif/log/Logger.h>
 
@@ -12,7 +13,7 @@ using namespace aif;
 class TestDetector : public Detector
 {
 public:
-    TestDetector() : Detector("/usr/share/aif/model/face_detection_short_range.tflite") {
+    TestDetector() : Detector("face_detection_short_range.tflite") {
         isCalledCreateParam = false;
         isCalledCompileModel = false;
         isCalledPreProcessing = false;
@@ -59,19 +60,33 @@ protected:
     DetectorTest() = default;
     ~DetectorTest() = default;
 
+    static void SetUpTestCase()
+    {
+        AIVision::init();
+    }
+
+    static void TearDownTestCase()
+    {
+        AIVision::deinit();
+    }
+
+
     void SetUp() override
     {
+        basePath = AIVision::getBasePath();
     }
 
     void TearDown() override
     {
     }
+
+    std::string basePath;
 };
 
-TEST_F(DetectorTest, 01_getModelPath)
+TEST_F(DetectorTest, 01_getModelName)
 {
     TestDetector td;
-    EXPECT_EQ(td.getModelPath(), "/usr/share/aif/model/face_detection_short_range.tflite");
+    EXPECT_EQ(td.getModelName(), "face_detection_short_range.tflite");
 }
 
 TEST_F(DetectorTest, 02_init)
@@ -109,7 +124,7 @@ TEST_F(DetectorTest, 04_detect)
     EXPECT_FALSE(td.isCalledPostProcessing);
 
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Descriptor>();
-    EXPECT_TRUE(td.detectFromImage("/usr/share/aif/images/mona.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(td.detectFromImage(basePath + "/images/mona.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(td.isCalledFillInputTensor);
     EXPECT_TRUE(td.isCalledPostProcessing);
 }

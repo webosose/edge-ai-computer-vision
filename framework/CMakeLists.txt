@@ -45,6 +45,7 @@ add_definitions(
     -DLOG_APPLICATION="AIF"
     -DLOG_CONTEXT="FACE"
     -DUSE_BASE64IMAGE
+    -DEDGEAI_VISION_HOME="/usr/share/aif"
 )
 
 IF(WITH_EDGETPU)

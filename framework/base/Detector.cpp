@@ -1,4 +1,5 @@
 #include <aif/base/Detector.h>
+#include <aif/base/AIVision.h>
 #include <aif/base/DelegateFactory.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
@@ -10,8 +11,8 @@ using aif::Stopwatch;
 
 namespace aif {
 
-Detector::Detector( const std::string& modelPath)
-    : m_modelPath(modelPath)
+Detector::Detector(const std::string& modelName)
+    : m_modelName(modelName)
     , m_model(nullptr)
     , m_interpreter(nullptr)
     , m_param(nullptr)
@@ -31,13 +32,13 @@ t_aif_status Detector::init(const std::string& param)
         m_param = createParam();
         if (!param.empty() && m_param->fromJson(param) != kAifOk) {
             errlog.clear();
-            errlog << "failed to read param from json: " << m_modelPath << "\n" << param;
+            errlog << "failed to read param from json: " << m_modelName << "\n" << param;
             throw std::runtime_error(errlog.str());
         }
 
         if (compile() != kAifOk) {
             errlog.clear();
-            errlog << "tflite model compile failed: " << m_modelPath;
+            errlog << "tflite model compile failed: " << m_modelName;
             throw std::runtime_error(errlog.str());
         }
         TRACE("compile(): ", sw.getMs(), "ms");
@@ -56,22 +57,23 @@ t_aif_status Detector::compile()
 {
     std::stringstream errlog;
     try {
-        m_model = tflite::FlatBufferModel::BuildFromFile(m_modelPath.c_str());
+        std::string path = AIVision::getModelFolderPath() + m_modelName;
+        m_model = tflite::FlatBufferModel::BuildFromFile(path.c_str());
         if (m_model == nullptr) {
             errlog.clear();
-            errlog << "Can't get tflite model: " << m_modelPath;
+            errlog << "Can't get tflite model: " << path;
             throw std::runtime_error(errlog.str());
         }
 
         if (compileModel() != kAifOk) {
             errlog.clear();
-            errlog << "tflite model compile failed: " << m_modelPath;
+            errlog << "tflite model compile failed: " << path;
             throw std::runtime_error(errlog.str());
         }
 
         if (compileDelegates() != kAifOk) {
             errlog.clear();
-            errlog << "tflite model compile delegates failed: " << m_modelPath;
+            errlog << "tflite model compile delegates failed: " << path;
             throw std::runtime_error(errlog.str());
         }
 

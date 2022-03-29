@@ -9,28 +9,28 @@ class DetectorParamTest : public ::testing::Test
 {
 protected:
     DetectorParamTest() {
-        param_xnnpack_on = 
+        param_xnnpack_on =
         "{"
         "  \"common\" : {"
         "      \"useXnnpack\": true,"
         "      \"numThreads\": 1"
         "    }"
         "}";
-        param_xnnpack_off = 
+        param_xnnpack_off =
         "{"
         "  \"common\" : {"
         "      \"useXnnpack\": false,"
         "      \"numThreads\": 1"
         "    }"
         "}";
-        param_numThreads_4 = 
+        param_numThreads_4 =
         "{"
         "  \"common\" : {"
         "      \"useXnnpack\": true,"
         "      \"numThreads\": 4"
         "    }"
         "}";
-        param_delegates_1 = 
+        param_delegates_1 =
         "{"
         "  \"common\" : {"
         "      \"useXnnpack\": true,"
@@ -41,12 +41,12 @@ protected:
         "      \"name\": \"armnn_delegate\","
         "      \"option\": {"
         "        \"backends\": [\"CpuAcc\"],"
-        "        \"logging_severity\": \"info\""
+        "        \"logging-severity\": \"info\""
         "      }"
         "    }"
         "  ]"
         "}";
-        param_delegates_2 = 
+        param_delegates_2 =
         "{"
         "  \"common\" : {"
         "      \"useXnnpack\": true,"
@@ -57,7 +57,7 @@ protected:
         "      \"name\": \"armnn_delegate\","
         "      \"option\": {"
         "        \"backends\": [\"CpuAcc\"],"
-        "        \"logging_severity\": \"info\""
+        "        \"logging-severity\": \"info\""
         "      }"
         "    },"
         "    {"
@@ -97,7 +97,7 @@ TEST_F(DetectorParamTest, 02_getUseXnnpack)
     EXPECT_FALSE(param.getUseXnnpack());
     EXPECT_EQ(param.fromJson(param_xnnpack_on), kAifOk);
     EXPECT_TRUE(param.getUseXnnpack());
-  
+
     DetectorParam param2;
     EXPECT_EQ(param2.fromJson(param_xnnpack_off), kAifOk);
     EXPECT_FALSE(param2.getUseXnnpack());
@@ -115,7 +115,7 @@ TEST_F(DetectorParamTest, 04_getDelegates)
 {
     DetectorParam param;
     EXPECT_EQ(param.getDelegates().size(), 0);
-    
+
     EXPECT_EQ(param.fromJson(param_delegates_1), kAifOk);
     EXPECT_EQ(param.getDelegates().size(), 1);
 

@@ -13,8 +13,7 @@
 namespace aif {
 
 EdgeTpuPalmDetector::EdgeTpuPalmDetector()
-    : PalmDetector(
-            "/usr/share/aif/model/palm_detection_lite.tflite")
+    : PalmDetector("palm_detection_lite.tflite")
 {
 }
 

@@ -13,7 +13,7 @@
 namespace aif {
 
 EdgeTpuPoseLandmarkDetector::EdgeTpuPoseLandmarkDetector()
-    : PoseLandmarkDetector("/usr/share/aif/model/p.tpu")
+    : PoseLandmarkDetector("not_support_edgetpu")
 {
 }
 
