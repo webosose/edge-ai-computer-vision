@@ -30,11 +30,11 @@ t_aif_status CpuMovenetDetector::compileModel()/* override*/
         if (!m_param->getUseXnnpack()) {
             Logi("Not use xnnpack: BuiltinOpResolverWithoutDefaultDelegates");
             tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
-            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         } else {
             Logi("Use xnnpack: BuiltinOpResolver");
             tflite::ops::builtin::BuiltinOpResolver resolver;
-            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         }
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("tflite interpreter build failed!!");

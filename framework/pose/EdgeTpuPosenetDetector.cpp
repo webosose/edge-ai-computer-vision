@@ -47,7 +47,7 @@ t_aif_status EdgeTpuPosenetDetector::compileModel()/* override*/
         // Registers PosnetDecoderOp
         resolver.AddCustom(coral::kPosenetDecoderOp, coral::RegisterPosenetDecoderOp());
 
-        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("tflite interpreter build failed!!");
         }

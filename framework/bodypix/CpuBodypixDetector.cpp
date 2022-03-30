@@ -32,12 +32,12 @@ t_aif_status CpuBodypixDetector::compileModel()/* override*/
             Logi("Not use xnnpack: BuiltinOpResolverWithoutDefaultDelegates");
             tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
             resolver.AddCustom(coral::kPosenetDecoderOp, coral::RegisterPosenetDecoderOp());
-            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         } else {
             Logi("Use xnnpack: BuiltinOpResolver");
             tflite::ops::builtin::BuiltinOpResolver resolver;
             resolver.AddCustom(coral::kPosenetDecoderOp, coral::RegisterPosenetDecoderOp());
-            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         }
 
 

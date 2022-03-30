@@ -32,12 +32,12 @@ t_aif_status CpuSelfieDetector::compileModel()/* override*/
             Logi("Not use xnnpack: BuiltinOpResolverWithoutDefaultDelegates");
             tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
             resolver.AddCustom("Convolution2DTransposeBias", mediapipe::tflite_operations::RegisterConvolution2DTransposeBias());
-            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         } else {
             Logi("Use xnnpack: BuiltinOpResolver");
             tflite::ops::builtin::BuiltinOpResolver resolver;
             resolver.AddCustom("Convolution2DTransposeBias", mediapipe::tflite_operations::RegisterConvolution2DTransposeBias());
-            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+            res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         }
 
 

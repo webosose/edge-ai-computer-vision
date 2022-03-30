@@ -71,13 +71,17 @@ t_aif_status Detector::compile()
             throw std::runtime_error(errlog.str());
         }
 
+        if (m_interpreter->SetNumThreads(m_param->getNumThreads()) != kTfLiteOk) {
+            Loge("failed to set num threads : ", m_param->getNumThreads());
+        } else {
+            Logi("set num threads : ", m_param->getNumThreads());
+        }
+
         if (compileDelegates() != kAifOk) {
             errlog.clear();
             errlog << "tflite model compile delegates failed: " << path;
             throw std::runtime_error(errlog.str());
         }
-
-        m_interpreter->SetNumThreads(m_param->getNumThreads());
 
         TfLiteStatus res = kTfLiteError;
         res = m_interpreter->AllocateTensors();

@@ -40,7 +40,7 @@ t_aif_status EdgeTpuHandLandmarkDetector::compileModel()/* override*/
 
         // Registers Edge TPU custom op handler with Tflite resolver.
         resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
-        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
+        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter, m_param->getNumThreads());
         if (res != kTfLiteOk || m_interpreter == nullptr) {
             throw std::runtime_error("tflite interpreter build failed!!");
         }
