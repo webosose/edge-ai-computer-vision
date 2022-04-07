@@ -1,0 +1,22 @@
+{
+  "LogLevel" : "TRACE4",
+  "ImagePath" : "./images/person.jpg",
+  "model" : "poselandmark_lite_cpu",
+  "param": {
+    "common": {
+      "useXnnpack": true,
+      "numThreads": 1
+    },
+    "delegates": [
+      {
+        "name": "gpu_delegate",
+        "option": {
+          "backends": ["cl"],
+          "inference_priorities": ["MIN_LATENCY", "MIN_MEMORY_USAGE", "MAX_PRECISION"],
+          "enable_quntized_inference": true
+        }
+      }
+    ]
+  }
+}
+
