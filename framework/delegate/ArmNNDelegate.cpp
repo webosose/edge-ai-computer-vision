@@ -36,11 +36,29 @@ TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
 {
     rj::Document payload;
     payload.Parse(m_option.c_str());
-    size_t numOptions = payload.Size();
 
+    size_t numOptions = 0;
     std::map<std::string, std::string> optionMap;
     for (auto& opt : payload.GetObject()) {
-        optionMap[opt.name.GetString()] = opt.value.GetString();
+        if (opt.value.IsArray()) {
+            std::string optStr;
+            for (int i = 0; i < opt.value.Size(); i++) {
+                if (i != 0) optStr += ", ";
+                optStr += opt.value[i].GetString();
+            }
+            optionMap[opt.name.GetString()] = optStr;
+            numOptions++;
+            Logi("[option ", numOptions, " ] ",
+                opt.name.GetString(), " : ", optionMap[opt.name.GetString()]);
+        }
+        else if (opt.value.IsString()) {
+            optionMap[opt.name.GetString()] = opt.value.GetString();
+            numOptions++;
+            Logi("[option ", numOptions, " ] ",
+                opt.name.GetString(), " : ", optionMap[opt.name.GetString()]);
+        } else {
+            Loge("option is not string: ", opt.name.GetString());
+        }
     }
 
     if (optionMap.find("save-cached-network") != optionMap.end() &&
