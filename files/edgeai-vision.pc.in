@@ -1,0 +1,6 @@
+Name: Edge AI Computer Vision C++ library
+Description: webos edge ai computer vision c++ shared library
+Version: @version@
+Requires:
+Libs: -L@libdir@ -legdeai-vision
+Cflags: -I@includedir@

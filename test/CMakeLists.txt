@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.7)
-project(ai-framework-test CXX)
+project(edgeai-vision-test CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
@@ -58,7 +58,7 @@ IF(WITH_GPU)
     ADD_DEFINITIONS(-DUSE_GPU_DELEGATE)
 ENDIF(WITH_GPU)
 
-set(EXE_NAME ai-framework-test)
+set(EXE_NAME edgeai-vision-test)
 set(HDR_DIR ${CMAKE_SOURCE_DIR}/test)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/test)
 set(GTEST_DIR ${CMAKE_SOURCE_DIR}/test/gtest)
@@ -77,6 +77,7 @@ link_directories(
 # Source Files
 
 set(SRC_FILES
+    ${SRC_DIR}/api_facade_test.cpp
     ${SRC_DIR}/detector_test.cpp
     ${SRC_DIR}/descriptor_test.cpp
     ${SRC_DIR}/detector_param_test.cpp
@@ -118,7 +119,7 @@ set(LIBS
     ${TFLITE_LIBRARIES}
     ${OPENCV_LIBRARIES}
     ${RAPIDJSON_LIBRARIES}
-    ai-framework
+    edgeai-vision
     pthread
 )
 

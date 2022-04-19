@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.7)
-project(ai-framework CXX)
+project(edgeai-vision CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
@@ -155,3 +155,4 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/handLandmark")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/palm")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/delegate")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/sample")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/facade")

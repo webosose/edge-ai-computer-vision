@@ -25,9 +25,10 @@ public:
             const DescriptorGenerator& descriptorGenerator);
     std::shared_ptr<Detector> getDetector(const std::string& id, const std::string& param = "");
     std::shared_ptr<Descriptor> getDescriptor(const std::string& id);
-    
+    void deleteDetector(const std::string& id);
+
     size_t getNumDetectors() const { return m_detectors.size(); }
-    void clear(); 
+    void clear();
 
 private:
     DetectorFactory() {}

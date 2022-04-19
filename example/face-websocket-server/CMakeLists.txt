@@ -72,7 +72,7 @@ set(LIBS
     ${TFLITE_LIBRARIES}
     ${OPENCV_LIBRARIES}
     ${RAPIDJSON_LIBRARIES}
-    ai-framework
+    edgeai-vision
     pthread
 )
 

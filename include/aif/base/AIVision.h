@@ -17,7 +17,7 @@ namespace aif {
 
 class AIVision {
 public:
-    static void init();
+    static void init(const std::string& basePath = "");
     static void deinit();
     static bool isInitialized();
     static std::string getBasePath();
@@ -25,6 +25,7 @@ public:
 
 private:
     static bool s_initialized;
+    static std::string s_basePath;
     static std::unique_ptr<ConfigReader> s_config;
 };
 

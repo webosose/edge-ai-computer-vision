@@ -30,13 +30,18 @@ t_aif_status DetectorFactory::registerGenerator(
     return kAifOk;
 }
 
+void DetectorFactory::deleteDetector(const std::string& id)
+{
+    m_detectors.erase(id);
+}
+
 std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, const std::string& param)
 {
     if (!AIVision::isInitialized()) {
         Loge(__func__, "AIVision is not initialized");
         return nullptr;
     }
- 
+
     try {
         if (m_detectors.find(id) == m_detectors.end() &&
             m_detectorGenerators.find(id) == m_detectorGenerators.end()) {
@@ -79,6 +84,6 @@ void DetectorFactory::clear()
 {
     DelegateFactory::get().clear();
     m_detectors.clear();
-} 
+}
 
 } // end of idspace aif

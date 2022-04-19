@@ -7,17 +7,25 @@
 namespace aif {
 
 bool AIVision::s_initialized = false;
+std::string AIVision::s_basePath = "";
 std::unique_ptr<ConfigReader> AIVision::s_config;
 
-void AIVision::init()
+void AIVision::init(const std::string& basePath)
 {
     if (s_initialized)
         return;
 
     s_config = std::make_unique<ConfigReader>(
             std::string(EDGEAI_VISION_HOME) + "/" + std::string(EDGEAI_VISION_CONFIG));
-    s_initialized = true;
     Logger::init(Logger::strToLogLevel(s_config->getOption(KEY_LOG_LEVEL)));
+
+    if (!basePath.empty()) {
+        s_basePath = basePath;
+    } else {
+        s_basePath = s_config->getOption(KEY_BASE_PATH);
+    }
+
+    s_initialized = true;
     Logi("AIVision is initialized");
 }
 
@@ -38,12 +46,10 @@ bool AIVision::isInitialized()
 
 std::string AIVision::getBasePath()
 {
-    std::string basePath = s_config->getOption(KEY_BASE_PATH);
-    if (basePath.empty()) {
-        basePath = EDGEAI_VISION_HOME;
+    if (s_basePath.empty()) {
+        s_basePath = EDGEAI_VISION_HOME;
     }
-    Logi("BasePath: ", basePath);
-    return basePath;
+    return s_basePath;
 }
 
 std::string AIVision::getModelFolderPath()

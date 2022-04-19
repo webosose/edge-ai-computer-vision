@@ -64,7 +64,8 @@ t_aif_status Detector::compile()
             errlog << "Can't get tflite model: " << path;
             throw std::runtime_error(errlog.str());
         }
-
+        
+        Logi("compile: ", path); 
         if (compileModel() != kAifOk) {
             errlog.clear();
             errlog << "tflite model compile failed: " << path;
