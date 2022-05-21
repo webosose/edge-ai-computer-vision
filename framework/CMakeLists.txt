@@ -4,6 +4,7 @@ project(ai-framework CXX)
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
 OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
+OPTION(WITH_GPU "Enable Gpu Delegate Support" ON)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
@@ -67,6 +68,11 @@ ENDIF(WITH_ARMNN)
 IF(WITH_XNNPACK)
     ADD_DEFINITIONS(-DUSE_XNNPACK)
 ENDIF(WITH_XNNPACK)
+
+IF(WITH_GPU)
+    ADD_DEFINITIONS(-DUSE_GPU_DELEGATE)
+ENDIF(WITH_GPU)
+
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wl,--no-as-needed -O2")
 
@@ -111,13 +117,20 @@ ENDIF(WITH_EDGETPU)
 IF(WITH_ARMNN)
     set(SRC_FILES
         ${SRC_FILES}
-        ${ARMNN-DELEGATE_SRCS}
+        ${ARMNN_DELEGATE_SRCS}
     )
     set(LIBS
         ${LIBS}
         ${ARMNN-DELEGATE_LIBRARIES}
     )
 ENDIF(WITH_ARMNN)
+
+IF(WITH_GPU)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${GPU_DELEGATE_SRCS}
+    )
+ENDIF(WITH_GPU)
 
 add_library(${LIB_NAME}
     SHARED

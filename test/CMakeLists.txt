@@ -54,6 +54,10 @@ IF(WITH_ARMNN)
     ADD_DEFINITIONS(-DUSE_ARMNN)
 ENDIF(WITH_ARMNN)
 
+IF(WITH_GPU)
+    ADD_DEFINITIONS(-DUSE_GPU_DELEGATE)
+ENDIF(WITH_GPU)
+
 set(EXE_NAME ai-framework-test)
 set(HDR_DIR ${CMAKE_SOURCE_DIR}/test)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/test)
@@ -105,7 +109,6 @@ set(SRC_FILES
     ${SRC_DIR}/palm_param_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
-    ${SRC_DIR}/gpu_delegate_test.cpp
     ${GTEST_DIR}/gtest-all.cc
     ${GTEST_DIR}/test_main.cpp
 )
@@ -138,6 +141,13 @@ IF(WITH_ARMNN)
         ${SRC_DIR}/armnn_delegate_test.cpp
     )
 ENDIF(WITH_ARMNN)
+
+IF(WITH_GPU)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${SRC_DIR}/gpu_delegate_test.cpp
+    )
+ENDIF(WITH_GPU)
 
 add_executable(
     ${EXE_NAME}
