@@ -4,7 +4,7 @@ project(edgeai-vision CXX)
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
 OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
-OPTION(WITH_GPU "Enable Gpu Delegate Support" ON)
+OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
