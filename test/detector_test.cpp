@@ -15,9 +15,8 @@
 
 using namespace aif;
 
-class TestDetector : public Detector
-{
-public:
+class TestDetector : public Detector {
+  public:
     TestDetector() : Detector("face_detection_short_range.tflite") {
         isCalledCreateParam = false;
         isCalledCompileModel = false;
@@ -30,13 +29,13 @@ public:
         isCalledCreateParam = true;
         return std::make_shared<DetectorParam>();
     }
-    t_aif_status compileModel() override {
+    t_aif_status
+    compileModel(tflite::ops::builtin::BuiltinOpResolver &resolver) override {
         isCalledCompileModel = true;
-        tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates resolver;
         tflite::InterpreterBuilder(*m_model.get(), resolver)(&m_interpreter);
         return kAifOk;
     }
-    t_aif_status fillInputTensor(const cv::Mat& img) override{
+    t_aif_status fillInputTensor(const cv::Mat &img) override {
         isCalledFillInputTensor = true;
         return kAifOk;
     }
@@ -45,9 +44,9 @@ public:
         return kAifOk;
         return kAifOk;
     }
-    t_aif_status postProcessing(
-            const cv::Mat& img,
-            std::shared_ptr<Descriptor>& descriptor) override {
+    t_aif_status
+    postProcessing(const cv::Mat &img,
+                   std::shared_ptr<Descriptor> &descriptor) override {
         isCalledPostProcessing = true;
         return kAifOk;
     }
@@ -58,44 +57,28 @@ public:
     bool isCalledPostProcessing;
 };
 
-
-class DetectorTest : public ::testing::Test
-{
-protected:
+class DetectorTest : public ::testing::Test {
+  protected:
     DetectorTest() = default;
     ~DetectorTest() = default;
 
-    static void SetUpTestCase()
-    {
-        AIVision::init();
-    }
+    static void SetUpTestCase() { AIVision::init(); }
 
-    static void TearDownTestCase()
-    {
-        AIVision::deinit();
-    }
+    static void TearDownTestCase() { AIVision::deinit(); }
 
+    void SetUp() override { basePath = AIVision::getBasePath(); }
 
-    void SetUp() override
-    {
-        basePath = AIVision::getBasePath();
-    }
-
-    void TearDown() override
-    {
-    }
+    void TearDown() override {}
 
     std::string basePath;
 };
 
-TEST_F(DetectorTest, 01_getModelName)
-{
+TEST_F(DetectorTest, 01_getModelName) {
     TestDetector td;
     EXPECT_EQ(td.getModelName(), "face_detection_short_range.tflite");
 }
 
-TEST_F(DetectorTest, 02_init)
-{
+TEST_F(DetectorTest, 02_init) {
     TestDetector td;
     EXPECT_FALSE(td.isCalledCreateParam);
     EXPECT_FALSE(td.isCalledCompileModel);
@@ -111,8 +94,7 @@ TEST_F(DetectorTest, 02_init)
     EXPECT_FALSE(td.isCalledPostProcessing);
 }
 
-TEST_F(DetectorTest, 03_getModelInfo)
-{
+TEST_F(DetectorTest, 03_getModelInfo) {
     TestDetector td;
     EXPECT_EQ(td.init(), kAifOk);
     auto modelInfo = td.getModelInfo();
@@ -121,15 +103,15 @@ TEST_F(DetectorTest, 03_getModelInfo)
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
-TEST_F(DetectorTest, 04_detect)
-{
+TEST_F(DetectorTest, 04_detect) {
     TestDetector td;
     EXPECT_EQ(td.init(), kAifOk);
     EXPECT_FALSE(td.isCalledFillInputTensor);
     EXPECT_FALSE(td.isCalledPostProcessing);
 
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Descriptor>();
-    EXPECT_TRUE(td.detectFromImage(basePath + "/images/mona.jpg", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(td.detectFromImage(basePath + "/images/mona.jpg", descriptor) ==
+                aif::kAifOk);
     EXPECT_TRUE(td.isCalledFillInputTensor);
     EXPECT_TRUE(td.isCalledPostProcessing);
 }

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <aif/base/AIVision.h>
 #include <aif/base/DelegateFactory.h>
 #include <aif/delegate/ArmNNDelegate.h>
 #include <aif/tools/Utils.h>
@@ -21,6 +22,17 @@ class ArmNNDelegateTest : public ::testing::Test
 protected:
     ArmNNDelegateTest() = default;
     ~ArmNNDelegateTest() = default;
+
+
+    static void SetUpTestCase()
+    {
+        AIVision::init();
+    }
+
+    static void TearDownTestCase()
+    {
+        AIVision::deinit();
+    }
 
     void SetUp() override
     {

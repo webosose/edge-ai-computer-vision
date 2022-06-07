@@ -3,14 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/base/Detector.h>
 #include <aif/base/AIVision.h>
 #include <aif/base/DelegateFactory.h>
+#include <aif/base/Detector.h>
+#include <aif/log/Logger.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
-#include <aif/log/Logger.h>
 
-#include <tensorflow/lite/kernels/register.h>
+#ifdef USE_AUTO_DELEGATE
+#include <aif/auto_delegation/AccelerationPolicyManager.h>
+#include <aif/auto_delegation/AutoDelegateSelector.h>
+#endif
 
 using aif::Stopwatch;
 
@@ -18,16 +21,13 @@ namespace aif {
 
 Detector::Detector(const std::string &modelName)
     : m_modelName(modelName), m_model(nullptr), m_interpreter(nullptr),
-      m_param(nullptr) {
+      m_param(nullptr), m_autoDelegateMode(false) {
     memset(&m_modelInfo, 0, sizeof(m_modelInfo));
 }
 
-Detector::~Detector()
-{
-}
+Detector::~Detector() {}
 
-t_aif_status Detector::init(const std::string& param)
-{
+t_aif_status Detector::init(const std::string &param) {
     std::stringstream errlog;
     try {
         Stopwatch sw;
@@ -35,7 +35,8 @@ t_aif_status Detector::init(const std::string& param)
         m_param = createParam();
         if (!param.empty() && m_param->fromJson(param) != kAifOk) {
             errlog.clear();
-            errlog << "failed to read param from json: " << m_modelName << "\n" << param;
+            errlog << "failed to read param from json: " << m_modelName << "\n"
+                   << param;
             throw std::runtime_error(errlog.str());
         }
 
@@ -47,17 +48,16 @@ t_aif_status Detector::init(const std::string& param)
         TRACE("compile(): ", sw.getMs(), "ms");
         sw.stop();
         return preProcessing();
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
         return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
         return kAifError;
     }
 }
 
-t_aif_status Detector::compile()
-{
+t_aif_status Detector::compile() {
     std::stringstream errlog;
     try {
         std::string path = AIVision::getModelFolderPath() + m_modelName;
@@ -67,21 +67,26 @@ t_aif_status Detector::compile()
             errlog << "Can't get tflite model: " << path;
             throw std::runtime_error(errlog.str());
         }
-        
-        Logi("compile: ", path); 
-        if (compileModel() != kAifOk) {
+
+        Logi("compile: ", path);
+
+        // TODO: if not use XNNPACK,
+        // use tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates
+        tflite::ops::builtin::BuiltinOpResolver resolver;
+        if (compileModel(resolver) != kAifOk) {
             errlog.clear();
             errlog << "tflite model compile failed: " << path;
             throw std::runtime_error(errlog.str());
         }
 
-        if (m_interpreter->SetNumThreads(m_param->getNumThreads()) != kTfLiteOk) {
+        if (m_interpreter->SetNumThreads(m_param->getNumThreads()) !=
+            kTfLiteOk) {
             Loge("failed to set num threads : ", m_param->getNumThreads());
         } else {
             Logi("set num threads : ", m_param->getNumThreads());
         }
 
-        if (compileDelegates() != kAifOk) {
+        if (compileDelegates(resolver) != kAifOk) {
             errlog.clear();
             errlog << "tflite model compile delegates failed: " << path;
             throw std::runtime_error(errlog.str());
@@ -94,7 +99,7 @@ t_aif_status Detector::compile()
         }
 
         const std::vector<int> &t_inputs = m_interpreter->inputs();
-        TfLiteTensor* tensor_input = m_interpreter->tensor(t_inputs[0]);
+        TfLiteTensor *tensor_input = m_interpreter->tensor(t_inputs[0]);
         if (tensor_input == nullptr || tensor_input->dims == nullptr) {
             throw std::runtime_error("tflite tensor_input invalid!!");
         }
@@ -120,21 +125,56 @@ t_aif_status Detector::compile()
         TRACE("channels: ", m_modelInfo.channels);
 
         return kAifOk;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
         return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
         return kAifError;
     }
 }
 
-t_aif_status Detector::compileDelegates()
-{
-    auto& delegates = m_param->getDelegates();
-    for (auto& delegate : delegates) {
+t_aif_status
+Detector::compileModel(tflite::ops::builtin::BuiltinOpResolver &resolver) {
+    std::stringstream errlog;
+    try {
+        TfLiteStatus res = kTfLiteError;
+        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
+            &m_interpreter, MAX_INTERPRETER_THREADS);
+
+        if (res != kTfLiteOk || m_interpreter == nullptr) {
+            throw std::runtime_error("tflite interpreter build failed!!");
+        }
+        return kAifOk;
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
+        return kAifError;
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
+        return kAifError;
+    }
+}
+
+t_aif_status
+Detector::compileDelegates(tflite::ops::builtin::BuiltinOpResolver &resolver) {
+    if (m_param->getUseAutoDelegate()) {
+#ifdef USE_AUTO_DELEGATE
+        AutoDelegateSelector ads(&resolver);
+        AccelerationPolicyManager apm(m_param->getAutoDelegateConfig());
+        m_autoDelegateMode = ads.SelectDelegate(&m_interpreter, &apm);
+        if (m_autoDelegateMode) {
+            Logi("auto delegate mode on");
+        } else {
+            Loge("auto delegate mode off(Failed to select auto delegates)");
+        }
+#endif
+        return kAifOk;
+    }
+
+    auto &delegates = m_param->getDelegates();
+    for (auto &delegate : delegates) {
         m_delegates.push_back(DelegateFactory::get().getDelegate(
-                    delegate.first, delegate.second));
+            delegate.first, delegate.second));
         Logi("delegate: ", delegate.first, "/ option: ", delegate.second);
     }
 
@@ -144,79 +184,81 @@ t_aif_status Detector::compileDelegates()
 
     try {
         TfLiteStatus res = kTfLiteError;
-        for (auto& delegate : m_delegates) {
-            res = m_interpreter->ModifyGraphWithDelegate(delegate->getTfLiteDelegate());
+        for (auto &delegate : m_delegates) {
+            res = m_interpreter->ModifyGraphWithDelegate(
+                delegate->getTfLiteDelegate());
             if (res == kTfLiteOk) {
                 Logi("selected delegate: ", delegate->getName());
                 return kAifOk;
             } else {
-                Logw(__func__, "Error: modify graph failed with " + delegate->getName());
+                Logw(__func__,
+                     "Error: modify graph failed with " + delegate->getName());
             }
         }
         throw std::runtime_error("tflite Modify failed");
         return kAifError;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
         return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
         return kAifError;
     }
 }
 
-
-t_aif_status Detector::detectFromImage(
-    const std::string& imagePath, std::shared_ptr<Descriptor>& descriptor)
-{
+t_aif_status
+Detector::detectFromImage(const std::string &imagePath,
+                          std::shared_ptr<Descriptor> &descriptor) {
     try {
         Stopwatch sw;
         cv::Mat img;
         // prepare input tensors
         sw.start();
         if (aif::getCvImageFrom(imagePath, img) != kAifOk) {
-            throw std::runtime_error(std::string("can't get opencv image: ")
-                + imagePath);
+            throw std::runtime_error(std::string("can't get opencv image: ") +
+                                     imagePath);
         }
         TRACE("aif::getCvImageFrom(): ", sw.getMs(), "ms");
         sw.stop();
 
+
         return detect(img, descriptor);
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
         return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
         return kAifError;
     }
 }
 
-t_aif_status Detector::detectFromBase64(
-    const std::string& base64image, std::shared_ptr<Descriptor>& descriptor)
-{
+t_aif_status
+Detector::detectFromBase64(const std::string &base64image,
+                           std::shared_ptr<Descriptor> &descriptor) {
     try {
         Stopwatch sw;
         cv::Mat img;
         // prepare input tensors
         sw.start();
         if (aif::getCvImageFromBase64(base64image, img) != kAifOk) {
-            throw std::runtime_error("can't get opencv image from base64image!");
+            throw std::runtime_error(
+                "can't get opencv image from base64image!");
         }
         TRACE("aif::getCvImageFromBase64(): ", sw.getMs(), "ms");
         sw.stop();
 
         return detect(img, descriptor);
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
         return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
         return kAifError;
     }
 }
 
-t_aif_status Detector::detect(
-    const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
-{
+t_aif_status Detector::detect(const cv::Mat &img,
+                              std::shared_ptr<Descriptor> &descriptor) {
     try {
         Stopwatch sw;
         // prepare input tensors
@@ -236,12 +278,11 @@ t_aif_status Detector::detect(
         TRACE("m_interpreter->Invoke(): ", sw.getMs(), "ms");
         sw.stop();
         return postProcessing(img, descriptor);
-
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
         return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
         return kAifError;
     }
 }

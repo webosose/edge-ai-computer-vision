@@ -15,18 +15,19 @@ namespace aif {
  */
 
 class EdgeAIVision {
-public:
+ public:
     /// Detector Type enum class
     enum class DetectorType {
-        FACE = 0,           ///< Face Detector (Default Model: face short range)
-        POSE,               ///< Pose Detector (Default Model: posenet)
-        SEGMENTATION,       ///< Segmentation Detector (Default Model: mediapipe selfie)
+        FACE = 0,     ///< Face Detector (Default Model: face short range)
+        POSE,         ///< Pose Detector (Default Model: posenet)
+        SEGMENTATION, ///< Segmentation Detector (Default Model: mediapipe
+                      ///< selfie)
     };
 
     /**
      * @brief get instance for Edge AI Vision
      */
-    static EdgeAIVision& getInstance();
+    static EdgeAIVision &getInstance();
 
     /**
      * @brief check if Edge AI Vision is started or not.
@@ -37,13 +38,15 @@ public:
     /**
      * @brief startup Edge AI Vision
      * @param basePath base folder path for Edge AI Vision
+     * @return return true if success to startup
      */
-    void startup(const std::string& basePath = "");
+    bool startup(const std::string &basePath = "");
 
     /**
      * @brief shutdown Edge AI Vision
+     * @return return true if success to shutdown
      */
-    void shutdown();
+    bool shutdown();
 
     /**
      * @brief create detector with specific DetectorType
@@ -51,7 +54,7 @@ public:
      * @param option detector option (setup specific model, param, delegates)
      * @return return true if success to create detector
      */
-    bool createDetector(DetectorType type, const std::string& option = "");
+    bool createDetector(DetectorType type, const std::string &option = "");
 
     /**
      * @brief delete detector with specific DetectorType
@@ -67,7 +70,7 @@ public:
      * @param output output result (json string)
      * @return return true if success to detect the result
      */
-    bool detect(DetectorType type, const cv::Mat& input, std::string& output);
+    bool detect(DetectorType type, const cv::Mat &input, std::string &output);
 
     /**
      * @brief detect the result from input image file
@@ -76,7 +79,8 @@ public:
      * @param output output result (json string)
      * @return return true if success to detect the result from input image file
      */
-    bool detectFromFile(DetectorType type, const std::string& inputPath, std::string& output);
+    bool detectFromFile(DetectorType type, const std::string &inputPath,
+                        std::string &output);
 
     /**
      * @brief detect the result from base64 input image
@@ -85,17 +89,16 @@ public:
      * @param output output result (json string)
      * @return return true if success to detect the result from input image file
      */
-    bool detectFromBase64(DetectorType type, const std::string& input, std::string& output);
+    bool detectFromBase64(DetectorType type, const std::string &input,
+                          std::string &output);
 
-
-private:
+  private:
     static std::once_flag s_onceFlag;
     static std::unique_ptr<EdgeAIVision> s_instance;
     std::map<DetectorType, std::string> m_selectedModels;
 
     EdgeAIVision() = default;
     std::string getDefaultModel(DetectorType type) const;
-
 };
 
 } // end of namespace aif

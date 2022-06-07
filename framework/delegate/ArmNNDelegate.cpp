@@ -16,29 +16,6 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
     : Delegate("ArmNNDelegate", option)
     , m_delegateOptions(armnn::Compute::CpuAcc)
 {
-}
-
-ArmNNDelegate::~ArmNNDelegate()
-{
-}
-
-bool ArmNNDelegate::updateCachedNetworkFile(const std::string& filepath) const
-{
-    if (FILE *file = fopen(filepath.c_str(), "r")) {
-        fclose(file);
-        Logi("use cached network file: ", filepath);
-        return false;
-    }
-
-    std::ofstream ofs;
-    ofs.open(filepath, std::ofstream::out | std::ofstream::trunc);
-    ofs.close();
-    Logi("create empty cached network file: ", filepath);
-    return true;
-}
-
-TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
-{
     rj::Document payload;
     payload.Parse(m_option.c_str());
 
@@ -89,9 +66,32 @@ TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
     armnnDelegate::DelegateOptions options(
             keys.get(), values.get(), numOptions, nullptr);
 
+    m_delegateOptions = options;
+}
 
+ArmNNDelegate::~ArmNNDelegate()
+{
+}
+
+bool ArmNNDelegate::updateCachedNetworkFile(const std::string& filepath) const
+{
+    if (FILE *file = fopen(filepath.c_str(), "r")) {
+        fclose(file);
+        Logi("use cached network file: ", filepath);
+        return false;
+    }
+
+    std::ofstream ofs;
+    ofs.open(filepath, std::ofstream::out | std::ofstream::trunc);
+    ofs.close();
+    Logi("create empty cached network file: ", filepath);
+    return true;
+}
+
+TfLiteDelegatePtr ArmNNDelegate::getTfLiteDelegate() const
+{
     return TfLiteDelegatePtr(
-            armnnDelegate::TfLiteArmnnDelegateCreate(options),
+            armnnDelegate::TfLiteArmnnDelegateCreate(m_delegateOptions),
             armnnDelegate::TfLiteArmnnDelegateDelete);
 }
 

@@ -12,25 +12,26 @@
 
 namespace aif {
 
-class FaceDetector : public Detector
-{
-public:
-    FaceDetector( const std::string& modelPath);
+class FaceDetector : public Detector {
+  public:
+    FaceDetector(const std::string &modelPath);
     virtual ~FaceDetector();
 
-protected:
+  protected:
     std::shared_ptr<DetectorParam> createParam() override;
     t_aif_status preProcessing() override;
-    t_aif_status postProcessing(
-            const cv::Mat& img,
-            std::shared_ptr<Descriptor>& descriptor) override;
+    t_aif_status
+    postProcessing(const cv::Mat &img,
+                   std::shared_ptr<Descriptor> &descriptor) override;
 
     t_aif_status generateAnchors(int width, int height);
-    t_aif_status faceDetect(std::shared_ptr<Descriptor>& descriptor);
-    float calculateScale(float min_scale, float max_scale, int stride_index, int num_strides);
-    bool checkUpdate(int idx, float cur_x, float cur_y, float cur_w, float cur_h, float threshold);
+    t_aif_status faceDetect(std::shared_ptr<Descriptor> &descriptor);
+    float calculateScale(float min_scale, float max_scale, int stride_index,
+                         int num_strides);
+    bool checkUpdate(int idx, float cur_x, float cur_y, float cur_w,
+                     float cur_h, float threshold);
 
-protected:
+  protected:
     std::vector<t_aif_anchor> m_anchors;
     std::vector<std::vector<float>> m_prev_faces;
 };

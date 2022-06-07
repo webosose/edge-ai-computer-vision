@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/facade/EdgeAIVision.h>
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
+#include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
 
 #define DEFAULT_FACE_MODEL "face_short_range_cpu"
@@ -18,38 +18,34 @@ namespace rj = rapidjson;
 std::unique_ptr<EdgeAIVision> EdgeAIVision::s_instance;
 std::once_flag EdgeAIVision::s_onceFlag;
 
-EdgeAIVision& EdgeAIVision::getInstance()
-{
-    std::call_once(EdgeAIVision::s_onceFlag, []() {
-        s_instance.reset(new EdgeAIVision);
-    });
+EdgeAIVision &EdgeAIVision::getInstance() {
+    std::call_once(EdgeAIVision::s_onceFlag,
+                   []() { s_instance.reset(new EdgeAIVision); });
 
     return *(s_instance.get());
 }
 
-bool EdgeAIVision::isStarted() const
-{
-    return AIVision::isInitialized();
-}
+bool EdgeAIVision::isStarted() const { return AIVision::isInitialized(); }
 
-void EdgeAIVision::startup(const std::string& basePath)
-{
+bool EdgeAIVision::startup(const std::string &basePath) {
     if (AIVision::isInitialized())
-        return;
+        return false;
 
     AIVision::init(basePath);
+    return isStarted();
 }
 
-void EdgeAIVision::shutdown()
-{
+bool EdgeAIVision::shutdown() {
     if (!AIVision::isInitialized())
-        return;
+        return false;
+
+    DetectorFactory::get().clear();
 
     AIVision::deinit();
+    return !isStarted();
 }
 
-std::string EdgeAIVision::getDefaultModel(DetectorType type) const
-{
+std::string EdgeAIVision::getDefaultModel(DetectorType type) const {
     std::string model;
     if (type == DetectorType::FACE) {
         model = DEFAULT_FACE_MODEL;
@@ -61,8 +57,8 @@ std::string EdgeAIVision::getDefaultModel(DetectorType type) const
     return model;
 }
 
-bool EdgeAIVision::createDetector(DetectorType type, const std::string& option)
-{
+bool EdgeAIVision::createDetector(DetectorType type,
+                                  const std::string &option) {
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -89,13 +85,12 @@ bool EdgeAIVision::createDetector(DetectorType type, const std::string& option)
     return (detector != nullptr);
 }
 
-bool EdgeAIVision::deleteDetector(DetectorType type)
-{
+bool EdgeAIVision::deleteDetector(DetectorType type) {
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
     }
-     if (m_selectedModels.find(type) == m_selectedModels.end()) {
+    if (m_selectedModels.find(type) == m_selectedModels.end()) {
         Logw("Detector is not created : ", static_cast<int>(type));
         return false;
     }
@@ -104,8 +99,8 @@ bool EdgeAIVision::deleteDetector(DetectorType type)
     return true;
 }
 
-bool EdgeAIVision::detect(DetectorType type, const cv::Mat& input, std::string& output)
-{
+bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
+                          std::string &output) {
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -127,8 +122,9 @@ bool EdgeAIVision::detect(DetectorType type, const cv::Mat& input, std::string& 
     return (kAifOk == res);
 }
 
-bool EdgeAIVision::detectFromFile(DetectorType type, const std::string& inputPath, std::string& output)
-{
+bool EdgeAIVision::detectFromFile(DetectorType type,
+                                  const std::string &inputPath,
+                                  std::string &output) {
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -150,8 +146,8 @@ bool EdgeAIVision::detectFromFile(DetectorType type, const std::string& inputPat
     return (kAifOk == res);
 }
 
-bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string& input, std::string& output)
-{
+bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
+                                    std::string &output) {
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -173,5 +169,4 @@ bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string& input,
     return (kAifOk == res);
 }
 
-
-}
+} // namespace aif

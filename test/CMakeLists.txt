@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.7)
 project(edgeai-vision-test CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
-OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
+OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
+OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
@@ -60,6 +61,14 @@ ENDIF(WITH_ARMNN)
 IF(WITH_GPU)
     ADD_DEFINITIONS(-DUSE_GPU_DELEGATE)
 ENDIF(WITH_GPU)
+
+IF(WITH_AUTO_DELEGATE)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(AUTO-DELEGATE REQUIRED auto-delegation)
+    INCLUDE_DIRECTORIES(${AUTO-DELEGATE_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${AUTO-DELEGATE_LIBRARY_DIRS})
+    ADD_DEFINITIONS(-DUSE_AUTO_DELEGATE)
+ENDIF(WITH_AUTO_DELEGATE)
 
 set(EXE_NAME edgeai-vision-test)
 set(HDR_DIR ${CMAKE_SOURCE_DIR}/test)
@@ -148,6 +157,18 @@ IF(WITH_GPU)
         ${SRC_DIR}/gpu_delegate_test.cpp
     )
 ENDIF(WITH_GPU)
+
+IF(WITH_AUTO_DELEGATE)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${SRC_DIR}/auto_delegate_test.cpp
+    )
+    set(LIBS
+        ${LIBS}
+        ${AUTO-DELEGATE_LIBRARIES}
+    )
+ENDIF(WITH_AUTO_DELEGATE)
+
 
 add_executable(
     ${EXE_NAME}

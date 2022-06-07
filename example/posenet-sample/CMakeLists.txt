@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.7)
 project(posenet-sample CXX)
 
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
-OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
+OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
+OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
@@ -25,6 +26,14 @@ pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
 IF(WITH_ARMNN)
 PKG_CHECK_MODULES(ARMNN-DELEGATE REQUIRED armnn-delegate)
 ENDIF(WITH_ARMNN)
+
+IF(WITH_AUTO_DELEGATE)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(AUTO-DELEGATE REQUIRED auto-delegation)
+    INCLUDE_DIRECTORIES(${AUTO-DELEGATE_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${AUTO-DELEGATE_LIBRARY_DIRS})
+    ADD_DEFINITIONS(-DUSE_AUTO_DELEGATE)
+ENDIF(WITH_AUTO_DELEGATE)
 
 # include directories
 include_directories(
@@ -115,6 +124,13 @@ set(LIBS
         ${ARMNN-DELEGATE_LIBRARIES}
     )
 ENDIF(WITH_ARMNN)
+
+IF(WITH_AUTO_DELEGATE)
+    set(LIBS
+        ${LIBS}
+        ${AUTO-DELEGATE_LIBRARIES}
+    )
+ENDIF(WITH_AUTO_DELEGATE)
 
 add_executable(
     ${PROJECT_NAME}

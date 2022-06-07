@@ -3,34 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <aif/log/Logger.h>
 #include <aif/palm/PalmParam.h>
 #include <aif/tools/Utils.h>
-#include <aif/log/Logger.h>
 
+#include <algorithm>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
-#include <fstream>
-#include <algorithm>
 
 using namespace aif;
 
-class PalmParamTest : public ::testing::Test
-{
-protected:
+class PalmParamTest : public ::testing::Test {
+  protected:
     PalmParamTest() = default;
     ~PalmParamTest() = default;
 
-    void SetUp() override
-    {
-    }
+    void SetUp() override {}
 
-    void TearDown() override
-    {
-    }
+    void TearDown() override {}
 };
 
-TEST_F(PalmParamTest, 01_constructor)
-{
+TEST_F(PalmParamTest, 01_constructor) {
     // default constructor
     PalmParam fp;
     fp.trace();
@@ -46,10 +40,10 @@ TEST_F(PalmParamTest, 01_constructor)
             \"minScale\": 0.1484375, \
             \"maxScale\": 0.75, \
             \"reduceBoxesInLowestLayer\": false, \
-            \"scoreThreshold\": 0.7, \
+            \"scoreThreshold\": 0.5, \
             \"iouThreshold\": 0.2, \
             \"maxOutputSize\": 100, \
-            \"updateThreshold\": 0.3f \
+            \"updateThreshold\": 0.3 \
         } \
     }");
     fp2.trace();
@@ -57,8 +51,7 @@ TEST_F(PalmParamTest, 01_constructor)
     EXPECT_EQ(fp, fp2);
 }
 
-TEST_F(PalmParamTest, 02_copy_constructors)
-{
+TEST_F(PalmParamTest, 02_copy_constructors) {
     // constructor 1
     PalmParam fp1;
     fp1.trace();
@@ -73,8 +66,7 @@ TEST_F(PalmParamTest, 02_copy_constructors)
     ASSERT_EQ(fp3, fp1);
 }
 
-TEST_F(PalmParamTest, 03_move_constructors)
-{
+TEST_F(PalmParamTest, 03_move_constructors) {
     // constructor 1
     PalmParam fp1;
     fp1.trace();
@@ -95,8 +87,7 @@ TEST_F(PalmParamTest, 03_move_constructors)
     EXPECT_EQ(fp5, fp1);
 }
 
-TEST_F(PalmParamTest, 04_test_fromJson)
-{
+TEST_F(PalmParamTest, 04_test_fromJson) {
     PalmParam fp;
     fp.fromJson("{ \
         \"modelParam\": { \
@@ -132,11 +123,9 @@ TEST_F(PalmParamTest, 04_test_fromJson)
     EXPECT_EQ(fp.iouThreshold, 0.3f);
     EXPECT_EQ(fp.maxOutputSize, 90);
     EXPECT_EQ(fp.updateThreshold, 0.2f);
-
 }
 
-TEST_F(PalmParamTest, 05_test_fromJson_partial)
-{
+TEST_F(PalmParamTest, 05_test_fromJson_partial) {
     PalmParam fp;
     fp.fromJson("{ \"modelParam\": { \"strides\": [4, 4]} } ");
     EXPECT_EQ(fp.strides.size(), 2);
@@ -177,4 +166,3 @@ TEST_F(PalmParamTest, 05_test_fromJson_partial)
     fp.fromJson("{ \"modelParam\": { \"updateThreshold\": 0.2} }");
     EXPECT_EQ(fp.updateThreshold, 0.2f);
 }
-

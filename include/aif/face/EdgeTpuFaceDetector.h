@@ -6,10 +6,10 @@
 #ifndef AIF_EDGE_FACE_DETECTOR_H
 #define AIF_EDGE_FACE_DETECTOR_H
 
-#include <aif/face/FaceDetector.h>
-#include <aif/face/FaceDescriptor.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DetectorFactoryRegistrations.h>
+#include <aif/face/FaceDescriptor.h>
+#include <aif/face/FaceDetector.h>
 #include <edgetpu.h>
 
 namespace aif {
@@ -17,39 +17,37 @@ namespace aif {
 //------------------------------------------------------
 // EdgeTpuFaceDetector
 //------------------------------------------------------
-class EdgeTpuFaceDetector : public FaceDetector
-{
-public:
-    EdgeTpuFaceDetector(const std::string& modelPath);
+class EdgeTpuFaceDetector : public FaceDetector {
+  public:
+    EdgeTpuFaceDetector(const std::string &modelPath);
 
     virtual ~EdgeTpuFaceDetector();
 
-protected:
+  protected:
+    t_aif_status
+    compileModel(tflite::ops::builtin::BuiltinOpResolver &resolver) override;
 
-    t_aif_status compileModel() override;
+    t_aif_status fillInputTensor(const cv::Mat &img) override;
 
-    t_aif_status fillInputTensor(const cv::Mat& img) override;
-
-protected:
+  protected:
     std::shared_ptr<edgetpu::EdgeTpuContext> m_edgetpuContext;
 };
 
 //------------------------------------------------------
 // EdgeTpuShortRangeFaceDetector
 //------------------------------------------------------
-class EdgeTpuShortRangeFaceDetector : public EdgeTpuFaceDetector
-{
-public:
+class EdgeTpuShortRangeFaceDetector : public EdgeTpuFaceDetector {
+  public:
     EdgeTpuShortRangeFaceDetector();
 
     virtual ~EdgeTpuShortRangeFaceDetector();
 
-protected:
+  protected:
     std::shared_ptr<DetectorParam> createParam() override;
 };
 
 DetectorFactoryRegistration<EdgeTpuShortRangeFaceDetector, FaceDescriptor>
-face_detect_edgetpu("face_short_range_edgetpu");
+    face_detect_edgetpu("face_short_range_edgetpu");
 
 } // end of namespace aif
 
