@@ -18,9 +18,6 @@ public:
     HandLandmarkParam(const HandLandmarkParam& other);
     HandLandmarkParam(HandLandmarkParam&& other) noexcept;
 
-    HandLandmarkParam& operator=(const HandLandmarkParam& other);
-    HandLandmarkParam& operator=(HandLandmarkParam&& other) noexcept;
-
     bool operator==(const HandLandmarkParam& other) const;
     bool operator!=(const HandLandmarkParam& other) const;
 

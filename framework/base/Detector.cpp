@@ -11,12 +11,10 @@ using aif::Stopwatch;
 
 namespace aif {
 
-Detector::Detector(const std::string& modelName)
-    : m_modelName(modelName)
-    , m_model(nullptr)
-    , m_interpreter(nullptr)
-    , m_param(nullptr)
-{
+Detector::Detector(const std::string &modelName)
+    : m_modelName(modelName), m_model(nullptr), m_interpreter(nullptr),
+      m_param(nullptr) {
+    memset(&m_modelInfo, 0, sizeof(m_modelInfo));
 }
 
 Detector::~Detector()

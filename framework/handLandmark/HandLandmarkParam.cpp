@@ -30,24 +30,6 @@ HandLandmarkParam::HandLandmarkParam(HandLandmarkParam&& other) noexcept
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
 
-HandLandmarkParam& HandLandmarkParam::operator=(const HandLandmarkParam& other)
-{
-    // TRACE(TAG, "ASSIGNMENT OPERATOR....");
-    if (this == &other) {
-        return *this;
-    }
-    return *this;
-}
-
-HandLandmarkParam& HandLandmarkParam::operator=(HandLandmarkParam&& other) noexcept
-{
-    // TRACE(TAG, "MOVE ASSIGNMENT OPERATOR....");
-    if (this == &other) {
-        return *this;
-    }
-    return *this;
-}
-
 bool HandLandmarkParam::operator==(const HandLandmarkParam& other) const
 {
     return (this == &other); 
