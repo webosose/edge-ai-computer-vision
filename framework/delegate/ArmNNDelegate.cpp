@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/delegate/ArmNNDelegate.h>
 #include <aif/tools/Utils.h>
 #include <rapidjson/document.h>

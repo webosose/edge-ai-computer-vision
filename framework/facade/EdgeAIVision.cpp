@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>

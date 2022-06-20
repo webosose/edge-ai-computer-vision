@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef AIF_CONFIG_READER_H
 #define AIF_CONFIG_READER_H
 

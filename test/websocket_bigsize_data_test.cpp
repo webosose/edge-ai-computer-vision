@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/base/WSServer.h>
 #include <aif/base/WSClient.h>
 #include <aif/log/Logger.h>

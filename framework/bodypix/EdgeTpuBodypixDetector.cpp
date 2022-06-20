@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/bodypix/EdgeTpuBodypixDetector.h>
 #include <aif/pose/posenet_decoder_op.h>
 #include <aif/tools/Stopwatch.h>

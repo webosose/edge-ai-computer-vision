@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(edgeai-vision CXX)
 
+set(EDGE_AI_VISION_VERSION_MAJOR 1)
+set(EDGE_AI_VISION_VERSION_MINOR 0)
+set(EDGE_AI_VISION_VERSION_PATCH 1)
+set(EDGE_AI_VISION_VERSION_LIST 
+    "${EDGE_AI_VISION_VERSION_MAJOR}."
+    "${EDGE_AI_VISION_VERSION_MINOR}."
+    "${EDGE_AI_VISION_VERSION_PATCH}")
+string(REPLACE ";" "" EDGE_AI_VISION_VERSION ${EDGE_AI_VISION_VERSION_LIST})
+
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" ON)
 OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
@@ -136,10 +145,16 @@ add_library(${LIB_NAME}
     SHARED
     ${SRC_FILES}
 )
-
+set_target_properties(${LIB_NAME} PROPERTIES
+    VERSION ${EDGE_AI_VISION_VERSION}
+    SOVERSION ${EDGE_AI_VISION_VERSION_MAJOR})
 target_link_libraries(${LIB_NAME}
     ${LIBS}
 )
+
+install(TARGETS edgeai-vision
+    DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/log")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/tools")

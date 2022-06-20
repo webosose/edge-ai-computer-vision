@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/selfie/CpuSelfieDetector.h>
 #include <aif/selfie/transpose_conv_bias.h>
 #include <aif/tools/Stopwatch.h>

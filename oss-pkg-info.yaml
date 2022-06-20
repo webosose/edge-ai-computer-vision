@@ -1,0 +1,12 @@
+Open Source Software Package:
+- name: webOSOSE
+  source: https://github.com/webosose
+  license: Apache-2.0
+- name: mediapipe
+  version: 0.8.10
+  source: https://github.com/google/mediapipe
+  license: Apache-2.0
+- name: edgetpu
+  version: eel
+  source: https://github.com/google-coral/edgetpu
+  license: Apache-2.0

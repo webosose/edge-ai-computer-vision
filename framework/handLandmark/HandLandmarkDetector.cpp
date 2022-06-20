@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/handLandmark/HandLandmarkDetector.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
