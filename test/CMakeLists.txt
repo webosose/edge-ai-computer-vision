@@ -17,12 +17,14 @@ endif()
 
 # find needed packages
 find_package(PkgConfig)
+pkg_check_modules(GTEST REQUIRED gtest_main)
 pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
 
 # include directories
 include_directories(
+    ${GTEST_INCLUDE_DIRS}
     ${TFLITE_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIRS}
     ${RAPIDJSON_INCLUDE_DIRS}
@@ -30,6 +32,7 @@ include_directories(
 
 # link directories
 link_directories(
+    ${GTEST_LIBRARY_DIRS}
     ${TFLITE_LIBRARY_DIRS}
     ${OPENCV_LIBRARY_DIRS}
     ${RAPIDJSON_LIBRARY_DIRS}
@@ -61,14 +64,12 @@ ENDIF(WITH_GPU)
 set(EXE_NAME edgeai-vision-test)
 set(HDR_DIR ${CMAKE_SOURCE_DIR}/test)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/test)
-set(GTEST_DIR ${CMAKE_SOURCE_DIR}/test/gtest)
 
 # Header Files
 include_directories(
     ${INCLUDE_DIR}
     ${HDR_DIR}
     ${SRC_DIR}
-    ${GTEST_DIR}
 )
 
 link_directories(
@@ -110,8 +111,6 @@ set(SRC_FILES
     ${SRC_DIR}/palm_param_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
-    ${GTEST_DIR}/gtest-all.cc
-    ${GTEST_DIR}/test_main.cpp
 )
 
 set(LIBS
@@ -156,6 +155,7 @@ add_executable(
 )
 
 target_link_libraries(${EXE_NAME}
+    ${GTEST_LIBRARIES}
     ${LIBS}
 )
 

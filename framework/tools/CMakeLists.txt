@@ -5,6 +5,7 @@ set(TOOLS_SRC
     ${TOOLS_SRC_DIR}/Stopwatch.cpp
     ${TOOLS_SRC_DIR}/ConfigReader.cpp
     ${TOOLS_SRC_DIR}/Utils.cpp
+    ${TOOLS_SRC_DIR}/CAPIForTas.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${TOOLS_SRC_DIR})
