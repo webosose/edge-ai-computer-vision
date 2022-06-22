@@ -133,9 +133,9 @@ TEST_F(UtilTest, util06_base64Decode_to_file)
 {
     std::array<std::pair<std::string, std::string>, 4> filenames{{
         { basePath + "/images/mona.jpg", basePath + "/images/mona_decoded.jpg" },
-        { basePath + "/images/bts.jpg", basePath + "/images/bts_decoded.jpg" },
-        { basePath + "/images/blackpink.jpg", basePath + "/images/blackpink_decoded.jpg" },
-        { basePath + "/images/doctors.jpg", basePath + "/images/doctos_decoded.jpg" }
+        { basePath + "/images/5faces.jpg", basePath + "/images/5faces_decoded.jpg" },
+        { basePath + "/images/2faces.jpg", basePath + "/images/2faces_decoded.jpg" },
+        { basePath + "/images/5people.jpg", basePath + "/images/5people_decoded.jpg" }
     }};
 
     for (const auto& f : filenames) {

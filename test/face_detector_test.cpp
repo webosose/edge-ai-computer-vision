@@ -71,24 +71,24 @@ TEST_F(FaceDetectorTest, 02_short_range_detect_faces_from_mona)
     EXPECT_EQ(foundFaces->size(), 1);
 }
 
-TEST_F(FaceDetectorTest, 03_short_range_detect_faces_from_bts)
+TEST_F(FaceDetectorTest, 03_short_range_detect_faces_from_5faces)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<FaceDescriptor>();
     auto foundFaces = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/bts.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(foundFaces->size(), 7);
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/5faces.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(foundFaces->size(), 5);
 }
 
-TEST_F(FaceDetectorTest, 04_short_range_detect_faces_from_blackpink)
+TEST_F(FaceDetectorTest, 04_short_range_detect_faces_from_2faces)
 {
     auto fd = DetectorFactory::get().getDetector("face_short_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<FaceDescriptor>();
     auto foundFaces = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/blackpink.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(foundFaces->size(), 4);
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/2faces.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(foundFaces->size(), 2);
 }
 
 #if 0
@@ -128,24 +128,24 @@ TEST_F(FaceDetectorTest, 07_full_range_detect_faces_from_mona)
     EXPECT_EQ(foundFaces->size(), 1);
 }
 
-TEST_F(FaceDetectorTest, 08_full_range_detect_faces_from_bts)
+TEST_F(FaceDetectorTest, 08_full_range_detect_faces_from_5faces)
 {
     auto fd = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<FaceDescriptor>();
     auto foundFaces = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/bts.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(foundFaces->size(), 7);
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/5faces.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(foundFaces->size(), 5);
 }
 
-TEST_F(FaceDetectorTest, 09_full_range_detect_faces_from_blackpink)
+TEST_F(FaceDetectorTest, 09_full_range_detect_faces_from_2faces)
 {
     auto fd = DetectorFactory::get().getDetector("face_full_range_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<FaceDescriptor>();
     auto foundFaces = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/blackpink.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(foundFaces->size(), 4);
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/2faces.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(foundFaces->size(), 2);
 }
 
 TEST_F(FaceDetectorTest, 10_short_range_detect_faces_from_base64_mona)
