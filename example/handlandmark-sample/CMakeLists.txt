@@ -146,9 +146,4 @@ target_link_libraries(${PROJECT_NAME}
     ${LIBS}
 )
 
-# Install Artifacts
-#install (
-#    PROGRAMS ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/${EXE_NAME}
-#    DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
-
+install(TARGETS ${PROJECT_NAME} DESTINATION ${AIF_INSTALL_EXAMPLE_DIR})

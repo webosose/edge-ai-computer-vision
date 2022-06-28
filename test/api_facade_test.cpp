@@ -83,7 +83,7 @@ TEST_F(ApiFacadeTest, 04_detect_face_default)
     EXPECT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/mona.jpg", cv::IMREAD_COLOR);
+    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
     EXPECT_TRUE(ai.createDetector(type));
@@ -104,7 +104,7 @@ TEST_F(ApiFacadeTest, 05_detectFromFile_face_default)
     ai.startup();
     EXPECT_TRUE(ai.isStarted());
 
-    std::string inputPath = AIVision::getBasePath() + "/images/mona.jpg";
+    std::string inputPath = AIVision::getBasePath() + "/images/person.jpg";
     std::string output;
     EXPECT_TRUE(ai.createDetector(type));
     EXPECT_TRUE(ai.detectFromFile(type, inputPath, output));
@@ -117,27 +117,7 @@ TEST_F(ApiFacadeTest, 05_detectFromFile_face_default)
     Logd(output);
 }
 
-TEST_F(ApiFacadeTest, 06_detectFromBase64_face_default)
-{
-    EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
-    EdgeAIVision ai = EdgeAIVision::getInstance();
-    ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-
-    auto base64image = aif::fileToStr(AIVision::getBasePath() + "/images/mona_base64.txt"); // 128 x 128
-    std::string output;
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detectFromBase64(type, base64image, output));
-    EXPECT_TRUE(ai.deleteDetector(type));
-    ai.shutdown();
-
-    rj::Document result;
-    result.Parse(output.c_str());
-    EXPECT_EQ(result["faces"].Size(), 1);
-    Logd(output);
-}
-
-TEST_F(ApiFacadeTest, 07_detect_pose_default)
+TEST_F(ApiFacadeTest, 06_detect_pose_default)
 {
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::POSE;
     EdgeAIVision ai = EdgeAIVision::getInstance();
@@ -159,7 +139,7 @@ TEST_F(ApiFacadeTest, 07_detect_pose_default)
     Logd(output);
 }
 
-TEST_F(ApiFacadeTest, 08_detectFromFile_pose_default)
+TEST_F(ApiFacadeTest, 07_detectFromFile_pose_default)
 {
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::POSE;
     EdgeAIVision ai = EdgeAIVision::getInstance();
@@ -179,7 +159,7 @@ TEST_F(ApiFacadeTest, 08_detectFromFile_pose_default)
     Logd(output);
 }
 
-TEST_F(ApiFacadeTest, 09_detect_segmentation_default)
+TEST_F(ApiFacadeTest, 08_detect_segmentation_default)
 {
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::SEGMENTATION;
     EdgeAIVision ai = EdgeAIVision::getInstance();
@@ -201,7 +181,7 @@ TEST_F(ApiFacadeTest, 09_detect_segmentation_default)
     //Logd(output);
 }
 
-TEST_F(ApiFacadeTest, 10_detectFromFile_segmentation_default)
+TEST_F(ApiFacadeTest, 09_detectFromFile_segmentation_default)
 {
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::SEGMENTATION;
     EdgeAIVision ai = EdgeAIVision::getInstance();
@@ -220,7 +200,8 @@ TEST_F(ApiFacadeTest, 10_detectFromFile_segmentation_default)
     EXPECT_EQ(result["segments"].Size(), 1);
 }
 
-TEST_F(ApiFacadeTest, 11_detect_face_full_range)
+#if 0
+TEST_F(ApiFacadeTest, 10_detect_face_full_range)
 {
     std::string param =
         "{ \
@@ -253,7 +234,7 @@ TEST_F(ApiFacadeTest, 11_detect_face_full_range)
     EXPECT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/mona.jpg", cv::IMREAD_COLOR);
+    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
     EXPECT_TRUE(ai.createDetector(type, param));
@@ -266,8 +247,9 @@ TEST_F(ApiFacadeTest, 11_detect_face_full_range)
     EXPECT_EQ(result["faces"].Size(), 1);
     Logd(output);
 }
+#endif
 
-TEST_F(ApiFacadeTest, 12_create_delete_detector)
+TEST_F(ApiFacadeTest, 11_create_delete_detector)
 {
     EdgeAIVision ai = EdgeAIVision::getInstance();
     ai.startup();
@@ -280,10 +262,10 @@ TEST_F(ApiFacadeTest, 12_create_delete_detector)
     ai.shutdown();
 }
 
-TEST_F(ApiFacadeTest, 13_use_api_before_startup)
+TEST_F(ApiFacadeTest, 12_use_api_before_startup)
 {
     std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/mona.jpg", cv::IMREAD_COLOR);
+    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
     EdgeAIVision ai = EdgeAIVision::getInstance();

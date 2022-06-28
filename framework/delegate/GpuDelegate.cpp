@@ -77,16 +77,16 @@ void GpuDelegate::setupOptions() {
                  priorities[2].GetString());
         }
     }
-    if (payload.HasMember("enable_quntized_inference")) {
-        if (payload["enable_quntized_inference"].GetBool()) {
+    if (payload.HasMember("enable_quantized_inference")) {
+        if (payload["enable_quantized_inference"].GetBool()) {
             m_delegateOptions.experimental_flags |=
                 TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_QUANT;
         } else {
             m_delegateOptions.experimental_flags &=
                 ~TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_QUANT;
         }
-        Logi("enabled quntized inference : ",
-             payload["enable_quntized_inference"].GetBool());
+        Logi("enabled quantized inference : ",
+             payload["enable_quantized_inference"].GetBool());
     }
     if (payload.HasMember("backends")) {
         const rj::Value &backends = payload["backends"];

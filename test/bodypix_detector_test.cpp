@@ -97,7 +97,7 @@ TEST_F(BodypixDetectorTest, 03_detect_base64)
     auto dt = DetectorFactory::get().getDetector("bodypix_mobilenet_cpu");
     EXPECT_TRUE(dt.get() != nullptr);
 
-    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
     BodypixDescriptor* bodypixDescriptor = new BodypixDescriptor();
     std::shared_ptr<Descriptor> descriptor(bodypixDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));

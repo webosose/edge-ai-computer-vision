@@ -4,9 +4,11 @@ project(edgeai-vision-test CXX)
 OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
 OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
 OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
+OPTION(WITH_WEBSOKCET_TEST "Enable Auto Delegate Selector Support" OFF)
 
-#set(BOOST_ROOT /home/worker)
-#set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
+IF("${AIF_INSTALL_TEST_DIR}" STREQUAL "")
+    set(AIF_INSTALL_TEST_DIR "${AIF_INSTALL_DIR}/test")
+ENDIF()
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
@@ -22,6 +24,7 @@ pkg_check_modules(GTEST REQUIRED gtest_main)
 pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
+pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
 
 # include directories
 include_directories(
@@ -29,6 +32,7 @@ include_directories(
     ${TFLITE_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIRS}
     ${RAPIDJSON_INCLUDE_DIRS}
+    ${PMLOGLIB_INCLUDE_DIRS}
 )
 
 # link directories
@@ -37,13 +41,13 @@ link_directories(
     ${TFLITE_LIBRARY_DIRS}
     ${OPENCV_LIBRARY_DIRS}
     ${RAPIDJSON_LIBRARY_DIRS}
+    ${PMLOGLIB_LIBRARY_DIRS}
 )
 
 add_definitions(
     -std=c++14
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
-    -DLOG_CONTEXT="FACE"
 )
 
 IF(WITH_EDGETPU)
@@ -55,6 +59,10 @@ IF(WITH_EDGETPU)
 ENDIF(WITH_EDGETPU)
 
 IF(WITH_ARMNN)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(ARMNN-DELEGATE REQUIRED armnn-delegate)
+    INCLUDE_DIRECTORIES(${ARMNN-DELEGATE_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${ARMNN-DELEGATE_LIBRARY_DIRS})
     ADD_DEFINITIONS(-DUSE_ARMNN)
 ENDIF(WITH_ARMNN)
 
@@ -95,39 +103,46 @@ set(SRC_FILES
     ${SRC_DIR}/detector_factory_test.cpp
     ${SRC_DIR}/logger_test.cpp
     ${SRC_DIR}/stopwatch_test.cpp
-    ${SRC_DIR}/websocket_test.cpp
-    ${SRC_DIR}/websocket_bigsize_data_test.cpp
     ${SRC_DIR}/util_test.cpp
     ${SRC_DIR}/yunet_face_detector_test.cpp
+    ${SRC_DIR}/yunet_face_param_test.cpp
+    ${SRC_DIR}/short_range_face_detector_test.cpp
     ${SRC_DIR}/face_descriptor_test.cpp
-    ${SRC_DIR}/face_detector_test.cpp
     ${SRC_DIR}/face_param_test.cpp
     ${SRC_DIR}/posenet_descriptor_test.cpp
     ${SRC_DIR}/posenet_detector_test.cpp
-    ${SRC_DIR}/movenet_descriptor_test.cpp
-    ${SRC_DIR}/movenet_detector_test.cpp
-    ${SRC_DIR}/bodypix_descriptor_test.cpp
-    ${SRC_DIR}/bodypix_detector_test.cpp
     ${SRC_DIR}/selfie_descriptor_test.cpp
     ${SRC_DIR}/selfie_detector_test.cpp
-    ${SRC_DIR}/semantic_descriptor_test.cpp
-    ${SRC_DIR}/semantic_detector_test.cpp
-    ${SRC_DIR}/poselandmark_descriptor_test.cpp
-    ${SRC_DIR}/poselandmark_detector_test.cpp
-    ${SRC_DIR}/handlandmark_descriptor_test.cpp
-    ${SRC_DIR}/handlandmark_detector_test.cpp
-    ${SRC_DIR}/palm_descriptor_test.cpp
-    ${SRC_DIR}/palm_detector_test.cpp
-    ${SRC_DIR}/palm_param_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
 )
+
+IF(WITH_EXTRA_MODELS)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${SRC_DIR}/full_range_face_detector_test.cpp
+        ${SRC_DIR}/movenet_descriptor_test.cpp
+        ${SRC_DIR}/movenet_detector_test.cpp
+        ${SRC_DIR}/bodypix_descriptor_test.cpp
+        ${SRC_DIR}/bodypix_detector_test.cpp
+        ${SRC_DIR}/semantic_descriptor_test.cpp
+        ${SRC_DIR}/semantic_detector_test.cpp
+        ${SRC_DIR}/poselandmark_descriptor_test.cpp
+        ${SRC_DIR}/poselandmark_detector_test.cpp
+        ${SRC_DIR}/handlandmark_descriptor_test.cpp
+        ${SRC_DIR}/handlandmark_detector_test.cpp
+        ${SRC_DIR}/palm_descriptor_test.cpp
+        ${SRC_DIR}/palm_detector_test.cpp
+        ${SRC_DIR}/palm_param_test.cpp
+    )
+ENDIF(WITH_EXTRA_MODELS)
 
 set(LIBS
     ${Boost_LIBRARIES}
     ${TFLITE_LIBRARIES}
     ${OPENCV_LIBRARIES}
     ${RAPIDJSON_LIBRARIES}
+    ${PMLOGLIB_LDFLAGS}
     edgeai-vision
     pthread
 )
@@ -150,6 +165,10 @@ IF(WITH_ARMNN)
         ${SRC_FILES}
         ${SRC_DIR}/armnn_delegate_test.cpp
     )
+    set(LIBS
+        ${LIBS}
+        ${ARMNN-DELEGATE_LIBRARIES}
+    )
 ENDIF(WITH_ARMNN)
 
 IF(WITH_GPU)
@@ -170,6 +189,13 @@ IF(WITH_AUTO_DELEGATE)
     )
 ENDIF(WITH_AUTO_DELEGATE)
 
+IF(WITH_WEBSOCKET_TEST)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${SRC_DIR}/websocket_test.cpp
+        ${SRC_DIR}/websocket_bigsize_data_test.cpp
+    )
+ENDIF(WITH_WEBSOCKET_TEST)
 
 add_executable(
     ${EXE_NAME}
@@ -181,9 +207,5 @@ target_link_libraries(${EXE_NAME}
     ${LIBS}
 )
 
-# Install Artifacts
-#install (
-#    PROGRAMS ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/${EXE_NAME}
-#    DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
-
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/images DESTINATION ${AIF_INSTALL_DIR})
+install(TARGETS ${EXE_NAME} DESTINATION ${AIF_INSTALL_TEST_DIR})

@@ -7,6 +7,7 @@
 #include <aif/log/Logger.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
+#include <aif/base/AIVision.h>
 
 #include <tensorflow/lite/kernels/internal/reference/non_max_suppression.h>
 #include <tensorflow/lite/kernels/register.h>

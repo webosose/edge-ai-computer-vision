@@ -34,7 +34,7 @@ class GpuDelegateTest : public ::testing::Test {
                          " \"inference_preference\": \"SUSTAINED_SPEED\" ,"
                          " \"inference_priorities\": [\"MIN_LATENCY\", "
                          " \"MIN_MEMORY_USAGE\", \"MAX_PRECISION\"], "
-                         " \"enable_quntized_inference\" : true"
+                         " \"enable_quantized_inference\" : true"
                          "}"};
 
     std::string options2{"{"
@@ -42,7 +42,7 @@ class GpuDelegateTest : public ::testing::Test {
                          " \"inference_preference\": \"FAST_SINGLE_ANSWER\" ,"
                          " \"inference_priorities\": [\"MAX_PRECISION\", "
                          " \"MIN_MEMORY_USAGE\", \"AUTO\"], "
-                         " \"enable_quntized_inference\" : false"
+                         " \"enable_quantized_inference\" : false"
                          "}"};
 };
 

@@ -1,18 +1,31 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.7)
 project (edgeai-vision)
+
+OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
+OPTION(WITH_EXTRA_MODELS "Enable Extra Models" OFF)
+OPTION(WITH_EXAMPLES "Enable Examples" OFF)
+OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
-add_subdirectory(framework)
-add_subdirectory(test)
-add_subdirectory(example/face-websocket-server)
-add_subdirectory(example/face-detect-sample)
-add_subdirectory(example/posenet-sample)
-add_subdirectory(example/poselandmark-sample)
-add_subdirectory(example/handlandmark-sample)
-add_subdirectory(example/palm-sample)
-add_subdirectory(example/apis/face)
+IF("${AIF_INSTALL_DIR}" STREQUAL "")
+    set(AIF_INSTALL_DIR "/usr/share/aif")
+ENDIF()
 
-add_dependencies(edgeai-vision-test edgeai-vision)
-add_dependencies(face-websocket-server edgeai-vision)
-add_dependencies(face-detect-sample edgeai-vision)
+IF(WITH_UPDATABLE_MODELS)
+    ADD_DEFINITIONS(-DUSE_UPDATABLE_MODELS)
+ENDIF(WITH_UPDATABLE_MODELS)
+
+IF(WITH_EXTRA_MODELS)
+    ADD_DEFINITIONS(-DUSE_EXTRA_MODELS)
+ENDIF(WITH_EXTRA_MODELS)
+
+add_subdirectory(framework)
+
+IF(WITH_EXAMPLES)
+    add_subdirectory(example)
+ENDIF()
+
+IF(WITH_UNIT_TEST)
+    add_subdirectory(test)
+ENDIF()

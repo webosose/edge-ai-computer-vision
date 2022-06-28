@@ -71,7 +71,7 @@ protected:
         "           \"inference_preference\": \"SUSTAINED_SPEED\" ,"
         "           \"inference_priorities\": [\"MIN_LATENCY\", "
         "           \"MIN_MEMORY_USAGE\", \"MAX_PRECISION\"], "
-        "           \"enable_quntized_inference\" : true"
+        "           \"enable_quantized_inference\" : true"
         "       }"
         "     }"
         "  ]"

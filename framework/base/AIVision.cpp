@@ -6,6 +6,10 @@
 #include <aif/base/AIVision.h>
 #include <aif/log/Logger.h>
 
+#ifdef USE_UPDATABLE_MODELS
+#include <AIAdaptor.h>
+#endif
+
 #define KEY_LOG_LEVEL "LogLevel"
 #define KEY_BASE_PATH "BasePath"
 
@@ -57,9 +61,36 @@ std::string AIVision::getBasePath()
     return s_basePath;
 }
 
-std::string AIVision::getModelFolderPath()
+#ifdef USE_UPDATABLE_MODELS
+int AIVision::getUpdatableModelIndex(const std::string& modelName)
 {
-    return getBasePath() + "/model/";
+    std::vector<std::string> updatableModels {
+        "face_detection_short_range.tflite",
+        "posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
+        "selfie_segmentation.tflite"
+    };
+
+    for (int i = 0; i < updatableModels.size(); i++) {
+        if (updatableModels[i] == modelName) {
+            return i;
+        }
+    }
+    return -1;
+}
+#endif
+
+std::string AIVision::getModelPath(const std::string& modelName)
+{
+#ifdef USE_UPDATABLE_MODELS
+    AIAdaptor adapter;
+    auto paths = adapter.getModelPaths("aif");
+
+    int index = getUpdatableModelIndex(modelName);
+    if (0 <= index && index < paths.size()) {
+        return paths[index];
+    }
+#endif
+    return getBasePath() + "/model/" + modelName;
 }
 
 

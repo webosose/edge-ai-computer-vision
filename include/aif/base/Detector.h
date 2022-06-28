@@ -43,6 +43,7 @@ class Detector {
     std::shared_ptr<DetectorParam> getParam() const { return m_param; }
     size_t getNumDelegates() const { return m_delegates.size(); }
     bool getAutoDelegateMode() const { return m_autoDelegateMode; }
+    std::string getModelPath() const;
 
   protected:
     virtual std::shared_ptr<DetectorParam> createParam() = 0;

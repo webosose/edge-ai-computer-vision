@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.8.7)
+project (edgeai-vision)
+
+IF("${AIF_INSTALL_EXAMPLE_DIR}" STREQUAL "")
+    set(AIF_INSTALL_EXAMPLE_DIR "${AIF_INSTALL_DIR}/example")
+ENDIF()
+
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/face)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-detect-sample)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/posenet-sample)
+
+IF(WITH_EXTRA_MODELS)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-websocket-server)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/poselandmark-sample)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/handlandmark-sample)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/palm-sample)
+ENDIF(WITH_EXTRA_MODELS)

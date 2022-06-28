@@ -15,7 +15,7 @@
 #endif
 
 #ifndef EDGEAI_VISION_CONFIG
-#define EDGEAI_VISION_CONFIG "aivision.config"
+#define EDGEAI_VISION_CONFIG "edgeai.config"
 #endif
 
 namespace aif {
@@ -26,7 +26,10 @@ public:
     static void deinit();
     static bool isInitialized();
     static std::string getBasePath();
-    static std::string getModelFolderPath();
+    static std::string getModelPath(const std::string& modelName);
+#ifdef USE_UPDATABLE_MODELS
+    static int getUpdatableModelIndex(const std::string& modelName);
+#endif
 
 private:
     static bool s_initialized;

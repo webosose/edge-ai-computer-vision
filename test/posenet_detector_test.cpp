@@ -128,7 +128,7 @@ TEST_F(PosenetDetectorTest, 04_cpu_posenet_from_base64_person)
     auto pd = DetectorFactory::get().getDetector("posenet_mobilenet_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
 
-    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
     PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(poseDescriptor);
     EXPECT_EQ(poseDescriptor->getPoseCount(), 0);

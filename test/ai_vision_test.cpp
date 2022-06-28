@@ -41,7 +41,7 @@ TEST_F(AIVisionTest, 02_getBasePath)
     AIVision::init();
     EXPECT_TRUE(AIVision::isInitialized());
     EXPECT_EQ(AIVision::getBasePath(), EDGEAI_VISION_HOME);
-    EXPECT_EQ(AIVision::getModelFolderPath(),
-            string(EDGEAI_VISION_HOME) +  "/model/");
+    EXPECT_EQ(AIVision::getModelPath("test.tflite"),
+            string(EDGEAI_VISION_HOME) +  "/model/test.tflite");
     AIVision::deinit();
 }

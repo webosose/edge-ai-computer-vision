@@ -93,7 +93,7 @@ TEST_F(PoseLandmarkDetectorTest, 04_cpu_poselandmark_from_base64_mona)
     auto pd = DetectorFactory::get().getDetector("poselandmark_lite_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
 
-    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
     PoseLandmarkDescriptor* poselandmarkDescriptor = new PoseLandmarkDescriptor();
     std::shared_ptr<Descriptor> descriptor(poselandmarkDescriptor);
     EXPECT_TRUE(descriptor->hasMember("poses"));

@@ -75,14 +75,14 @@ TEST_F(UtilTest, util01_base64_encode)
 
 TEST_F(UtilTest, util02_base64_decode)
 {
-    // std::string base64_file = "images/mona_base64.txt";
+    // std::string base64_file = "images/mona_base64.jpg";
     // std::stringstream encoded_str;
     // std::ifstream fin { base64_file };
     // EXPECT_FALSE(!fin);
     // encoded_str << fin.rdbuf();
     // fin.close();
 
-    auto encoded_str = aif::fileToStr(basePath + "/images/mona_base64.txt");
+    auto encoded_str = aif::fileToStr(basePath + "/images/mona_base64.jpg");
     Logd(encoded_str);
 
     auto decoded_size = base64::decoded_size(encoded_str.size());
@@ -112,7 +112,7 @@ TEST_F(UtilTest, util03_base64Encode_to_string)
 
 TEST_F(UtilTest, util04_base64Encode_to_file)
 {
-    bool result = aif::base64Encode(basePath + "/images/mona.jpg", basePath + "/images/mona_base64.txt");
+    bool result = aif::base64Encode(basePath + "/images/mona.jpg", basePath + "/images/mona_base64.jpg");
     EXPECT_TRUE(result);
 }
 
@@ -152,7 +152,7 @@ TEST_F(UtilTest, util06_base64Decode_to_file)
 
 TEST_F(UtilTest, util07_base64Decode_normalize)
 {
-    auto base64str = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
+    auto base64str = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
 
     const int width = 128;
     const int height = 128;

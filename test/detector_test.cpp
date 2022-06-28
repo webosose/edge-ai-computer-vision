@@ -55,6 +55,7 @@ class TestDetector : public Detector {
     bool isCalledPreProcessing;
     bool isCalledFillInputTensor;
     bool isCalledPostProcessing;
+
 };
 
 class DetectorTest : public ::testing::Test {

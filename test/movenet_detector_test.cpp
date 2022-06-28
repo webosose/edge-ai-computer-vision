@@ -110,7 +110,7 @@ TEST_F(MovenetDetectorTest, 04_cpu_movenet_from_base64_mona)
     auto pd = DetectorFactory::get().getDetector("movenet_thunder_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
 
-    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
     MovenetDescriptor* movenetDescriptor = new MovenetDescriptor();
     std::shared_ptr<Descriptor> descriptor(movenetDescriptor);
     EXPECT_FALSE(descriptor->hasMember("poses"));

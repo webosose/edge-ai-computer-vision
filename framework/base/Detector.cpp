@@ -57,7 +57,6 @@ t_aif_status Detector::init(const std::string &param) {
     }
 }
 
-
 void Detector::setModelInfo(TfLiteTensor* inputTensor)
 {
     m_modelInfo.batchSize = inputTensor->dims->data[0];
@@ -72,10 +71,15 @@ void Detector::setModelInfo(TfLiteTensor* inputTensor)
     TRACE("channels: ", m_modelInfo.channels);
 }
 
+std::string Detector::getModelPath() const
+{
+    return AIVision::getModelPath(m_modelName);
+}
+
 t_aif_status Detector::compile() {
     std::stringstream errlog;
     try {
-        std::string path = AIVision::getModelFolderPath() + m_modelName;
+        std::string path = getModelPath();
         m_model = tflite::FlatBufferModel::BuildFromFile(path.c_str());
         if (m_model == nullptr) {
             errlog.clear();

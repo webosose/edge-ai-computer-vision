@@ -27,7 +27,7 @@ const char* getDetectResult(const char* image, int type)
 
     EdgeAIVision::DetectorType detectorType = (EdgeAIVision::DetectorType)type;
 
-    EdgeAIVision ai = EdgeAIVision::getInstance();
+    EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
 
     ai.createDetector(detectorType);

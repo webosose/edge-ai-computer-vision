@@ -105,7 +105,7 @@ t_aif_status YuNetFaceParam::fromJson(const std::string& param)
         if (modelParam.HasMember("scoreThreshold"))
             scoreThreshold = modelParam["scoreThreshold"].GetFloat();
 
-        if (modelParam.HasMember("scoreThreshold"))
+        if (modelParam.HasMember("nmsThreshold"))
             nmsThreshold = modelParam["nmsThreshold"].GetFloat();
 
         if (modelParam.HasMember("topK"))

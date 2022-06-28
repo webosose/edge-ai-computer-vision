@@ -80,7 +80,7 @@ TEST_F(SelfieDetectorTest, 03_detect_base64)
     auto dt = DetectorFactory::get().getDetector("selfie_mediapipe_cpu");
     EXPECT_TRUE(dt.get() != nullptr);
 
-    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.txt"); // 128 x 128
+    auto base64image = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
     SelfieDescriptor* selfieDescriptor = new SelfieDescriptor();
     std::shared_ptr<Descriptor> descriptor(selfieDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));

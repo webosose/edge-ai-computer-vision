@@ -14,7 +14,7 @@ int main()
     std::string output;
 
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
-    EdgeAIVision ai = EdgeAIVision::getInstance();
+    EdgeAIVision& ai = EdgeAIVision::getInstance();
 
     ai.startup();
     ai.createDetector(type);
