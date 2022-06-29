@@ -18,6 +18,9 @@ OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
+IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
+    set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
+ENDIF()
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
@@ -169,9 +172,12 @@ target_link_libraries(${LIB_NAME}
     ${LIBS}
 )
 
+install(FILES ${CMAKE_SOURCE_DIR}/files/edgeai-vision.pc.in
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig RENAME edgeai-vision.pc)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/aif
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(TARGETS edgeai-vision
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/log")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/tools")
