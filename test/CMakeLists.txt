@@ -98,6 +98,7 @@ set(SRC_FILES
     ${SRC_DIR}/websocket_test.cpp
     ${SRC_DIR}/websocket_bigsize_data_test.cpp
     ${SRC_DIR}/util_test.cpp
+    ${SRC_DIR}/yunet_face_detector_test.cpp
     ${SRC_DIR}/face_descriptor_test.cpp
     ${SRC_DIR}/face_detector_test.cpp
     ${SRC_DIR}/face_param_test.cpp

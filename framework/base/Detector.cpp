@@ -57,6 +57,21 @@ t_aif_status Detector::init(const std::string &param) {
     }
 }
 
+
+void Detector::setModelInfo(TfLiteTensor* inputTensor)
+{
+    m_modelInfo.batchSize = inputTensor->dims->data[0];
+    m_modelInfo.height = inputTensor->dims->data[1];
+    m_modelInfo.width = inputTensor->dims->data[2];
+    m_modelInfo.channels = inputTensor->dims->data[3];
+
+    TRACE("input_size: ", m_modelInfo.inputSize);
+    TRACE("batch_size: ", m_modelInfo.batchSize);
+    TRACE("height:", m_modelInfo.height);
+    TRACE("width: ", m_modelInfo.width);
+    TRACE("channels: ", m_modelInfo.channels);
+}
+
 t_aif_status Detector::compile() {
     std::stringstream errlog;
     try {
@@ -112,17 +127,7 @@ t_aif_status Detector::compile() {
         if (m_modelInfo.inputSize != 4) {
             throw std::runtime_error("this model input require 4 tensors");
         }
-
-        m_modelInfo.batchSize = tensor_input->dims->data[0];
-        m_modelInfo.height = tensor_input->dims->data[1];
-        m_modelInfo.width = tensor_input->dims->data[2];
-        m_modelInfo.channels = tensor_input->dims->data[3];
-
-        TRACE("input_size: ", m_modelInfo.inputSize);
-        TRACE("batch_size: ", m_modelInfo.batchSize);
-        TRACE("height:", m_modelInfo.height);
-        TRACE("width: ", m_modelInfo.width);
-        TRACE("channels: ", m_modelInfo.channels);
+        setModelInfo(tensor_input);
 
         return kAifOk;
     } catch (const std::exception &e) {

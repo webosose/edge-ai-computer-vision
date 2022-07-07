@@ -52,6 +52,7 @@ class Detector {
     postProcessing(const cv::Mat &img,
                    std::shared_ptr<Descriptor> &descriptor) = 0;
 
+    virtual void setModelInfo(TfLiteTensor* inputTensor);
     virtual t_aif_status compile();
     virtual t_aif_status
     compileModel(tflite::ops::builtin::BuiltinOpResolver &resolver);

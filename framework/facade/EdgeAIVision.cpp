@@ -8,7 +8,7 @@
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
 
-#define DEFAULT_FACE_MODEL "face_short_range_cpu"
+#define DEFAULT_FACE_MODEL "face_yunet_cpu"
 #define DEFAULT_POSE_MODEL "posenet_mobilenet_cpu"
 #define DEFAULT_SEGMENTATION_MODEL "selfie_mediapipe_cpu"
 

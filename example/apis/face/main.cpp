@@ -9,7 +9,8 @@ using namespace aif;
 
 int main()
 {
-    cv::Mat input = cv::imread("/usr/share/aif/images/mona.jpg", cv::IMREAD_COLOR);
+    cv::Mat input = cv::imread("/usr/share/aif/images/person.jpg", cv::IMREAD_COLOR);
+    cv::Mat input2 = cv::imread("/usr/share/aif/images/5faces.jpg", cv::IMREAD_COLOR);
     std::string output;
 
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
@@ -17,10 +18,16 @@ int main()
 
     ai.startup();
     ai.createDetector(type);
+
     ai.detect(type, input, output);
+    std::cout << output << std:: endl;
+
+    ai.detect(type, input2, output);
+    std::cout << output << std:: endl;
+
+
     ai.deleteDetector(type);
     ai.shutdown();
 
-    std::cout << output << std:: endl;
     return 0;
 }

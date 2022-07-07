@@ -28,8 +28,6 @@ ConfigReader::ConfigReader(const std::string& fileName, const std::string& defau
             m_document.ParseStream(isw);
             ifs.close();
             std::cout << "Load config file: " << fileName << std::endl;
-        } else {
-            std::cout <<"Failed to load config file: " << fileName << std::endl;
         }
     } else if (!defaultConfig.empty()){
         loadFromString(defaultConfig);
