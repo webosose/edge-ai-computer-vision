@@ -10,3 +10,7 @@ Open Source Software Package:
   version: eel
   source: https://github.com/google-coral/edgetpu
   license: Apache-2.0
+- name: opencv
+  version: 4.5.5
+  source: https://github.com/opencv/opencv
+  license: Apache-2.0
