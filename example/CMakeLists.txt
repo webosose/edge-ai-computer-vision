@@ -7,6 +7,7 @@ ENDIF()
 
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/face)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/websocket-service)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-detect-sample)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/posenet-sample)
 
