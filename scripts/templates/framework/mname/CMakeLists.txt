@@ -11,7 +11,6 @@ set(MNAME_SRC
 
 IF(WITH_EDGETPU)
     set(MNAME_EDGETPU_SRC
-        ${MNAME_SRC_DIR}/EdgeTpuMNameDetector.cpp
     )
 ENDIF(WITH_EDGETPU)
 

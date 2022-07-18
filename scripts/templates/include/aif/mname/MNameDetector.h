@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef AIF_MNAME_DETECTOR_H
 #define AIF_MNAME_DETECTOR_H
 
@@ -16,13 +21,11 @@ public:
 
 protected:
     std::shared_ptr<DetectorParam> createParam() override;
+    void setModelInfo(TfLiteTensor* inputTensor) override;
     t_aif_status fillInputTensor(const cv::Mat& img) override;
     t_aif_status preProcessing() override;
     t_aif_status postProcessing(const cv::Mat& img,
             std::shared_ptr<Descriptor>& descriptor) override;
-
-private:
-    void printOutput();
 };
 
 } // end of namespace aif

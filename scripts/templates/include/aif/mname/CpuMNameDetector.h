@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef AIF_CPU_MNAME_DETECTOR_H
 #define AIF_CPU_MNAME_DETECTOR_H
 
@@ -16,10 +21,6 @@ class CpuMNameDetector : public MNameDetector {
     template <typename T1, typename T2>
     friend class DetectorFactoryRegistration;
     virtual ~CpuMNameDetector();
-
-  protected:
-    t_aif_status
-    compileModel(tflite::ops::builtin::BuiltinOpResolver &resolver) override;
 };
 
 DetectorFactoryRegistration<CpuMNameDetector, MNameDescriptor>

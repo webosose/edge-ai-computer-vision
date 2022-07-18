@@ -1,11 +1,14 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef AIF_MNAME_PARAM_H
 #define AIF_MNAME_PARAM_H
 
 #include <aif/base/Types.h>
 #include <aif/base/DetectorParam.h>
 
-#include <memory>
-#include <vector>
 #include <ostream>
 
 namespace aif {

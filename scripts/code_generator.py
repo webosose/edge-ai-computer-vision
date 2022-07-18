@@ -9,13 +9,13 @@ parser = argparse.ArgumentParser(description=textwrap.dedent( ''' Code Generator
     formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('name', help='function name')
 parser.add_argument('cpu_model', help='cpu model name')
-parser.add_argument('tpu_model', help='edgetpu model name')
+#parser.add_argument('tpu_model', help='edgetpu model name')
 #parser.add_argument('-i', help='install output', default=False, action='store_true')
 
 args= parser.parse_args()
 
 cpu_model_name = args.cpu_model
-tpu_model_name = args.tpu_model
+#tpu_model_name = args.tpu_model
 fname = args.name 
 Fname = fname.capitalize()
 FNAME = fname.upper()
@@ -25,8 +25,10 @@ f1 = ['templates', 'mname', 'MName']
 f2 = ['output', fname, Fname]
 
 # replace sources contents
-t1 = ['MNAME', 'MName', 'mname', 'cpu_model_name', 'tpu_model_name']
-t2 = [FNAME, Fname, fname, cpu_model_name, tpu_model_name]
+#t1 = ['MNAME', 'MName', 'mname', 'cpu_model_name', 'tpu_model_name']
+#t2 = [FNAME, Fname, fname, cpu_model_name, tpu_model_name]
+t1 = ['MNAME', 'MName', 'mname', 'cpu_model_name']
+t2 = [FNAME, Fname, fname, cpu_model_name]
 types = ('*.h', '*.cpp', '*.txt') 
 
 src_path = './templates/**/'
