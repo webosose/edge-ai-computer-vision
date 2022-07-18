@@ -21,7 +21,8 @@ enum class DetectorType {
 using namespace aif;
 static std::string output;
 
-const char* getDetectResult(const char* image, int type)
+
+static const char* _detect(const char* image, int type, const char* option)
 {
     cv::Mat input = cv::imread(image, cv::IMREAD_COLOR);
 
@@ -30,7 +31,7 @@ const char* getDetectResult(const char* image, int type)
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
 
-    ai.createDetector(detectorType);
+    ai.createDetector(detectorType, option);
 
     ai.detect(detectorType, input, output);
 
@@ -38,6 +39,16 @@ const char* getDetectResult(const char* image, int type)
     ai.shutdown();
 
     return output.c_str();
+}
+
+const char* getDetectResult(const char* image, int type)
+{
+    return _detect(image, type, "");
+}
+
+const char* getDetectResultWithOption(const char* image, int type, const char* option)
+{
+    return _detect(image, type, option);
 }
 
 #ifdef __cplusplus
