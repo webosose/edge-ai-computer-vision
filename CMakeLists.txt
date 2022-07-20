@@ -5,6 +5,7 @@ OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
 OPTION(WITH_EXTRA_MODELS "Enable Extra Models" OFF)
 OPTION(WITH_EXAMPLES "Enable Examples" OFF)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
+OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
 
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
@@ -26,6 +27,9 @@ IF(WITH_EXAMPLES)
     add_subdirectory(example)
 ENDIF()
 
-IF(WITH_UNIT_TEST)
+IF(WITH_HOST_TEST)        ### for meta-shift unit test ###
+    enable_testing()
+    add_subdirectory(test)
+ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test)
 ENDIF()

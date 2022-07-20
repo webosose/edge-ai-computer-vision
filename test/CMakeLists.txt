@@ -12,6 +12,7 @@ ENDIF()
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
+find_package(GTest REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -48,6 +49,7 @@ add_definitions(
     -std=c++14
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
+    -DEDGEAI_VISION_HOME="${AIF_INSTALL_DIR}"
 )
 
 IF(WITH_EDGETPU)
@@ -205,8 +207,19 @@ add_executable(
 
 target_link_libraries(${EXE_NAME}
     ${GTEST_LIBRARIES}
+    ${GTEST_MAIN_LIBRARIES}
     ${LIBS}
 )
+
+IF(WITH_HOST_TEST)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test/tmp)
+  file(COPY ${CMAKE_SOURCE_DIR}/images DESTINATION ${CMAKE_BINARY_DIR}/test/tmp)
+  file(COPY ${CMAKE_SOURCE_DIR}/model DESTINATION ${CMAKE_BINARY_DIR}/test/tmp)
+  file(COPY ${CMAKE_SOURCE_DIR}/extra_models/ DESTINATION ${CMAKE_BINARY_DIR}/test/tmp/model/)
+
+  ADD_DEFINITIONS(-DUSE_HOST_TEST)
+  gtest_add_tests(${EXE_NAME} "" AUTO)
+ENDIF(WITH_HOST_TEST)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/images DESTINATION ${AIF_INSTALL_DIR})
 install(TARGETS ${EXE_NAME} DESTINATION ${AIF_INSTALL_TEST_DIR})

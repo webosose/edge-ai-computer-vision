@@ -93,7 +93,7 @@ TEST_F(AutoDelegateTest, 01_use_default)
     EXPECT_TRUE(pd->getAutoDelegateMode());
 }
 
-
+#ifndef USE_HOST_TEST
 TEST_F(AutoDelegateTest, 02_not_use_auto_delegate)
 {
     auto pd = DetectorFactory::get().getDetector("posenet_mobilenet_cpu", not_use_auto_delegate);
@@ -119,3 +119,4 @@ TEST_F(AutoDelegateTest, 03_use_auto_delegate)
     EXPECT_EQ(poseDescriptor->getPoseCount(), 5);
     EXPECT_TRUE(pd->getAutoDelegateMode());
 }
+#endif
