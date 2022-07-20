@@ -56,8 +56,8 @@ TEST_F(FaceDetectorTest, 01_full_range_init)
     EXPECT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "face_detection_full_range.tflite");
     auto modelInfo = fd->getModelInfo();
-    EXPECT_EQ(modelInfo.height, 128);
-    EXPECT_EQ(modelInfo.width, 128);
+    EXPECT_EQ(modelInfo.height, 192);
+    EXPECT_EQ(modelInfo.width, 192);
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
