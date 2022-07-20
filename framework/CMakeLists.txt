@@ -164,7 +164,10 @@ IF(WITH_AUTO_DELEGATE)
 ENDIF(WITH_AUTO_DELEGATE)
 
 IF(WITH_UPDATABLE_MODELS)
-    set(LIBS ailoader)
+    set(LIBS
+        ${LIBS}
+        ailoader
+    )
 ENDIF(WITH_UPDATABLE_MODELS)
 
 add_library(${LIB_NAME}
