@@ -105,6 +105,9 @@ TEST_F(UtilTest, util02_base64_decode)
 
 TEST_F(UtilTest, util03_base64Encode_to_string)
 {
+    std::string base64str_xxx = aif::base64Encode(basePath + "/images/xxx.jpg"); /* file not exist */
+    EXPECT_EQ(base64str_xxx, "");
+
     std::string base64str = aif::base64Encode(basePath + "/images/mona.jpg");
     EXPECT_TRUE(base64str.size() > 0);
     Logd(base64str);
@@ -167,4 +170,70 @@ TEST_F(UtilTest, util07_base64Decode_normalize)
         imgData
     );
     EXPECT_TRUE(result);
+}
+
+TEST_F(UtilTest, util08_image_normalize)
+{
+    auto imagePathstr = basePath + "/images/mona.jpg";    // 200 x 298
+    const int width = 200;
+    const int height = 298;
+    const int channels = 3;
+    int imgDataSize = height * width * channels;
+    std::vector<float> imgData(imgDataSize);
+    auto result = aif::normalizeWithImage(
+        imagePathstr,
+        width,
+        height,
+        channels,
+        imgData
+    );
+    EXPECT_TRUE(result);
+}
+
+TEST_F(UtilTest, util09_floatEquals)
+{
+    EXPECT_TRUE(aif::floatEquals(0.001, 0.001));
+    EXPECT_FALSE(aif::floatEquals(0.001, 0.003));
+    EXPECT_FALSE(aif::floatEquals(0.003, 0.001));
+}
+
+TEST_F(UtilTest, util10_getCvImage)
+{
+    cv::Mat cvImg;
+    auto ret = aif::getCvImageFrom(basePath + "/images/mona.jpg", cvImg);
+    EXPECT_EQ(ret, aif::kAifOk);
+
+    auto base64str = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
+    ret = aif::getCvImageFromBase64(base64str, cvImg);
+    EXPECT_EQ(ret, aif::kAifOk);
+}
+
+TEST_F(UtilTest, util11_splitString)
+{
+    std::string str = ":abc:de:f:";
+
+    auto strings = aif::splitString(str, ':');
+
+    EXPECT_EQ(strings.size(), 4);
+
+    EXPECT_EQ(strings[0], "");
+    EXPECT_EQ(strings[1], "abc");
+    EXPECT_EQ(strings[2], "de");
+    EXPECT_EQ(strings[3], "f");
+}
+
+TEST_F(UtilTest, util12_isIOU)
+{
+    /* x, y, w, h */
+    cv::Rect2f rect1(1.0, 3.0, 4.0, 6.0);
+    cv::Rect2f rect2(3.0, 5.0, 6.0, 6.0);
+    cv::Rect2f rect3(1.1, 2.9, 3.9, 5.9);
+    cv::Rect2f rect4(5.0, 3.0, 2.0, 3.0);
+
+    EXPECT_FALSE(aif::isIOU(rect1, rect2, 0.7f));
+    EXPECT_FALSE(aif::isIOU(rect2, rect1, 0.7f));
+    EXPECT_TRUE(aif::isIOU(rect1, rect3, 0.7f));
+    EXPECT_TRUE(aif::isIOU(rect3, rect1, 0.7f));
+    EXPECT_FALSE(aif::isIOU(rect1, rect4, 0.7f));
+
 }

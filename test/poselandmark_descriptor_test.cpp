@@ -94,7 +94,7 @@ TEST_F(PoseLandmarkDescriptorTest, 03_addMaskData_two)
     descriptor.addMaskData(width, height, mask1);
     descriptor.addMaskData(width, height, mask2);
     std::vector<std::vector<cv::Rect2f>> prev;
-    descriptor.makeBodyParts(prev, 0.3f);
+    descriptor.makeBodyParts(prev, 0.7f);
 
     auto json = descriptor.toStr();
     rj::Document d;
@@ -125,7 +125,7 @@ TEST_F(PoseLandmarkDescriptorTest, 04_addLandmarks)
 
     descriptor.addLandmarks(landmarks);
     std::vector<std::vector<cv::Rect2f>> prev;
-    descriptor.makeBodyParts(prev, 0.3f);
+    descriptor.makeBodyParts(prev, 0.7f);
 
     auto json = descriptor.toStr();
     rj::Document d;
@@ -160,7 +160,7 @@ TEST_F(PoseLandmarkDescriptorTest, 05_add_response_and_returncode)
 
     descriptor.addLandmarks(landmarks);
     std::vector<std::vector<cv::Rect2f>> prev;
-    descriptor.makeBodyParts(prev, 0.3f);
+    descriptor.makeBodyParts(prev, 0.7f);
 
     descriptor.addResponseName("poselandmark_detect");
     descriptor.addReturnCode(kAifOk);

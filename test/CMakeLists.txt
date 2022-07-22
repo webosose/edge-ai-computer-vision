@@ -114,8 +114,10 @@ set(SRC_FILES
     ${SRC_DIR}/face_param_test.cpp
     ${SRC_DIR}/posenet_descriptor_test.cpp
     ${SRC_DIR}/posenet_detector_test.cpp
+    ${SRC_DIR}/posenet_param_test.cpp
     ${SRC_DIR}/selfie_descriptor_test.cpp
     ${SRC_DIR}/selfie_detector_test.cpp
+    ${SRC_DIR}/selfie_param_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
 )
@@ -126,14 +128,19 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/full_range_face_detector_test.cpp
         ${SRC_DIR}/movenet_descriptor_test.cpp
         ${SRC_DIR}/movenet_detector_test.cpp
+        ${SRC_DIR}/movenet_param_test.cpp
         ${SRC_DIR}/bodypix_descriptor_test.cpp
         ${SRC_DIR}/bodypix_detector_test.cpp
+        ${SRC_DIR}/bodypix_param_test.cpp
         ${SRC_DIR}/semantic_descriptor_test.cpp
         ${SRC_DIR}/semantic_detector_test.cpp
+        ${SRC_DIR}/semantic_param_test.cpp
         ${SRC_DIR}/poselandmark_descriptor_test.cpp
         ${SRC_DIR}/poselandmark_detector_test.cpp
+        ${SRC_DIR}/poselandmark_param_test.cpp
         ${SRC_DIR}/handlandmark_descriptor_test.cpp
         ${SRC_DIR}/handlandmark_detector_test.cpp
+        ${SRC_DIR}/handlandmark_param_test.cpp
         ${SRC_DIR}/palm_descriptor_test.cpp
         ${SRC_DIR}/palm_detector_test.cpp
         ${SRC_DIR}/palm_param_test.cpp

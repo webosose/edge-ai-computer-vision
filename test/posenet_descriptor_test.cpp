@@ -52,7 +52,7 @@ TEST_F(PosenetDescriptorTest, 02_addKeyPoints_one)
     std::vector<float> scores(17);
     jpd.addKeyPoints(0.5, keypoints, scores);
     std::vector<std::vector<cv::Rect2f>> prev;
-    jpd.makeBodyParts(prev, 0.3f);
+    jpd.makeBodyParts(prev, 0.7f);
 
     auto json = jpd.toStr();
     Logd(json);
@@ -85,7 +85,7 @@ TEST_F(PosenetDescriptorTest, 03_addPosenet_two)
     }
     jpd.addKeyPoints(0.5, keypoints2, scores);
     std::vector<std::vector<cv::Rect2f>> prev;
-    jpd.makeBodyParts(prev, 0.3f);
+    jpd.makeBodyParts(prev, 0.7f);
 
     auto json = jpd.toStr();
     Logd(json);
@@ -110,7 +110,7 @@ TEST_F(PosenetDescriptorTest, 04_add_response_and_returncode)
     std::vector<float> scores(17);
     jpd.addKeyPoints(0.5, keypoints, scores);
     std::vector<std::vector<cv::Rect2f>> prev;
-    jpd.makeBodyParts(prev, 0.3f);
+    jpd.makeBodyParts(prev, 0.7f);
 
     jpd.addResponseName("face_detect");
     jpd.addReturnCode(kAifOk);

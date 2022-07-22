@@ -12,7 +12,7 @@ namespace aif {
 
 PoseLandmarkDetector::PoseLandmarkDetector(const std::string& modelPath)
     : Detector(modelPath )
-    , m_iouThreshold(0.3f)
+    , m_iouThreshold(0.7f)
 {
 }
 

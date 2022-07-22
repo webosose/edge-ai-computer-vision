@@ -91,7 +91,7 @@ PoseLandmarkDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev,
 
     int i = 0;
     cv::Rect2f faceRect = getRect(NOSE, RIGHT_MOUTH);
-    if (i < prev.size() && !isIOU(faceRect, prev[i][0], iouThreshold)) {
+    if (i < prev.size() && isIOU(faceRect, prev[i][0], iouThreshold)) {
         faceRect = prev[i][0];
     }
     rj::Value face(rj::kObjectType);
@@ -106,7 +106,7 @@ PoseLandmarkDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev,
 
 
     cv::Rect2f bodyRect = getRect(NOSE, RIGHT_FOOT_INDEX);
-    if (i < prev.size() && !isIOU(bodyRect, prev[i][1], iouThreshold)) {
+    if (i < prev.size() && isIOU(bodyRect, prev[i][1], iouThreshold)) {
         bodyRect = prev[i][1];
     }
     rj::Value body(rj::kObjectType);
@@ -120,7 +120,7 @@ PoseLandmarkDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev,
     person.AddMember("body", body, allocator);
 
     cv::Rect2f upperBodyRect = getRect(NOSE, RIGHT_HIP);
-    if (i < prev.size() && !isIOU(upperBodyRect, prev[i][2], iouThreshold)) {
+    if (i < prev.size() && isIOU(upperBodyRect, prev[i][2], iouThreshold)) {
         upperBodyRect = prev[i][2];
     }
     rj::Value upperBody(rj::kObjectType);

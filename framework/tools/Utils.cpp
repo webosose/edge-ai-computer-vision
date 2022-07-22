@@ -203,7 +203,7 @@ bool normalizeWithImage(
         }
 
         cv::Mat img_resized;
-        cv::resize(img, img_resized, cv::Size(height, width), 0, 0, cv::INTER_LINEAR);
+        cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
         //EXPECT_TRUE(img_resized.rows == height);
         //EXPECT_TRUE(img_resized.cols == width);
         if (img_resized.rows != height || img_resized.cols != width) {
@@ -257,7 +257,7 @@ bool normalizeWithBase64Image(
         cv::Mat img_resized = cv::imdecode(cv::Mat(decoded_image), 1);
         // EXPECT_TRUE(img.rows > 0 && img.cols > 0);
         // cv::Mat img_resized;
-        // cv::resize(img, img_resized, cv::Size(height, width), 0, 0, cv::INTER_LINEAR);
+        // cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
         // EXPECT_TRUE(img_resized.rows == height);
         // EXPECT_TRUE(img_resized.cols == width);
         if (img_resized.rows != height || img_resized.cols != width) {
@@ -372,7 +372,7 @@ bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
         (std::min(y1 + h1, y2 + h2) - y2);
     float A_or_B = A + B - A_and_B;
 
-    return ((A_and_B / A_or_B) < (1.0f - threshold));
+    return ((A_and_B / A_or_B) > threshold);
 }
 
 } // end of namespace aif
