@@ -28,6 +28,8 @@ EdgeAIVision &EdgeAIVision::getInstance() {
 bool EdgeAIVision::isStarted() const { return AIVision::isInitialized(); }
 
 bool EdgeAIVision::startup(const std::string &basePath) {
+
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (AIVision::isInitialized())
         return false;
 
@@ -36,10 +38,12 @@ bool EdgeAIVision::startup(const std::string &basePath) {
 }
 
 bool EdgeAIVision::shutdown() {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (!AIVision::isInitialized())
         return false;
 
     DetectorFactory::get().clear();
+    m_selectedModels.clear();
 
     AIVision::deinit();
     return !isStarted();
@@ -59,6 +63,7 @@ std::string EdgeAIVision::getDefaultModel(DetectorType type) const {
 
 bool EdgeAIVision::createDetector(DetectorType type,
                                   const std::string &option) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -70,14 +75,16 @@ bool EdgeAIVision::createDetector(DetectorType type,
     std::string model = getDefaultModel(type);
     std::string param;
 
-    rj::Document json;
-    rj::ParseResult ok = json.Parse(option.c_str());
-    if (ok) {
-        if (json.HasMember("model")) {
-            model = json["model"].GetString();
-        }
-        if (json.HasMember("param")) {
-            param = jsonObjectToString(json["param"]);
+    if (!option.empty()) {
+        rj::Document json;
+        rj::ParseResult ok = json.Parse(option.c_str());
+        if (ok) {
+            if (json.IsObject() && json.HasMember("model")) {
+                model = json["model"].GetString();
+            }
+            if (json.IsObject() && json.HasMember("param")) {
+                param = jsonObjectToString(json["param"]);
+            }
         }
     }
     m_selectedModels[type] = model;
@@ -86,6 +93,7 @@ bool EdgeAIVision::createDetector(DetectorType type,
 }
 
 bool EdgeAIVision::deleteDetector(DetectorType type) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -101,6 +109,7 @@ bool EdgeAIVision::deleteDetector(DetectorType type) {
 
 bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
                           std::string &output) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -125,6 +134,7 @@ bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
 bool EdgeAIVision::detectFromFile(DetectorType type,
                                   const std::string &inputPath,
                                   std::string &output) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;
@@ -148,6 +158,7 @@ bool EdgeAIVision::detectFromFile(DetectorType type,
 
 bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
                                     std::string &output) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (!isStarted()) {
         Loge("Edge AI Vision is not started");
         return false;

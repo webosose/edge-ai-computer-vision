@@ -7,6 +7,7 @@
 #define AIF_EDGEAI_VISION_H
 
 #include <opencv2/opencv.hpp>
+#include <mutex>
 
 namespace aif {
 
@@ -23,6 +24,9 @@ class EdgeAIVision {
         SEGMENTATION, ///< Segmentation Detector (Default Model: mediapipe
                       ///< selfie)
     };
+
+    EdgeAIVision(const EdgeAIVision& other) = delete;
+    EdgeAIVision& operator=(const EdgeAIVision& rhs) = delete;
 
     /**
      * @brief get instance for Edge AI Vision
@@ -95,6 +99,7 @@ class EdgeAIVision {
   private:
     static std::once_flag s_onceFlag;
     static std::unique_ptr<EdgeAIVision> s_instance;
+    mutable std::mutex m_mutex;
     std::map<DetectorType, std::string> m_selectedModels;
 
     EdgeAIVision() = default;
