@@ -8,6 +8,8 @@ set(FACE_SRC
     ${FACE_SRC_DIR}/CpuFaceDetector.cpp
     ${FACE_SRC_DIR}/YuNetFaceParam.cpp
     ${FACE_SRC_DIR}/YuNetFaceDetector.cpp
+    ${FACE_SRC_DIR}/YuNetFaceDetectorV2.cpp
+    ${FACE_SRC_DIR}/YuNetFaceDetectorV2s.cpp
 )
 
 IF(WITH_EDGETPU)

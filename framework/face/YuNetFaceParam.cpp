@@ -102,14 +102,20 @@ t_aif_status YuNetFaceParam::fromJson(const std::string& param)
     payload.Parse(param.c_str());
     if (payload.HasMember("modelParam")) {
         rj::Value& modelParam = payload["modelParam"];
-        if (modelParam.HasMember("scoreThreshold"))
+        if (modelParam.HasMember("scoreThreshold")) {
             scoreThreshold = modelParam["scoreThreshold"].GetFloat();
+            Logi("set scoreThreshold : ", scoreThreshold);
+        }
 
-        if (modelParam.HasMember("nmsThreshold"))
+        if (modelParam.HasMember("nmsThreshold")) {
             nmsThreshold = modelParam["nmsThreshold"].GetFloat();
+            Logi("set nmsThreshold: ", nmsThreshold);
+        }
 
-        if (modelParam.HasMember("topK"))
+        if (modelParam.HasMember("topK")) {
             topK = modelParam["topK"].GetInt();
+            Logi("set topK: ", topK);
+        }
 
     }
     return res;

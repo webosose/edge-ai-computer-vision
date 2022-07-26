@@ -107,7 +107,6 @@ set(SRC_FILES
     ${SRC_DIR}/logger_test.cpp
     ${SRC_DIR}/stopwatch_test.cpp
     ${SRC_DIR}/util_test.cpp
-    ${SRC_DIR}/yunet_face_detector_test.cpp
     ${SRC_DIR}/yunet_face_param_test.cpp
     ${SRC_DIR}/short_range_face_detector_test.cpp
     ${SRC_DIR}/face_descriptor_test.cpp
@@ -144,6 +143,8 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/palm_descriptor_test.cpp
         ${SRC_DIR}/palm_detector_test.cpp
         ${SRC_DIR}/palm_param_test.cpp
+        ${SRC_DIR}/yunet_v2_face_detector_test.cpp
+        ${SRC_DIR}/yunet_face_detector_test.cpp
     )
 ENDIF(WITH_EXTRA_MODELS)
 

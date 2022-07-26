@@ -189,7 +189,7 @@ install(TARGETS edgeai-vision
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 IF(WITH_UPDATABLE_MODELS)
-    install(FILES ${CMAKE_SOURCE_DIR}/model/face_yunet.tflite DESTINATION ${AIF_INSTALL_DIR}/model)
+    install(FILES ${CMAKE_SOURCE_DIR}/model/yunet_yunet_final_360_640_simplify_float32.tflite DESTINATION ${AIF_INSTALL_DIR}/model)
 ELSE()
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/model DESTINATION ${AIF_INSTALL_DIR})
 ENDIF(WITH_UPDATABLE_MODELS)
