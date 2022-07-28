@@ -22,8 +22,8 @@
 #include <aif/auto_delegation/AutoDelegateSelector.h>
 
 
-typedef AutoDelegateSelector ADS;
-typedef AccelerationPolicyManager APM;
+typedef aif::AutoDelegateSelector ADS;
+typedef aif::AccelerationPolicyManager APM;
 
 using namespace aif;
 
