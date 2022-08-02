@@ -131,8 +131,8 @@ t_aif_status Detector::compile() {
         }
 
         m_modelInfo.inputSize = tensor_input->dims->size;
-        if (m_modelInfo.inputSize != 4) {
-            throw std::runtime_error("this model input require 4 tensors");
+        if (m_modelInfo.inputSize <= 0) {
+            throw std::runtime_error("this model input require >0 tensors");
         }
         setModelInfo(tensor_input);
 

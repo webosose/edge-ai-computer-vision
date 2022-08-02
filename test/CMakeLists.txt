@@ -118,6 +118,10 @@ set(SRC_FILES
     ${SRC_DIR}/selfie_descriptor_test.cpp
     ${SRC_DIR}/selfie_detector_test.cpp
     ${SRC_DIR}/selfie_param_test.cpp
+    ${SRC_DIR}/bodyposeestimation_param_test.cpp
+    ${SRC_DIR}/yolov4_param_test.cpp
+    ${SRC_DIR}/yolov4_descriptor_test.cpp
+    ${SRC_DIR}/yolov4_detector_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
     ${SRC_DIR}/performance_reporter_test.cpp
