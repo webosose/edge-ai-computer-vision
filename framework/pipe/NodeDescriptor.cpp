@@ -5,6 +5,7 @@
 
 #include <aif/pipe/NodeDescriptor.h>
 #include <aif/pipe/NodeType.h>
+#include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
 #include <rapidjson/writer.h>
@@ -28,9 +29,9 @@ void NodeDescriptor::setImage(const cv::Mat& image)
     m_image = image;
 }
 
-void NodeDescriptor::addOperationResult(const std::string& name, const std::string& result)
+void NodeDescriptor::addOperationResult(const std::string& id, const std::string& result)
 {
-    Logi("addOperationResult: " , result);
+    Logi(id, ": add operation result - ", result);
     m_type.addType(NodeType::INFERENCE);
     rj::Document document;
     document.Parse(result.c_str());
@@ -43,7 +44,7 @@ void NodeDescriptor::addOperationResult(const std::string& name, const std::stri
 
     rj::Value res(rj::kObjectType);
     res.AddMember(
-            rj::Value(name.c_str(), allocator),
+            rj::Value(id.c_str(), allocator),
             rj::Value(document, allocator),
             allocator);
 
@@ -76,6 +77,21 @@ std::string NodeDescriptor::getResult() const
     writer.SetMaxDecimalPlaces(4);
     m_result.Accept(writer);
     return buffer.GetString();
+}
+
+std::string NodeDescriptor::getResult(const std::string& id) const
+{
+    if (!m_type.isContain(NodeType::INFERENCE)) {
+        Loge("failed to getResult- descriptor type : ", m_type.toString());
+        return "";
+    }
+
+    for (auto& result : m_result["results"].GetArray()) {
+        if (result.HasMember(id)) {
+            return jsonObjectToString(result[id]);
+        }
+    }
+    return "";
 }
 
 } // end of namespace aif

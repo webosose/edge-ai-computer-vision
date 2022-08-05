@@ -28,13 +28,14 @@ class NodeDescriptor {
 
         void setImage(const cv::Mat& image);
         void addOperationResult(
-                const std::string& name,
+                const std::string& id,
                 const std::string& result);
 
         const NodeType& getType() const;
         const cv::Mat& getImage() const;
 
         std::string getResult() const;
+        std::string getResult(const std::string& id) const;
 
     private:
         NodeType m_type;

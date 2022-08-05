@@ -17,6 +17,7 @@ public:
         NONE    = 0x0,
         IMAGE   = (0x01 << 1),
         INFERENCE = (0x01 << 2),
+        //TENSOR  = (0x01 << 3)
     };
     NodeType();
     NodeType(int type);

@@ -21,12 +21,13 @@ NodeIO::~NodeIO()
 const std::shared_ptr<NodeDescriptor>& NodeIO::getDescriptor() const
 {
     if (!m_descriptor) {
-        Loge("Node descriptor is null");
+        Loge(m_id, ": node descriptor is null");
         return m_descriptor;
     }
     if (!verifyDescriptor(m_descriptor)) {
-        Loge("Node descriptor is invalid - io type : ", m_type.toString(),
-             " / descriptor type : ", m_descriptor->getType().toString());
+        Loge(m_id, ": failed to get node descriptor(invalid descriptor)");
+        Loge("io type : ", m_type.toString());
+        Loge("descriptor type: ", m_descriptor->getType().toString());
     }
     return m_descriptor;
 }
@@ -34,8 +35,9 @@ const std::shared_ptr<NodeDescriptor>& NodeIO::getDescriptor() const
 bool NodeIO::setDescriptor(const std::shared_ptr<NodeDescriptor>& descriptor)
 {
     if (!verifyDescriptor(descriptor)) {
-        Loge("Node descriptor is invalid - io type : ", m_type.toString(),
-             " / descriptor type : ", descriptor->getType().toString());
+        Loge(m_id, ": failed to set node descriptor(invalid descriptor)");
+        Loge("io type : ", m_type.toString());
+        Loge("descriptor type: ", descriptor->getType().toString());
         return false;
     }
 
