@@ -93,12 +93,12 @@ class PipeConfig {
 
         bool parse(const std::string& config);
 
-        const std::string& getId() const { return m_id; }
+        const std::string& getName() const { return m_name; }
         size_t getNodeSize() const { return m_nodes.size(); }
         std::shared_ptr<NodeConfig> getNode(int index) const;
 
     private:
-        std::string m_id;
+        std::string m_name;
         std::vector<std::shared_ptr<NodeConfig>> m_nodes;
 };
 

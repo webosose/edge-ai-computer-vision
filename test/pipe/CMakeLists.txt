@@ -9,12 +9,15 @@ set(PIPE_SRC
     ${PIPE_SRC_DIR}/crop_operation_test.cpp
     ${PIPE_SRC_DIR}/detector_operation_test.cpp
     ${PIPE_SRC_DIR}/pipe_config_test.cpp
+    ${PIPE_SRC_DIR}/pipe_node_test.cpp
+    ${PIPE_SRC_DIR}/pipe_test.cpp
 )
 
 IF(WITH_EXTRA_MODELS)
 set(PIPE_SRC
     ${PIPE_SRC}
     ${PIPE_SRC_DIR}/palm_crop_operation_test.cpp
+    ${PIPE_SRC_DIR}/hand_gesture_pipe_test.cpp
 )
 ENDIF(WITH_EXTRA_MODELS)
 

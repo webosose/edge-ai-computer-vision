@@ -22,7 +22,7 @@ bool CropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
 {
     auto& descriptor = input->getDescriptor();
     if (!descriptor) {
-        Loge(m_id, " crop op: failed to run operaiton (descriptor is null)");
+        Loge(m_id, ": failed to run operaiton (descriptor is null)");
         return false;
     }
 
@@ -32,7 +32,7 @@ bool CropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     if (cropRect.width == 0 || cropRect.height == 0 ||
         imageSize.width < cropRect.x + cropRect.width ||
         imageSize.height < cropRect.y + cropRect.height) {
-        Loge(m_id, "crop op: failed to crop image (crop size is wrong)");
+        Loge(m_id, ": failed to crop image (crop size is wrong)");
         Loge("image size : ", imageSize);
         Loge("crop size : ", cropRect);
         return false;

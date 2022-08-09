@@ -11,6 +11,7 @@
 #endif
 
 #include <aif/pipe/NodeType.h>
+#include <aif/base/Descriptor.h>
 #include <rapidjson/document.h>
 #include <opencv2/core/core.hpp>
 
@@ -21,7 +22,7 @@ namespace rj = rapidjson;
 
 namespace aif {
 
-class NodeDescriptor {
+class NodeDescriptor : public Descriptor {
     public:
         NodeDescriptor();
         virtual ~NodeDescriptor();
@@ -40,7 +41,6 @@ class NodeDescriptor {
     private:
         NodeType m_type;
         cv::Mat m_image;
-        rj::Document m_result;
 };
 
 } // end of namespace aif

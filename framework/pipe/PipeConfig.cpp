@@ -104,8 +104,8 @@ bool PipeConfig::parse(const std::string& config)
 {
     rj::Document doc;
     doc.Parse(config.c_str());
-    if (!doc.HasMember("id")) {
-        Loge("invalid pipe config (no id)");
+    if (!doc.HasMember("name")) {
+        Loge("invalid pipe config (no name)");
         return false;
     }
     if (!doc.HasMember("nodes") || doc["nodes"].Size() == 0) {
@@ -113,7 +113,7 @@ bool PipeConfig::parse(const std::string& config)
         return false;
     }
 
-    m_id = doc["id"].GetString();
+    m_name = doc["name"].GetString();
     const rj::Value& nodes = doc["nodes"];
     if (!nodes.IsArray() || nodes.Size() == 0) {
         Loge("invalid pipe config (invalid nodes)");

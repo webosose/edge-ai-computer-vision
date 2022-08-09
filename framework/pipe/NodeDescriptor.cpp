@@ -16,7 +16,7 @@ namespace aif {
 NodeDescriptor::NodeDescriptor()
 : m_type(NodeType::NONE)
 {
-    m_result.SetObject();
+    m_root.SetObject();
 }
 
 NodeDescriptor::~NodeDescriptor()
@@ -36,10 +36,10 @@ void NodeDescriptor::addOperationResult(const std::string& id, const std::string
     rj::Document document;
     document.Parse(result.c_str());
 
-    rj::Document::AllocatorType& allocator = m_result.GetAllocator();
-    if (!m_result.HasMember("results")) {
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("results")) {
         rj::Value results(rj::kArrayType);
-        m_result.AddMember("results", results, allocator);
+        m_root.AddMember("results", results, allocator);
     }
 
     rj::Value res(rj::kObjectType);
@@ -48,7 +48,7 @@ void NodeDescriptor::addOperationResult(const std::string& id, const std::string
             rj::Value(document, allocator),
             allocator);
 
-    m_result["results"].PushBack(res, allocator);
+    m_root["results"].PushBack(res, allocator);
 }
 
 const NodeType& NodeDescriptor::getType() const
@@ -75,7 +75,7 @@ std::string NodeDescriptor::getResult() const
     rj::StringBuffer buffer;
     rj::Writer<rj::StringBuffer> writer(buffer);
     writer.SetMaxDecimalPlaces(4);
-    m_result.Accept(writer);
+    m_root.Accept(writer);
     return buffer.GetString();
 }
 
@@ -86,7 +86,7 @@ std::string NodeDescriptor::getResult(const std::string& id) const
         return "";
     }
 
-    for (auto& result : m_result["results"].GetArray()) {
+    for (auto& result : m_root["results"].GetArray()) {
         if (result.HasMember(id)) {
             return jsonObjectToString(result[id]);
         }

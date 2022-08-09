@@ -143,7 +143,7 @@ public:
         })";
      std::string pipeCfg = R"(
         {
-            "id" : "pipe_hand_gesture",
+            "name" : "pipe_hand_gesture",
             "nodes": [
                 {
                     "id" : "detect_palm",
@@ -191,7 +191,7 @@ public:
             ]
         }
     )";
-    std::string pipeCfg_no_id = R"(
+    std::string pipeCfg_no_name = R"(
         {
             "nodes": [
                 {
@@ -232,12 +232,12 @@ public:
     )";
     std::string pipeCfg_no_nodes = R"(
         {
-            "id" : "pipe_hand_gesture"
+            "name" : "pipe_hand_gesture"
         }
     )";
     std::string pipeCfg_no_nodes2 = R"(
         {
-            "id" : "pipe_hand_gesture",
+            "name" : "pipe_hand_gesture",
             "nodes" : []
         }
     )";
@@ -343,7 +343,7 @@ TEST_F(PipeConfigTest, PipeConfig)
 {
     PipeConfig config;
     EXPECT_TRUE(config.parse(pipeCfg));
-    EXPECT_EQ(config.getId(), "pipe_hand_gesture");
+    EXPECT_EQ(config.getName(), "pipe_hand_gesture");
     EXPECT_EQ(config.getNodeSize(), 3);
     EXPECT_TRUE(config.getNode(0) != nullptr);
     EXPECT_EQ(config.getNode(0)->getId(), "detect_palm");
@@ -357,7 +357,7 @@ TEST_F(PipeConfigTest, PipeConfig)
 TEST_F(PipeConfigTest, PipeConfig_invalid)
 {
     PipeConfig config;
-    EXPECT_FALSE(config.parse(pipeCfg_no_id));
+    EXPECT_FALSE(config.parse(pipeCfg_no_name));
     EXPECT_FALSE(config.parse(pipeCfg_no_nodes));
     EXPECT_FALSE(config.parse(pipeCfg_no_nodes2));
 }

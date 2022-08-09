@@ -69,8 +69,8 @@ TEST_F(PalmDescriptorTest, 02_addpalm_one)
     EXPECT_TRUE(d["palms"][0]["region"].Size() == 4);
     EXPECT_TRUE(d["palms"][0]["region"][0].GetDouble() == 1.0);
     EXPECT_TRUE(d["palms"][0]["region"][1].GetDouble() == 2.0);
-    EXPECT_TRUE(d["palms"][0]["region"][2].GetDouble() == 3.0);
-    EXPECT_TRUE(d["palms"][0]["region"][3].GetDouble() == 4.0);
+    EXPECT_TRUE(d["palms"][0]["region"][2].GetDouble() == (3.0 - 1.0));
+    EXPECT_TRUE(d["palms"][0]["region"][3].GetDouble() == (4.0 - 2.0));
     EXPECT_TRUE(d["palms"][0].HasMember("keyPoints"));
     EXPECT_TRUE(d["palms"][0]["keyPoints"].IsArray());
     EXPECT_TRUE(d["palms"][0]["keyPoints"].Size() == 14);

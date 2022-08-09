@@ -42,9 +42,10 @@ void PalmDescriptor::addPalm(float score, const std::vector<float>& palmPoints)
 
     // region: [x, y, w, h]
     rj::Value region(rj::kArrayType);
-    for (int i = 0; i < 4; i++) {
-        region.PushBack(palmPoints[i], allocator);
-    }
+    region.PushBack(palmPoints[0], allocator);
+    region.PushBack(palmPoints[1], allocator);
+    region.PushBack(palmPoints[2] - palmPoints[0], allocator);
+    region.PushBack(palmPoints[3] - palmPoints[1], allocator);
     palm.AddMember("region", region, allocator);
 
     rj::Value keyPoints(rj::kArrayType);
