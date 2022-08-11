@@ -1,0 +1,21 @@
+{
+    "name" : "pipe_face",
+    "nodes": [
+        {
+            "id" : "detect_face",
+            "input" : ["image"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "detector",
+                "config": {
+                    "model": "face_yunet_cpu",
+                    "param": {
+                        "autoDelegate": {
+                            "policy": "CPU_ONLY"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

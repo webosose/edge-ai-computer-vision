@@ -1,0 +1,48 @@
+{
+    "name" : "pipe_hand_gesture",
+    "nodes": [
+        {
+            "id" : "detect_palm",
+            "input" : ["image"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "detector",
+                "config": {
+                    "model": "palm_lite_cpu",
+                    "param": {
+                        "autoDelegate": {
+                            "policy": "CPU_ONLY"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id" : "palm_crop",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "palm_crop",
+                "config": {
+                    "targetId" : "detect_palm"
+                }
+            }
+        },
+        {
+            "id" : "hand_landmark",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "detector",
+                "config": {
+                    "model": "handlandmark_lite_cpu",
+                    "param": {
+                        "autoDelegate": {
+                            "policy": "CPU_ONLY"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
