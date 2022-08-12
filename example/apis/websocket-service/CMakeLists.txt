@@ -78,6 +78,7 @@ set(SRC_FILES
     ${SRC_DIR}/commands/Command.cpp
     ${SRC_DIR}/commands/Commands.cpp
     ${SRC_DIR}/commands/CommandFactory.cpp
+    ${SRC_DIR}/commands/PipeCommands.cpp
 )
 
 set(LIBS

@@ -11,6 +11,7 @@
 
 namespace aif {
 
+class Pipe;
 /**
  *  API Facade class for Edge AI Computer Vision
  */
@@ -32,7 +33,7 @@ class EdgeAIVision {
     /**
      * @brief get instance for Edge AI Vision
      */
-    static EdgeAIVision &getInstance();
+    static EdgeAIVision& getInstance();
 
     /**
      * @brief check if Edge AI Vision is started or not.
@@ -45,7 +46,7 @@ class EdgeAIVision {
      * @param basePath base folder path for Edge AI Vision
      * @return return true if success to startup
      */
-    bool startup(const std::string &basePath = "");
+    bool startup(const std::string& basePath = "");
 
     /**
      * @brief shutdown Edge AI Vision
@@ -59,7 +60,7 @@ class EdgeAIVision {
      * @param option detector option (setup specific model, param, delegates)
      * @return return true if success to create detector
      */
-    bool createDetector(DetectorType type, const std::string &option = "");
+    bool createDetector(DetectorType type, const std::string& option = "");
 
     /**
      * @brief delete detector with specific DetectorType
@@ -75,7 +76,7 @@ class EdgeAIVision {
      * @param output output result (json string)
      * @return return true if success to detect the result
      */
-    bool detect(DetectorType type, const cv::Mat &input, std::string &output);
+    bool detect(DetectorType type, const cv::Mat& input, std::string& output);
 
     /**
      * @brief detect the result from input image file
@@ -84,24 +85,76 @@ class EdgeAIVision {
      * @param output output result (json string)
      * @return return true if success to detect the result from input image file
      */
-    bool detectFromFile(DetectorType type, const std::string &inputPath,
-                        std::string &output);
+    bool detectFromFile(DetectorType type, const std::string& inputPath,
+                        std::string& output);
 
     /**
      * @brief detect the result from base64 input image
      * @param type detector type
      * @param input base64 input image
      * @param output output result (json string)
+     * @return return true if success to detect the result from input image data
+     */
+    bool detectFromBase64(DetectorType type, const std::string& input,
+                          std::string& output);
+
+    /**
+     * @brief create detector with pipeline config
+     * @param id pipe idnetifier
+     * @param option pipe configuration
+     * @return return true if success to create pipe
+     */
+    bool pipeCreate(const std::string& id, const std::string& option);
+
+    /**
+     * @brief delete pipe with id
+     * @param id pipe identifier
+     * @return return true if success to delete pipe
+     */
+    bool pipeDelete(const std::string& id);
+
+    /**
+     * @brief detect the result from input image
+     * @param id detector type
+     * @param input input image data
+     * @param output output result (json string)
+     * @return return true if success to detect the result
+     */
+    bool pipeDetect(
+            const std::string& id,
+            const cv::Mat& input,
+            std::string& output);
+
+    /**
+     * @brief detect the result from input image file
+     * @param id detector type
+     * @param inputPath input image file path
+     * @param output output result (json string)
      * @return return true if success to detect the result from input image file
      */
-    bool detectFromBase64(DetectorType type, const std::string &input,
-                          std::string &output);
+    bool pipeDetectFromFile(
+            const std::string& id,
+            const std::string& inputPath,
+            std::string& ouput);
+
+    /**
+     * @brief detect the result from base64 input image
+     * @param type detector type
+     * @param input base64 input image
+     * @param output output result (json string)
+     * @return return true if success to detect the result from input image data
+     */
+    bool pipeDetectFromBase64(
+            const std::string& id,
+            const std::string& input,
+            std::string& ouput);
 
   private:
     static std::once_flag s_onceFlag;
     static std::unique_ptr<EdgeAIVision> s_instance;
     mutable std::mutex m_mutex;
     std::map<DetectorType, std::string> m_selectedModels;
+    std::map<std::string, std::shared_ptr<Pipe>> m_pipeMap;
 
     EdgeAIVision() = default;
     std::string getDefaultModel(DetectorType type) const;

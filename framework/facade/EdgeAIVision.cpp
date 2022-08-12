@@ -5,6 +5,7 @@
 
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
+#include <aif/pipe/Pipe.h>
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
 
@@ -42,6 +43,8 @@ bool EdgeAIVision::shutdown() {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (!AIVision::isInitialized())
         return false;
+
+    m_pipeMap.clear();
 
     DetectorFactory::get().clear();
     m_selectedModels.clear();
@@ -217,6 +220,131 @@ bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
     output = descriptor->toStr();
 
     return (kAifOk == res);
+}
+
+bool EdgeAIVision::pipeCreate(const std::string& id, const std::string& option)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+    if (m_pipeMap.find(id) != m_pipeMap.end()) {
+        Loge(id, ": pipe is already created");
+        return false;
+    }
+
+    std::shared_ptr<Pipe> pipe = std::make_shared<Pipe>();
+    if (!pipe->build(option))  {
+        return false;
+    }
+    m_pipeMap[id] = pipe;
+    return true;
+}
+
+bool EdgeAIVision::pipeDelete(const std::string& id)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+   if (m_pipeMap.find(id) == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+
+    m_pipeMap.erase(id);
+    return true;
+}
+
+bool EdgeAIVision::pipeDetect(
+        const std::string& id, const cv::Mat& image, std::string& output)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+   if (m_pipeMap.find(id) == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+    std::shared_ptr<Pipe> pipe = m_pipeMap[id];
+    if (!pipe) {
+        Loge(id, ": pipe is null");
+        return false;
+    }
+    auto res = pipe->detect(image);
+    auto descriptor = pipe->getDescriptor();
+    if (!descriptor) {
+        Loge(id, ": pipe descriptor is null");
+        return false;
+    }
+    descriptor->addReturnCode(res);
+    output = descriptor->getResult();
+    return true;
+}
+
+bool EdgeAIVision::pipeDetectFromFile(
+        const std::string& id, const std::string& imagePath, std::string& output)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+    if (m_pipeMap.find(id) == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+    std::shared_ptr<Pipe> pipe = m_pipeMap[id];
+    if (!pipe) {
+        Loge(id, ": pipe is null");
+        return false;
+    }
+    auto res = pipe->detectFromFile(imagePath);
+    auto descriptor = pipe->getDescriptor();
+    if (!descriptor) {
+        Loge(id, ": pipe descriptor is null");
+        return false;
+    }
+    descriptor->addReturnCode(res);
+    output = descriptor->getResult();
+    return true;
+}
+
+bool EdgeAIVision::pipeDetectFromBase64(
+        const std::string& id, const std::string& base64Image, std::string& output)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+    if (m_pipeMap.find(id) == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+    std::shared_ptr<Pipe> pipe = m_pipeMap[id];
+    if (!pipe) {
+        Loge(id, ": pipe is null");
+        return false;
+    }
+    auto res =  pipe->detectFromBase64(base64Image);
+    auto descriptor = pipe->getDescriptor();
+    if (!descriptor) {
+        Loge(id, ": pipe descriptor is null");
+        return false;
+    }
+    descriptor->addReturnCode(res);
+    output = descriptor->getResult();
+    return true;
 }
 
 } // namespace aif

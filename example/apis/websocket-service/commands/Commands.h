@@ -1,5 +1,5 @@
-#ifndef AIF_STARTUP_COMMAND_H
-#define AIF_STARTUP_COMMAND_H
+#ifndef AIF_COMMANDS_H
+#define AIF_COMMANDS_H
 
 #include "Command.h"
 #include "CommandFactoryRegistration.h"
@@ -36,4 +36,4 @@ public:
 };
 CommandFactoryRegistration<DetectFromBase64Command> cmd_detectFromBase64("detectFromBase64");
 
-#endif // AIF_STARTUP_COMMAND_H
+#endif // AIF_COMMANDS_H
