@@ -4,6 +4,7 @@
  */
 
 #include <aif/pipe/Pipe.h>
+#include <aif/pipe/PipeDescriptorFactory.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 #include <aif/tools/Stopwatch.h>
@@ -59,7 +60,7 @@ bool Pipe::detect(const cv::Mat& image)
 
     Stopwatch sw;
     sw.start();
-    m_descriptor = std::make_shared<NodeDescriptor>();
+    m_descriptor = PipeDescriptorFactory::get().create(m_config->getDescriptorId());
     m_descriptor->setImage(image);
 
     std::shared_ptr<PipeNode> prevNode;
@@ -93,7 +94,7 @@ bool Pipe::detectFromFile(const std::string& imagePath)
         return false;
     }
 
-    m_descriptor = std::make_shared<NodeDescriptor>();
+    m_descriptor = std::make_shared<PipeDescriptor>();
     m_descriptor->setImage(image);
 
     std::shared_ptr<PipeNode> prevNode;
@@ -125,7 +126,7 @@ bool Pipe::detectFromBase64(const std::string& base64Image)
         return false;
     }
 
-    m_descriptor = std::make_shared<NodeDescriptor>();
+    m_descriptor = std::make_shared<PipeDescriptor>();
     m_descriptor->setImage(image);
 
     std::shared_ptr<PipeNode> prevNode;
@@ -152,7 +153,7 @@ const std::string& Pipe::getName() const
     return m_name;
 }
 
-const std::shared_ptr<NodeDescriptor>& Pipe::getDescriptor() const
+const std::shared_ptr<PipeDescriptor>& Pipe::getDescriptor() const
 {
     return m_descriptor;
 }

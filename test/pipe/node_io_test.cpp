@@ -49,18 +49,18 @@ TEST_F(NodeIOTest, 02_getId)
 
 TEST_F(NodeIOTest, 03_verifyDescriptor_type_none)
 {
-    std::shared_ptr<NodeDescriptor> d0 =
-        std::make_shared<NodeDescriptor>();
-    std::shared_ptr<NodeDescriptor> d1 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d0 =
+        std::make_shared<PipeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d1 =
+        std::make_shared<PipeDescriptor>();
     d1->setImage(cv::Mat());
-    std::shared_ptr<NodeDescriptor> d2 =
-        std::make_shared<NodeDescriptor>();
-    d2->addOperationResult("test", R"({"test":"test"})");
-    std::shared_ptr<NodeDescriptor> d3 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d2 =
+        std::make_shared<PipeDescriptor>();
+    d2->addBridgeOperationResult("test", R"({"test":"test"})");
+    std::shared_ptr<PipeDescriptor> d3 =
+        std::make_shared<PipeDescriptor>();
     d3->setImage(cv::Mat());
-    d3->addOperationResult("test", R"({"test":"test"})");
+    d3->addBridgeOperationResult("test", R"({"test":"test"})");
 
     NodeIO io("test", NodeType::NONE);
     EXPECT_TRUE(io.setDescriptor(d0));
@@ -71,18 +71,18 @@ TEST_F(NodeIOTest, 03_verifyDescriptor_type_none)
 
 TEST_F(NodeIOTest, 04_verifyDescriptor_type_image)
 {
-    std::shared_ptr<NodeDescriptor> d0 =
-        std::make_shared<NodeDescriptor>();
-    std::shared_ptr<NodeDescriptor> d1 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d0 =
+        std::make_shared<PipeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d1 =
+        std::make_shared<PipeDescriptor>();
     d1->setImage(cv::Mat());
-    std::shared_ptr<NodeDescriptor> d2 =
-        std::make_shared<NodeDescriptor>();
-    d2->addOperationResult("test", R"({"test":"test"})");
-    std::shared_ptr<NodeDescriptor> d3 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d2 =
+        std::make_shared<PipeDescriptor>();
+    d2->addBridgeOperationResult("test", R"({"test":"test"})");
+    std::shared_ptr<PipeDescriptor> d3 =
+        std::make_shared<PipeDescriptor>();
     d3->setImage(cv::Mat());
-    d3->addOperationResult("test", R"({"test":"test"})");
+    d3->addBridgeOperationResult("test", R"({"test":"test"})");
 
     NodeIO io("test", NodeType::IMAGE);
     EXPECT_FALSE(io.setDescriptor(d0));
@@ -93,18 +93,18 @@ TEST_F(NodeIOTest, 04_verifyDescriptor_type_image)
 
 TEST_F(NodeIOTest, 05_verifyDescriptor_type_inference)
 {
-    std::shared_ptr<NodeDescriptor> d0 =
-        std::make_shared<NodeDescriptor>();
-     std::shared_ptr<NodeDescriptor> d1 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d0 =
+        std::make_shared<PipeDescriptor>();
+     std::shared_ptr<PipeDescriptor> d1 =
+        std::make_shared<PipeDescriptor>();
     d1->setImage(cv::Mat());
-    std::shared_ptr<NodeDescriptor> d2 =
-        std::make_shared<NodeDescriptor>();
-    d2->addOperationResult("test", R"({"test":"test"})");
-    std::shared_ptr<NodeDescriptor> d3 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d2 =
+        std::make_shared<PipeDescriptor>();
+    d2->addBridgeOperationResult("test", R"({"test":"test"})");
+    std::shared_ptr<PipeDescriptor> d3 =
+        std::make_shared<PipeDescriptor>();
     d3->setImage(cv::Mat());
-    d3->addOperationResult("test", R"({"test":"test"})");
+    d3->addBridgeOperationResult("test", R"({"test":"test"})");
 
     NodeIO io("test", NodeType::INFERENCE);
     EXPECT_FALSE(io.setDescriptor(d0));
@@ -115,18 +115,18 @@ TEST_F(NodeIOTest, 05_verifyDescriptor_type_inference)
 
 TEST_F(NodeIOTest, 06_verifyDescriptor_types)
 {
-    std::shared_ptr<NodeDescriptor> d0 =
-        std::make_shared<NodeDescriptor>();
-    std::shared_ptr<NodeDescriptor> d1 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d0 =
+        std::make_shared<PipeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d1 =
+        std::make_shared<PipeDescriptor>();
     d1->setImage(cv::Mat());
-    std::shared_ptr<NodeDescriptor> d2 =
-        std::make_shared<NodeDescriptor>();
-    d2->addOperationResult("test", R"({"test":"test"})");
-    std::shared_ptr<NodeDescriptor> d3 =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d2 =
+        std::make_shared<PipeDescriptor>();
+    d2->addBridgeOperationResult("test", R"({"test":"test"})");
+    std::shared_ptr<PipeDescriptor> d3 =
+        std::make_shared<PipeDescriptor>();
     d3->setImage(cv::Mat());
-    d3->addOperationResult("test", R"({"test":"test"})");
+    d3->addBridgeOperationResult("test", R"({"test":"test"})");
 
     NodeIO io("test", NodeType::IMAGE|NodeType::INFERENCE);
     EXPECT_FALSE(io.setDescriptor(d0));
@@ -137,10 +137,10 @@ TEST_F(NodeIOTest, 06_verifyDescriptor_types)
 
 TEST_F(NodeIOTest, 07_getDescriptor)
 {
-    std::shared_ptr<NodeDescriptor> d =
-        std::make_shared<NodeDescriptor>();
+    std::shared_ptr<PipeDescriptor> d =
+        std::make_shared<PipeDescriptor>();
     d->setImage(cv::Mat());
-    d->addOperationResult("test", R"({"test":"test"})");
+    d->addBridgeOperationResult("test", R"({"test":"test"})");
 
     NodeIO io("test", NodeType::IMAGE|NodeType::INFERENCE);
     EXPECT_EQ(io.getDescriptor().get(), nullptr);

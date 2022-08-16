@@ -1,0 +1,12 @@
+{
+  "LogLevel" : "TRACE4",
+  "ImagePath" : "./images/person.jpg",
+  "model" : "posenet_mobilenet_cpu",
+  "param" : {
+    "common" : {
+      "useXnnpack": true,
+      "numThreads": 4
+    }
+  }
+}
+

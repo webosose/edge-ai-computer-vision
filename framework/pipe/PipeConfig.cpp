@@ -108,9 +108,16 @@ bool PipeConfig::parse(const std::string& config)
         Loge("invalid pipe config (no name)");
         return false;
     }
+
     if (!doc.HasMember("nodes") || doc["nodes"].Size() == 0) {
         Loge("invalid pipe config (no nodes)");
         return false;
+    }
+
+    if (doc.HasMember("descriptor")) {
+        m_descriptorId = doc["descriptor"].GetString();
+    } else {
+        m_descriptorId = "default_descriptor";
     }
 
     m_name = doc["name"].GetString();

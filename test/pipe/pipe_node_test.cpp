@@ -119,10 +119,10 @@ TEST_F(PipeNodeTest, 03_setDescriptor)
     PipeNode node;
     EXPECT_TRUE(node.build(config));
 
-    auto descriptor = std::make_shared<NodeDescriptor>();
+    auto descriptor = std::make_shared<PipeDescriptor>();
     EXPECT_FALSE(node.setDescriptor(descriptor));
 
-    descriptor->addOperationResult("detect_face", R"("{"item1":"test"})");
+    descriptor->addBridgeOperationResult("detect_face", R"("{"item1":"test"})");
     EXPECT_FALSE(node.setDescriptor(descriptor));
 
     cv::Mat image = cv::imread(basePath + "/images/person.jpg");
@@ -141,13 +141,13 @@ TEST_F(PipeNodeTest, 04_moveDescriptor)
     auto node2 = std::make_shared<PipeNode>();
     EXPECT_TRUE(node2->build(config2));
 
-    auto descriptor = std::make_shared<NodeDescriptor>();
+    auto descriptor = std::make_shared<PipeDescriptor>();
     cv::Mat image = cv::imread(basePath + "/images/person.jpg");
     descriptor->setImage(image);
     EXPECT_TRUE(node1->setDescriptor(descriptor));
     EXPECT_FALSE(node1->moveDescriptor(node2));
 
-    descriptor->addOperationResult("detect_face", R"("{"item1":"test"})");
+    descriptor->addBridgeOperationResult("detect_face", R"("{"item1":"test"})");
     EXPECT_TRUE(node1->getOutput()->setDescriptor(descriptor));
     EXPECT_TRUE(node1->moveDescriptor(node2));
 

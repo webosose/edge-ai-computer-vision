@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8.7)
 project (edgeai-vision)
 
 OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
-OPTION(WITH_EXTRA_MODELS "Enable Extra Models" OFF)
-OPTION(WITH_EXAMPLES "Enable Examples" OFF)
+OPTION(WITH_EXTRA_MODELS "Enable Extra Models" ON)
+OPTION(WITH_EXAMPLES "Enable Examples" ON)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
 

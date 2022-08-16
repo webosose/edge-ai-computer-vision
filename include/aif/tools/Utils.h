@@ -12,7 +12,9 @@
 #include <vector>
 #include <exception>
 #include <cmath>
-
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <tensorflow/lite/interpreter.h>
@@ -109,9 +111,9 @@ t_aif_status fillInputTensor(
         }
 
         if (!quantized) {
-            img_resized.convertTo(img_resized, CV_32F);
+            img_resized.convertTo(img_resized, CV_32FC3);
         } else {
-            img_resized.convertTo(img_resized, CV_8U);
+            img_resized.convertTo(img_resized, CV_8UC3);
         }
 
         if (rescaleOption == kAifNone) {
@@ -175,6 +177,59 @@ std::string jsonObjectToString(const rj::Value& object);
 
 
 bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
+
+template <typename T>
+void memoryDump(T* outTensor, std::string path, size_t outTotalSize)
+{
+
+    std::ofstream outdata;
+    outdata.open(path);
+    if (!outdata) {
+      std::cerr << "Error: file could not be opened" << std::endl;
+      return;
+    }
+
+    outdata.write (reinterpret_cast<char*>(outTensor), outTotalSize);
+    outdata.close();
+    std::cout << "MemoryDump!!! End-of-file reached.. and size is : " << outTotalSize <<  std::endl;
+    std::cout << "[0]: " <<  std::hex << outTensor[0] << std::endl;
+    std::cout << "[1]: " <<  outTensor[1] << std::endl;
+    std::cout << "[2]: " <<  outTensor[2] << std::endl;
+
+    std::cout << std::dec;
+}
+
+template <typename T>
+void memoryRestore(T* tensor_data, std::string path)
+{
+   std::ifstream indata; // indata is like cin
+   uint8_t data; // variable for input value
+   indata.open(path); // opens the file
+   if(!indata) { // file couldn't be opened
+      std::cerr << "Error: file could not be opened" << std::endl;
+      return;
+   }
+
+   // get length of file:
+   indata.seekg (0, std::ios::end);
+   int length = indata.tellg();
+   indata.seekg (0, std::ios::beg);
+   std::cout << "file length is : " << length << std::endl;
+
+   // allocate memory:
+   T*buffer = new T[length];
+
+   // read data as a block:
+   indata.read (reinterpret_cast<char*>(buffer),length);
+
+   memcpy(tensor_data, buffer, length);
+
+   indata.close();
+   std::cout << "End-of-file reached.. and size is : " << length <<  std::endl;
+
+   delete [] buffer;
+   return ;
+}
 
 } // end of namespace aif
 

@@ -23,7 +23,7 @@ class Pipe {
         bool detectFromBase64(const std::string& base64Image);
 
         const std::string& getName() const;
-        const std::shared_ptr<NodeDescriptor>& getDescriptor() const;
+        const std::shared_ptr<PipeDescriptor>& getDescriptor() const;
 
     protected:
         bool addPipeNode(std::shared_ptr<PipeNode>& node);
@@ -31,7 +31,7 @@ class Pipe {
     private:
         std::string m_name;
         std::shared_ptr<PipeConfig> m_config;
-        std::shared_ptr<NodeDescriptor> m_descriptor;
+        std::shared_ptr<PipeDescriptor> m_descriptor;
         std::vector<std::shared_ptr<PipeNode>> m_nodes;
 
 };

@@ -46,13 +46,13 @@ bool DetectorOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         return false;
     }
 
-    std::shared_ptr<NodeDescriptor> nodeDescriptor = input->getDescriptor();
-    if (!nodeDescriptor) {
+    std::shared_ptr<PipeDescriptor> pipeDescriptor = input->getDescriptor();
+    if (!pipeDescriptor) {
         Loge(m_id, ": node descriptor is null");
         return false;
     }
 
-    const cv::Mat& image = nodeDescriptor->getImage();
+    const cv::Mat& image = pipeDescriptor->getImage();
     std::shared_ptr<Descriptor> descriptor =
         DetectorFactory::get().getDescriptor(m_model);
 
@@ -62,7 +62,7 @@ bool DetectorOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         return false;
     }
 
-    nodeDescriptor->addOperationResult(m_id, descriptor->toStr());
+    pipeDescriptor->addDetectorOperationResult(m_id, m_model, descriptor);
     return true;
 }
 

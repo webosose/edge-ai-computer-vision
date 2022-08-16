@@ -67,7 +67,7 @@ TEST_F(DetectorOperationTest, 01_face_detector_operation_test)
     NodeType inputType(NodeType::IMAGE);
     NodeType outputType(NodeType::IMAGE|NodeType::INFERENCE);
 
-    const auto& descriptor = make_shared<NodeDescriptor>();
+    const auto& descriptor = make_shared<PipeDescriptor>();
     const auto& input = make_shared<NodeInput>(id, inputType);
     const auto& output = make_shared<NodeOutput>(id, outputType);
     const auto& operation = NodeOperationFactory::get().create(id, config);
@@ -107,7 +107,7 @@ TEST_F(DetectorOperationTest, 02_posenet_detector_operation_test)
     NodeType inputType(NodeType::IMAGE);
     NodeType outputType(NodeType::IMAGE|NodeType::INFERENCE);
 
-    const auto& descriptor = make_shared<NodeDescriptor>();
+    const auto& descriptor = make_shared<PipeDescriptor>();
     const auto& input = make_shared<NodeInput>(id, inputType);
     const auto& output = make_shared<NodeOutput>(id, outputType);
     const auto& operation = NodeOperationFactory::get().create(id, config);

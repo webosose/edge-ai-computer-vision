@@ -24,7 +24,7 @@ class PipeNode {
         virtual bool build(const std::shared_ptr<NodeConfig>& config);
         virtual bool run();
 
-        bool setDescriptor(const std::shared_ptr<NodeDescriptor>& descriptor);
+        bool setDescriptor(const std::shared_ptr<PipeDescriptor>& descriptor);
         bool moveDescriptor(std::shared_ptr<PipeNode>& node);
 
         bool verifyConnectPrev(const std::shared_ptr<PipeNode>& node) const;

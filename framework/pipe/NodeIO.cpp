@@ -18,7 +18,7 @@ NodeIO::~NodeIO()
 {
 }
 
-const std::shared_ptr<NodeDescriptor>& NodeIO::getDescriptor() const
+const std::shared_ptr<PipeDescriptor>& NodeIO::getDescriptor() const
 {
     if (!m_descriptor) {
         Loge(m_id, ": node descriptor is null");
@@ -32,7 +32,7 @@ const std::shared_ptr<NodeDescriptor>& NodeIO::getDescriptor() const
     return m_descriptor;
 }
 
-bool NodeIO::setDescriptor(const std::shared_ptr<NodeDescriptor>& descriptor)
+bool NodeIO::setDescriptor(const std::shared_ptr<PipeDescriptor>& descriptor)
 {
     if (!verifyDescriptor(descriptor)) {
         Loge(m_id, ": failed to set node descriptor(invalid descriptor)");
@@ -55,7 +55,7 @@ const std::string& NodeIO::getId() const
     return m_id;
 }
 
-bool NodeIO::verifyDescriptor(const std::shared_ptr<NodeDescriptor>& descriptor) const
+bool NodeIO::verifyDescriptor(const std::shared_ptr<PipeDescriptor>& descriptor) const
 {
     return descriptor->getType().isContain(m_type);
 }

@@ -74,7 +74,7 @@ TEST_F(CropOperationTest, 01_run)
     NodeType inputType(NodeType::IMAGE);
     NodeType outputType(NodeType::IMAGE|NodeType::INFERENCE);
 
-    const auto& descriptor = make_shared<NodeDescriptor>();
+    const auto& descriptor = make_shared<PipeDescriptor>();
     const auto& input = make_shared<NodeInput>(id, inputType);
     const auto& output = make_shared<NodeOutput>(id, outputType);
 

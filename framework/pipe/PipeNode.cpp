@@ -62,7 +62,7 @@ bool PipeNode::run()
     return true;
 }
 
-bool PipeNode::setDescriptor(const std::shared_ptr<NodeDescriptor>& descriptor)
+bool PipeNode::setDescriptor(const std::shared_ptr<PipeDescriptor>& descriptor)
 {
     if (!m_input) {
         Loge(m_id, ": input is null");

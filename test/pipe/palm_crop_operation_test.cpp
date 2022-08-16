@@ -59,9 +59,9 @@ TEST_F(PalmCropOperationTest, 01_run)
     string targetId = "detect_palm";
     string result = foundPalms->toStr();
 
-    const auto& nodeDescriptor = make_shared<NodeDescriptor>();
-    nodeDescriptor->setImage(image);
-    nodeDescriptor->addOperationResult(targetId, result);
+    const auto& pipeDescriptor = make_shared<PipeDescriptor>();
+    pipeDescriptor->setImage(image);
+    pipeDescriptor->addDetectorOperationResult(targetId, "test_model", descriptor);
 
     string id = "palm_crop";
     std::shared_ptr<NodeOperationConfig> config =
@@ -72,7 +72,7 @@ TEST_F(PalmCropOperationTest, 01_run)
     const auto& output = make_shared<NodeOutput>(id, outputType);
     const auto& operation = NodeOperationFactory::get().create(id, config);
 
-    input->setDescriptor(nodeDescriptor);
+    input->setDescriptor(pipeDescriptor);
     cv::Size originSize = input->getDescriptor()->getImage().size();
     EXPECT_TRUE(operation->run(input, output));
     cv::Size cropSize = output->getDescriptor()->getImage().size();
