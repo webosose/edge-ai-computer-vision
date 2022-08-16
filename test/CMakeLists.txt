@@ -194,6 +194,13 @@ IF(WITH_GPU)
     )
 ENDIF(WITH_GPU)
 
+IF(WITH_NPU)
+    set(SRC_FILES
+        ${SRC_FILES}
+        ${SRC_DIR}/npu_delegate_test.cpp
+    )
+ENDIF(WITH_NPU)
+
 IF(WITH_AUTO_DELEGATE)
     set(SRC_FILES
         ${SRC_FILES}
