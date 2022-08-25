@@ -20,6 +20,7 @@ public:
 
     // TODO: implment add result
     void addPerson(float score, const BBox &bbox);
+    void drawBbox(std::string imgPath);
     size_t size() const { return m_personCount; }
     void clear();
 

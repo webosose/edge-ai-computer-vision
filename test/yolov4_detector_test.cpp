@@ -65,8 +65,23 @@ protected:
         "      \"name\": \"npu_delegate\","
         "      \"option\": {"
         "       }"
-        "     }"
+        "    }"
         "  ]"
+        "}"};
+
+
+    std::string use_npu_delegate_and_people {
+        "{"
+        "  \"delegates\" : ["
+        "    {"
+        "      \"name\": \"npu_delegate\","
+        "      \"option\": {"
+        "       }"
+        "    }"
+        "  ],"
+        "  \"commonParam\" : {"
+        "    \"numMaxPerson\": 5"
+        "  }"
         "}"};
 
 
@@ -74,7 +89,7 @@ protected:
 
 };
 
-TEST_F(Yolov4DetectorTest, 01_yolov4_init)
+TEST_F(Yolov4DetectorTest, 01_yolov4_detect_person)
 {
     auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
@@ -87,20 +102,38 @@ TEST_F(Yolov4DetectorTest, 01_yolov4_init)
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov4Descriptor>();
     auto foundYolov4s = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/FitTV_sample_000000.jpg");
+
+    /*EXPECT_TRUE(fd->detectFromImage(basePath + "/images/test_arms.png", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/test_arms.png");*/
 
     std::cout << foundYolov4s->toStr() << std::endl;
     EXPECT_EQ(foundYolov4s->size(), 1);
-
 }
-/*
-TEST_F(Yolov4DetectorTest, 02_yolov4_from_one_person)
+
+TEST_F(Yolov4DetectorTest, 02_yolov4_detect_people)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate);
+    auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate_and_people);
     EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector.tflite");
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 416);
+    EXPECT_EQ(modelInfo.width, 416);
+    EXPECT_EQ(modelInfo.channels, 3);
+
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov4Descriptor>();
     auto foundYolov4s = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(foundYolov4s->size(), 1);
+
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/people.jpg");
     std::cout << foundYolov4s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov4s->size(), 5);
+
+
+    foundYolov4s->clear();
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/FitTV_sample_000000.jpg");
+    std::cout << foundYolov4s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov4s->size(), 1);
 }
-*/
+

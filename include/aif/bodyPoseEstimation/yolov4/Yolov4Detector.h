@@ -30,11 +30,14 @@ protected:
 
 private:
     cv::Mat staticResize(const cv::Mat& img, const int targetWidth, const int targetHeight);
-    float* dequantizingFromTensor(TfLiteTensor *output, size_t outTotalSize,
-                                  float& scale, int& zero_point);
-    void transformToImageCoordinates(uint8_t *outData, float *target_outData_f,
-                                     float scale, int zero_point,
-                                     std::shared_ptr<Yolov4Param> &param);
+    void getOutputTensorInfo(uint8_t **outTensorDataArr,
+                                     float *scale_arr,
+                                     int *zero_point_arr,
+                                     size_t &outConcatDimSize);
+
+    void transformToImageCoordinates(uint8_t **outTensorDataArr, float *target_outTensor_deq,
+                                                 float *scale_arr, int *zero_point_arr,
+                                                 std::shared_ptr<Yolov4Param> &param);
     void generateYolov4Proposals( std::vector<Object>& objects,
                                   std::shared_ptr<Yolov4Param> &param,
                                   float *outData, size_t outSize);
