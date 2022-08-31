@@ -48,17 +48,17 @@ t_aif_status CpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         int width = m_modelInfo.width;
         int channels = m_modelInfo.channels;
 
-        //cv::imwrite("/media/result/input.jpg", img);
         cv::Mat inputImg;
         getPaddedImage(img, cv::Size(width, height), inputImg);
 
-        //cv::imwrite("/media/result/padded_cpu.jpg", inputImg);
-        cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
+        //cv::imwrite("./padded_cpu.jpg", inputImg);
+        //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
         inputImg.convertTo(inputImg, CV_32FC3);
         inputImg /= 255.0f;
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
         std::memcpy(inputTensor, inputImg.ptr<float>(0), width * height * channels * sizeof(float));
+
         return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());

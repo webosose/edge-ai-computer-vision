@@ -4,6 +4,7 @@
  */
 
 #include <aif/pipe/DetectorOperation.h>
+#include <aif/pipe/NodeOperationFactory.h>
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <gtest/gtest.h>

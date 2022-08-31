@@ -11,6 +11,7 @@
 #endif
 
 #include <aif/pipe/NodeType.h>
+#include <aif/pipe/PipeConfig.h>
 #include <aif/base/Descriptor.h>
 
 #include <rapidjson/document.h>
@@ -33,16 +34,21 @@ class PipeDescriptor : public Descriptor {
         const cv::Mat& getImage() const;
 
         std::string getResult() const;
-        std::string getResult(const std::string& id) const;
+        std::string getResult(const std::string& nodeId) const;
 
         virtual bool addBridgeOperationResult(
-                const std::string& id,
+                const std::string& nodeId,
+                const std::string& operationType,
                 const std::string& result);
 
         virtual bool addDetectorOperationResult(
-                const std::string& id,
+                const std::string& nodeId,
                 const std::string& model,
                 const std::shared_ptr<Descriptor>& descriptor);
+    protected:
+        bool addStringResult(
+                const std::string& nodeId,
+                const std::string& result);
 
     protected:
         NodeType m_type;

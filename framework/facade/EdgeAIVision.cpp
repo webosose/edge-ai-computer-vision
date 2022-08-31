@@ -45,8 +45,6 @@ bool EdgeAIVision::shutdown() {
         return false;
 
     m_pipeMap.clear();
-
-    DetectorFactory::get().clear();
     m_selectedModels.clear();
 
     AIVision::deinit();

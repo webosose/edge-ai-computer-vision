@@ -55,6 +55,9 @@ Pose3dDescriptor::addJoints3D(const std::vector<Joint3D> &joints3d,
     person.AddMember("joint3dPos", pointsPos, allocator);
 
     m_root["poses3d"].PushBack(person, allocator);
+
+    m_3dResult = joints3d;
+    m_trajectory = joint3dPos;
 }
 
 

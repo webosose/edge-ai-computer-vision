@@ -40,4 +40,9 @@ const std::string& NodeOperation::getId() const
     return m_id;
 }
 
+const std::shared_ptr<NodeOperationConfig>& NodeOperation::getConfig() const
+{
+    return m_config;
+}
+
 } // end of namespace aif

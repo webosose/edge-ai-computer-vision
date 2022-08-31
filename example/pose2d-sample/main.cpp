@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     detector->detect(img, descriptor);
     std::cout << descriptor->toStr() << std::endl;
 
-    cv::Mat result = Renderer::drawPose2d(img, std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor));
+    cv::Mat result = Renderer::drawPose2d(img, std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor)->getKeyPoints());
     cv::imwrite("./result_pose2d.jpg", result);
 
     AIVision::deinit();

@@ -78,5 +78,7 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Result: " << std::endl << pipe.getDescriptor()->getResult() << std::endl;
+    AIVision::deinit();
+
     return 0;
 }

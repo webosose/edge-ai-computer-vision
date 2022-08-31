@@ -11,10 +11,8 @@ using joint_pair = std::pair<int, int>;
 
 namespace aif {
 
-cv::Mat Renderer::drawPose2d(const cv::Mat &img, const std::shared_ptr<Pose2dDescriptor>& descriptor)
+cv::Mat Renderer::drawPose2d(const cv::Mat &img, const std::vector<std::vector<float>>& keyPoints)
 {
-    const auto& keyPoints = descriptor->getKeyPoints();
-
     std::map<std::string, std::vector<int>> colors;
     std::map<std::string, std::vector<std::pair<int, int>>> joints_relation_map;
     std::vector<std::string> keys;
@@ -94,7 +92,7 @@ cv::Mat Renderer::drawPose2d(const cv::Mat &img, const std::shared_ptr<Pose2dDes
 
     float threshold = 0.1f;
     cv::Mat temp = img;
-    int line_width = 1;
+    int line_width = 2;
     // iterate over keys
     for ( unsigned int i = 0; i < keys.size(); i++ )
     {
@@ -102,11 +100,11 @@ cv::Mat Renderer::drawPose2d(const cv::Mat &img, const std::shared_ptr<Pose2dDes
         for ( unsigned int j = 0; j < relation.size(); j++ )
         {
             std::pair<int, int> relation_pair = relation[j];
-            if ( keyPoints[relation_pair.first][2] >= threshold && keyPoints[relation_pair.second][2] >= threshold )
+            if ( keyPoints[relation_pair.first][0] >= threshold && keyPoints[relation_pair.second][0] >= threshold )
             {
                 cv::line( temp,
-                    cv::Point( int( keyPoints[relation_pair.first][0] ), int( keyPoints[relation_pair.first][1] ) ),
-                    cv::Point( int( keyPoints[relation_pair.second][0] ), int( keyPoints[relation_pair.second][1] ) ),
+                    cv::Point( int( keyPoints[relation_pair.first][1] ), int( keyPoints[relation_pair.first][2] ) ),
+                    cv::Point( int( keyPoints[relation_pair.second][1] ), int( keyPoints[relation_pair.second][2] ) ),
                     cv::Scalar( colors[keys[i]][2], colors[keys[i]][1], colors[keys[i]][0] ),
                     line_width );
             }
@@ -116,7 +114,7 @@ cv::Mat Renderer::drawPose2d(const cv::Mat &img, const std::shared_ptr<Pose2dDes
     for ( unsigned int i = 0; i < keyPoints.size(); i++ )
     {
         {
-            cv::circle( temp, cv::Point( int( keyPoints[i][0] ), int( keyPoints[i][1] ) ), 2,
+            cv::circle( temp, cv::Point( int( keyPoints[i][1] ), int( keyPoints[i][2] ) ), line_width,
                 cv::Scalar( 255, 255, 255 ), -1 );
         }
     }

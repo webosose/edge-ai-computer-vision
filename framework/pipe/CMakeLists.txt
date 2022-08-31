@@ -16,6 +16,7 @@ set(PIPE_SRC
     ${PIPE_SRC_DIR}/PipeNode.cpp
     ${PIPE_SRC_DIR}/Pipe.cpp
     ${PIPE_SRC_DIR}/PipeDescriptorFactory.cpp
+    ${PIPE_SRC_DIR}/PersonCropOperation.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PIPE_SRC_DIR})

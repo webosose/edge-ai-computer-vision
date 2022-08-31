@@ -7,6 +7,7 @@
 #include <aif/pipe/NodeOperationFactory.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
+#include <aif/tools/Stopwatch.h>
 
 namespace aif {
 
@@ -50,6 +51,8 @@ bool PipeNode::build(const std::shared_ptr<NodeConfig>& config)
 
 bool PipeNode::run()
 {
+    Stopwatch sw;
+    sw.start();
     if (!m_operation->run(m_input, m_output)) {
         Loge(m_id, ": failed to do operation");
         return false;
@@ -58,7 +61,9 @@ bool PipeNode::run()
         Loge(m_id, ": failed to set node descriptor into NodeOutput");
         return false;
     }
-
+    Logi(m_id, ": node detect time : ", sw.getMs(), "ms");
+    sw.stop();
+ 
     return true;
 }
 

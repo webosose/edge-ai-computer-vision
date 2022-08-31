@@ -39,7 +39,7 @@ TEST_F(PipeDescriptorTest, 02_type_check_addBridgeOperationResult)
     PipeDescriptor nd;
 
     EXPECT_FALSE(nd.getType().isContain(NodeType::INFERENCE));
-    nd.addBridgeOperationResult("test", R"({ "item1" : "test" })");
+    nd.addBridgeOperationResult("test", "testOp", R"({ "item1" : "test" })");
     EXPECT_TRUE(nd.getType().isContain(NodeType::INFERENCE));
     EXPECT_FALSE(nd.getType().isContain(NodeType::IMAGE));
 }
@@ -53,7 +53,7 @@ TEST_F(PipeDescriptorTest, 03_type_check)
     EXPECT_FALSE(nd.getType().isContain(NodeType::INFERENCE));
 
     nd.setImage(cv::Mat());
-    nd.addBridgeOperationResult("test", R"({ "item1" : "test" })");
+    nd.addBridgeOperationResult("test", "testOp", R"({ "item1" : "test" })");
 
     EXPECT_TRUE(nd.getType().isContain(NodeType::INFERENCE));
     EXPECT_TRUE(nd.getType().isContain(NodeType::IMAGE));
@@ -63,9 +63,9 @@ TEST_F(PipeDescriptorTest, 03_type_check)
 TEST_F(PipeDescriptorTest, 04_addBridgeOperationResult)
 {
     PipeDescriptor nd;
-    nd.addBridgeOperationResult("test1", R"({ "item1" : "test" })");
-    nd.addBridgeOperationResult("test2", R"({ "item2" : "test" })");
-    nd.addBridgeOperationResult("test3", R"({ "item3" : "test" })");
+    nd.addBridgeOperationResult("test1", "testOp", R"({ "item1" : "test" })");
+    nd.addBridgeOperationResult("test2", "testOp", R"({ "item2" : "test" })");
+    nd.addBridgeOperationResult("test3", "testOp", R"({ "item3" : "test" })");
 
     std::string result = nd.getResult();
 
@@ -95,9 +95,9 @@ TEST_F(PipeDescriptorTest, 05_getResult)
         R"({"results":[{"test1":{"item1":"test"}},{"test2":{"item2":"test"}},{"test3":{"item3":"test"}}]})";
 
     PipeDescriptor nd;
-    nd.addBridgeOperationResult(id1, result1);
-    nd.addBridgeOperationResult(id2, result2);
-    nd.addBridgeOperationResult(id3, result3);
+    nd.addBridgeOperationResult(id1, "testOp", result1);
+    nd.addBridgeOperationResult(id2, "testOp", result2);
+    nd.addBridgeOperationResult(id3, "testOp", result3);
 
     std::string ndResult = nd.getResult();
     EXPECT_EQ(result, ndResult);
@@ -113,9 +113,9 @@ TEST_F(PipeDescriptorTest, 05_getResultById)
     std::string result3 = R"({"item1":"test"})";
 
     PipeDescriptor nd;
-    nd.addBridgeOperationResult(id1, result1);
-    nd.addBridgeOperationResult(id2, result2);
-    nd.addBridgeOperationResult(id3, result3);
+    nd.addBridgeOperationResult(id1, "testOp", result1);
+    nd.addBridgeOperationResult(id2, "testOp", result2);
+    nd.addBridgeOperationResult(id3, "testOp", result3);
 
     std::string ndResult0 = nd.getResult("invalid_id");
     std::string ndResult1 = nd.getResult(id1);

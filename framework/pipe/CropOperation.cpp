@@ -48,7 +48,10 @@ bool CropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     cropRegion.PushBack(cropRect.width, allocator);
     cropRegion.PushBack(cropRect.height, allocator);
     doc.GetObject().AddMember("region", cropRegion, allocator);
-    descriptor->addBridgeOperationResult(m_id, jsonObjectToString(doc.GetObject()));
+    descriptor->addBridgeOperationResult(
+            m_id, 
+            m_config->getType(),
+            jsonObjectToString(doc.GetObject()));
 
     return true;
 }

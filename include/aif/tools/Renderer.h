@@ -15,7 +15,7 @@ class Renderer {
 public:
     static cv::Mat drawPose2d(
             const cv::Mat &img,
-            const std::shared_ptr<Pose2dDescriptor>& descriptor);
+            const std::vector<std::vector<float>>& keyPoints);
 };
 
 }

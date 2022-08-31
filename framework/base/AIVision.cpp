@@ -4,6 +4,8 @@
  */
 
 #include <aif/base/AIVision.h>
+#include <aif/base/DetectorFactory.h>
+#include <aif/base/DelegateFactory.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/PerformanceReporter.h>
 
@@ -53,6 +55,9 @@ void AIVision::deinit()
 {
     if (!s_initialized)
         return;
+
+    DetectorFactory::get().clear();
+    DelegateFactory::get().clear();
 
     s_initialized = false;
     s_config = nullptr;

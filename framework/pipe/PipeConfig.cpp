@@ -33,11 +33,9 @@ bool BridgeOperationConfig::parse(const rj::Value& value)
         return false;
     }
 
-    if (!value["config"].HasMember("targetId")) {
-        Loge("invalid bridge operation config (no targetId)");
-        return false;
+    if (value["config"].HasMember("targetId")) {
+        m_target = value["config"]["targetId"].GetString();
     }
-    m_target = value["config"]["targetId"].GetString();
     return true;
 }
 

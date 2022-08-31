@@ -10,6 +10,7 @@ namespace aif {
 Pose2dDetector::Pose2dDetector(const std::string& modelPath)
     : Detector(modelPath)
     , m_leftBorder(0)
+    , m_topBorder(0)
     , m_numKeyPoints(Pose2dDescriptor::KeyPointType::KEY_POINT_TYPES)
     , m_heatMapWidth(DEFAULT_HEATMAP_WIDTH)
     , m_heatMapHeight(DEFAULT_HEATMAP_HEIGHT)
@@ -49,13 +50,13 @@ bool Pose2dDetector::processHeatMap(
 
         // scale model size to input img
         x = m_paddedSize.width  * ((x - m_leftBorder) / m_modelInfo.width);
-        y = m_paddedSize.height * (y / m_modelInfo.height);
+        y = m_paddedSize.height * ((y - m_topBorder) / m_modelInfo.height);
 
         // change x, y of input img to x, y of origin image
         x += m_cropRect.x;
         y += m_cropRect.y;
 
-        keyPoints.push_back({ x, y, maxVal});
+        keyPoints.push_back({ maxVal, x, y });
     }
 
     std::shared_ptr<Pose2dDescriptor> pose2dDescriptor =
@@ -84,17 +85,17 @@ void Pose2dDetector::getPaddedImage(const cv::Mat& src, const cv::Size& modelSiz
     cv::Mat inputImg;
     cv::resize(src, inputImg, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
 
-    std::cout << "modelW : " << modelSize.width << std::endl;
-    std::cout << "modelH : " << modelSize.height << std::endl;
-    std::cout << "srcW : " << srcW << std::endl;
-    std::cout << "srcH : " << srcH << std::endl;
-    std::cout << "dstW : " << dstW << std::endl;
-    std::cout << "dstH : " << dstH << std::endl;
+    m_leftBorder = 0;
+    m_topBorder = 0;
     if (modelSize.width != width)
         m_leftBorder = (modelSize.width - width) / 2;
-    int rightBorder = modelSize.width - width - m_leftBorder;
+    if (modelSize.height != height)
+        m_topBorder = (modelSize.height - height) / 2;
 
-    cv::copyMakeBorder(inputImg, dst, 0, modelSize.height - height, m_leftBorder, rightBorder, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    int rightBorder = modelSize.width - width - m_leftBorder;
+    int bottomBorder = modelSize.height - height - m_topBorder;
+
+    cv::copyMakeBorder(inputImg, dst, m_topBorder, bottomBorder, m_leftBorder, rightBorder, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
     m_paddedSize = cv::Size(
             srcW * (static_cast<float>(modelSize.width)/width),
             srcH * (static_cast<float>(modelSize.height)/height));

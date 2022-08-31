@@ -31,10 +31,14 @@ public:
     size_t size() const { return m_personCount; }
     void clear();
 
+    int getNumBbox() const { return m_boxes.size(); }
+    float getScore(int index) const { return m_scores[index]; }
+    const BBox& getBbox(int index) const { return m_boxes[index]; }
+
 private:
     size_t m_personCount;
-/*	std::vector<BBox> detectorBoxes;              // boxes in image coordinates
-	std::vector<float> detectorScores;            // confidence for each box detection*/
+	std::vector<BBox> m_boxes;              // boxes in image coordinates
+	std::vector<float> m_scores;            // confidence for each box detection
 };
 
 } // end of namespace aif

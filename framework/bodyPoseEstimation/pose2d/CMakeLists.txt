@@ -8,6 +8,7 @@ set(POSE2D_SRC
     ${POSE2D_SRC_DIR}/Pose2dDescriptor.cpp
     ${POSE2D_SRC_DIR}/CpuPose2dDetector.cpp
     ${POSE2D_SRC_DIR}/NpuPose2dDetector.cpp
+    ${POSE2D_SRC_DIR}/CpuQuantPose2dDetector.cpp
 )
 
 IF(WITH_EDGETPU)

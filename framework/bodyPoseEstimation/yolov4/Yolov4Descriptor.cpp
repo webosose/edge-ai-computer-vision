@@ -30,6 +30,9 @@ Yolov4Descriptor::~Yolov4Descriptor()
 
 void Yolov4Descriptor::addPerson(float score, const BBox &bbox)
 {
+    m_scores.push_back(score);
+    m_boxes.push_back(bbox);
+
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("persons")) {
         rj::Value persons(rj::kArrayType);

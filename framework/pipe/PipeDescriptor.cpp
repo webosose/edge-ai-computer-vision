@@ -58,7 +58,7 @@ std::string PipeDescriptor::getResult() const
     return buffer.GetString();
 }
 
-std::string PipeDescriptor::getResult(const std::string& id) const
+std::string PipeDescriptor::getResult(const std::string& nodeId) const
 {
     if (!m_type.isContain(NodeType::INFERENCE)) {
         Loge("failed to getResult- descriptor type : ", m_type.toString());
@@ -66,42 +66,39 @@ std::string PipeDescriptor::getResult(const std::string& id) const
     }
 
     for (auto& result : m_root["results"].GetArray()) {
-        if (result.HasMember(id)) {
-            return jsonObjectToString(result[id]);
+        if (result.HasMember(nodeId)) {
+            return jsonObjectToString(result[nodeId]);
         }
     }
     return "";
 }
 
-bool PipeDescriptor::addBridgeOperationResult(const std::string& id, const std::string& result)
+bool PipeDescriptor::addBridgeOperationResult(
+        const std::string& nodeId, 
+        const std::string& operationType,
+        const std::string& result)
 {
-    Logi(id, ": add bridge operation result - ", result);
-    m_type.addType(NodeType::INFERENCE);
-    rj::Document document;
-    document.Parse(result.c_str());
+    Logi(nodeId, ": add bridge operation result");
+    Logi(operationType, " : ",  result);
 
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    if (!m_root.HasMember("results")) {
-        rj::Value results(rj::kArrayType);
-        m_root.AddMember("results", results, allocator);
-    }
-
-    rj::Value res(rj::kObjectType);
-    res.AddMember(
-            rj::Value(id.c_str(), allocator),
-            rj::Value(document, allocator),
-            allocator);
-
-    m_root["results"].PushBack(res, allocator);
-
-    return true;
+    return addStringResult(nodeId, result);    
 }
 
 bool PipeDescriptor::addDetectorOperationResult(
-        const std::string& id, const std::string& model, const std::shared_ptr<Descriptor>& descriptor)
+        const std::string& nodeId, 
+        const std::string& model, 
+        const std::shared_ptr<Descriptor>& descriptor)
 {
     std::string result = descriptor->toStr();
-    Logi(id, ": add detector operation result - ", result);
+    Logi(nodeId, ": add detector operation result - ", result);
+    Logi(model, " : ",  result);
+
+    return addStringResult(nodeId, result);    
+}
+
+bool PipeDescriptor::addStringResult(
+        const std::string& nodeId, const std::string& result)
+{
     m_type.addType(NodeType::INFERENCE);
     rj::Document document;
     document.Parse(result.c_str());
@@ -114,12 +111,11 @@ bool PipeDescriptor::addDetectorOperationResult(
 
     rj::Value res(rj::kObjectType);
     res.AddMember(
-            rj::Value(id.c_str(), allocator),
+            rj::Value(nodeId.c_str(), allocator),
             rj::Value(document, allocator),
             allocator);
 
     m_root["results"].PushBack(res, allocator);
-
     return true;
 }
 

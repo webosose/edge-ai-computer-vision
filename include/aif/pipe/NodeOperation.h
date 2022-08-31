@@ -23,6 +23,7 @@ class NodeOperation {
                const std::shared_ptr<NodeOutput>& output);
 
        const std::string& getId() const;
+       const std::shared_ptr<NodeOperationConfig>& getConfig() const;
 
     protected:
        virtual bool runImpl(const std::shared_ptr<NodeInput>& input) = 0;

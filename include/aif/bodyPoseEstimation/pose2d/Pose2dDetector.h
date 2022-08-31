@@ -36,6 +36,7 @@ protected:
     cv::Rect m_cropRect;
     cv::Size m_paddedSize;
     int m_leftBorder;
+    int m_topBorder;
     int m_numKeyPoints;
     int m_heatMapWidth;
     int m_heatMapHeight;

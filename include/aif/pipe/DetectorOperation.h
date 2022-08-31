@@ -7,7 +7,6 @@
 #define AIF_DETECTOR_OPERATION_H
 
 #include <aif/pipe/NodeOperation.h>
-#include <aif/pipe/NodeOperationFactoryRegistration.h>
 #include <aif/base/Detector.h>
 
 #include <string>
@@ -15,7 +14,7 @@
 namespace aif {
 
 class DetectorOperation : public NodeOperation {
-    private:
+    protected:
        DetectorOperation(const std::string& id);
 
     public:
@@ -29,15 +28,12 @@ class DetectorOperation : public NodeOperation {
     protected:
        bool runImpl(const std::shared_ptr<NodeInput>& input) override;
 
-    private:
+    protected:
        std::shared_ptr<Detector> m_detector;
        std::string m_model;
        std::string m_param;
 
 };
-
-NodeOperationFactoryRegistration<DetectorOperation, DetectorOperationConfig>
-    detector_operation("detector");
 
 } // end of namespace aif
 

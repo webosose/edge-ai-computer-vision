@@ -22,6 +22,8 @@ public:
     void addKeyPoints(const std::vector<std::vector<float>>& keyPoints);
     const std::vector<std::vector<float>>& getKeyPoints() const;
     size_t getPoseCount() const { return m_poseCount; }
+    int getTrackId() const { return m_trackId; }
+    void setTrackId(int id) { m_trackId = id; }
 
     enum KeyPointOutput {
         POS_X = 0,
@@ -77,6 +79,7 @@ public:
 
 private:
     size_t m_poseCount;
+    int m_trackId;
     std::vector<std::vector<float>> m_keyPoints;
 };
 

@@ -47,6 +47,17 @@ public:
                      const Joint3D &joint3dPos);
 //    void addJoint3DPos(const Joint3D &joint3dPos);
 
+    int getTrackId() const { return m_trackId; }
+    void setTrackId(int id) { m_trackId = id; }
+
+    const std::vector<Joint3D>& getPose3dResult() const
+    { return m_3dResult; }
+    const Joint3D& getTrajectory() const
+    { return m_trajectory; }
+private:
+    int m_trackId;
+    std::vector<Joint3D> m_3dResult;
+    Joint3D m_trajectory;
 };
 
 } // end of namespace aif

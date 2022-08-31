@@ -17,6 +17,7 @@ namespace aif {
 Pose2dDescriptor::Pose2dDescriptor()
     : Descriptor()
     , m_poseCount(0)
+    , m_trackId(0)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     rj::Value poses(rj::kArrayType);
@@ -48,7 +49,7 @@ void Pose2dDescriptor::addKeyPoints(const std::vector<std::vector<float>>& keyPo
     }
     person.AddMember("keypoints", points, allocator);
     m_root["poses"].PushBack(person, allocator);
-    m_poseCount += keyPoints.size();
+    m_poseCount++;
 }
 
 const std::vector<std::vector<float>>& Pose2dDescriptor::getKeyPoints() const

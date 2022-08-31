@@ -4,6 +4,7 @@
  */
 
 #include <aif/pipe/DetectorOperation.h>
+#include <aif/pipe/DetectorOperationRegistration.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>

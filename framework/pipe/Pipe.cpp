@@ -76,7 +76,7 @@ bool Pipe::detect(const cv::Mat& image)
         }
         prevNode = node;
     }
-    Logi(m_name, ": detect time ", sw.getMs(), "ms");
+    Logi(m_name, ": pipe detect time: ", sw.getMs(), "ms");
     sw.stop();
     return true;
 }
@@ -94,23 +94,7 @@ bool Pipe::detectFromFile(const std::string& imagePath)
         return false;
     }
 
-    m_descriptor = std::make_shared<PipeDescriptor>();
-    m_descriptor->setImage(image);
-
-    std::shared_ptr<PipeNode> prevNode;
-    for (auto& node : m_nodes) {
-        if (!prevNode) {
-            node->getInput()->setDescriptor(m_descriptor);
-        } else {
-            prevNode->moveDescriptor(node);
-        }
-
-        if (!node->run()) {
-            return false;
-        }
-        prevNode = node;
-    }
-    return true;
+    return detect(image);
 }
 
 bool Pipe::detectFromBase64(const std::string& base64Image)
@@ -126,23 +110,7 @@ bool Pipe::detectFromBase64(const std::string& base64Image)
         return false;
     }
 
-    m_descriptor = std::make_shared<PipeDescriptor>();
-    m_descriptor->setImage(image);
-
-    std::shared_ptr<PipeNode> prevNode;
-    for (auto& node : m_nodes) {
-        if (!prevNode) {
-            node->getInput()->setDescriptor(m_descriptor);
-        } else {
-            prevNode->moveDescriptor(node);
-        }
-
-        if (!node->run()) {
-            return false;
-        }
-        prevNode = node;
-    }
-    return true;
+    return detect(image);
 }
 
 const std::string& Pipe::getName() const

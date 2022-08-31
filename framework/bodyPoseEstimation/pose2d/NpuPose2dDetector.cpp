@@ -50,13 +50,13 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         cv::Mat inputImg;
         getPaddedImage(img, cv::Size(width, height), inputImg);
 
-        //cv::imwrite("/media/result/padded_npu.jpg", inputImg);
-        cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
+        //cv::imwrite("./padded_npu.jpg", inputImg);
+        //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
         inputImg.convertTo(inputImg, CV_8UC3);
-
         uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
         std::memcpy(inputTensor, inputImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
 
+        //memoryDump(inputTensor, "./input.bin", width * height * channels * sizeof(uint8_t));
         return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());

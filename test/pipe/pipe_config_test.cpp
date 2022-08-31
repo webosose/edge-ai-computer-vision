@@ -277,12 +277,6 @@ TEST_F(PipeConfigTest, BridgeOperationConfig)
     EXPECT_EQ(config.getTargetId(), "palm");
 }
 
-TEST_F(PipeConfigTest, BridgeOperationConfig_no_targetId)
-{
-    BridgeOperationConfig config;
-    EXPECT_FALSE(config.parse(ConfigUtil::stringToJson(bridgeOpCfg_no_targetId)));
-}
-
 TEST_F(PipeConfigTest, DetectorOperationConfig)
 {
     DetectorOperationConfig config;
