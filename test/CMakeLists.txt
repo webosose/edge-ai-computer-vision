@@ -122,6 +122,9 @@ set(SRC_FILES
     ${SRC_DIR}/yolov4_param_test.cpp
     ${SRC_DIR}/yolov4_descriptor_test.cpp
     ${SRC_DIR}/yolov4_detector_test.cpp
+    ${SRC_DIR}/pose3d_param_test.cpp
+    ${SRC_DIR}/pose3d_descriptor_test.cpp
+    ${SRC_DIR}/pose3d_detector_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
     ${SRC_DIR}/performance_reporter_test.cpp

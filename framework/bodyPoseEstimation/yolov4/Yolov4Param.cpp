@@ -68,6 +68,7 @@ Yolov4Param::Yolov4Param(const Yolov4Param& other)
     , strides(other.strides)
     , numAnchors(other.numAnchors)
     , anchors(other.anchors)
+    , anchorsNorm(other.anchorsNorm)
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -82,6 +83,7 @@ Yolov4Param::Yolov4Param(Yolov4Param&& other) noexcept
     , strides(std::move(other.strides))
     , numAnchors(std::move(other.numAnchors))
     , anchors(std::move(other.anchors))
+    , anchorsNorm(std::move(other.anchorsNorm))
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -95,6 +97,14 @@ Yolov4Param& Yolov4Param::operator=(const Yolov4Param& other)
 
     bboxBottomThresholdY = other.bboxBottomThresholdY;
     useFp16 = other.useFp16;
+    nms_threshold = other.nms_threshold;
+    bbox_conf_threshold = other.bbox_conf_threshold;
+    numClasses = other.numClasses;
+    numOutChannels = other.numOutChannels;
+    strides = other.strides;
+    numAnchors = other.numAnchors;
+    anchors = other.anchors;
+    anchorsNorm = other.anchorsNorm;
 
     return *this;
 }
@@ -108,6 +118,14 @@ Yolov4Param& Yolov4Param::operator=(Yolov4Param&& other) noexcept
 
     bboxBottomThresholdY = std::move(other.bboxBottomThresholdY);
     useFp16 = std::move(other.useFp16);
+    nms_threshold = std::move(other.nms_threshold);
+    bbox_conf_threshold = std::move(other.bbox_conf_threshold);
+    numClasses = std::move(other.numClasses);
+    numOutChannels = std::move(other.numOutChannels);
+    strides = std::move(other.strides);
+    numAnchors = std::move(other.numAnchors);
+    anchors = std::move(other.anchors);
+    anchorsNorm = std::move(other.anchorsNorm);
 
     return *this;
 }
@@ -116,7 +134,15 @@ bool Yolov4Param::operator==(const Yolov4Param& other) const
 {
     return (
         (bboxBottomThresholdY == other.bboxBottomThresholdY) &&
-        (useFp16 == other.useFp16)
+        (useFp16 == other.useFp16) &&
+        (std::abs(nms_threshold - other.nms_threshold) < aif::EPSILON) &&
+        (std::abs(bbox_conf_threshold - other.bbox_conf_threshold) < aif::EPSILON) &&
+        (numClasses == other.numClasses) &&
+        (numOutChannels == other.numOutChannels) &&
+        (std::equal(strides.begin(), strides.end(), other.strides.begin())) &&
+        (std::equal(numAnchors.begin(), numAnchors.end(), other.numAnchors.begin())) &&
+        (std::equal(anchors.begin(), anchors.end(), other.anchors.begin())) &&
+        (std::equal(anchorsNorm.begin(), anchorsNorm.end(), other.anchorsNorm.begin()))
     );
 }
 
@@ -157,6 +183,13 @@ std::ostream& operator<<(std::ostream& os, const Yolov4Param& fp)
     for (int i = 0; i < fp.anchors.size(); i++) { // 2
         for (int j = 0; j < fp.numAnchors[i]; j++) { // 3
             os << "[" << fp.anchors[i][j].first << "," << fp.anchors[i][j].second << "]\n";
+        }
+    }
+    os << "],\n";
+    os << "\tanchorsNorm: [";
+    for (int i = 0; i < fp.anchorsNorm.size(); i++) { // 2
+        for (int j = 0; j < fp.numAnchors[i]; j++) { // 3
+            os << "[" << fp.anchorsNorm[i][j].first << "," << fp.anchorsNorm[i][j].second << "]\n";
         }
     }
     os << "],\n";

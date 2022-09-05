@@ -31,12 +31,9 @@ protected:
 private:
     cv::Mat staticResize(const cv::Mat& img, const int targetWidth, const int targetHeight);
     void getOutputTensorInfo(uint8_t **outTensorDataArr,
-                                     float *scale_arr,
-                                     int *zero_point_arr,
                                      size_t &outConcatDimSize);
 
     void transformToImageCoordinates(uint8_t **outTensorDataArr, float *target_outTensor_deq,
-                                                 float *scale_arr, int *zero_point_arr,
                                                  std::shared_ptr<Yolov4Param> &param);
     void generateYolov4Proposals( std::vector<Object>& objects,
                                   std::shared_ptr<Yolov4Param> &param,
@@ -49,6 +46,10 @@ private:
         cv::Rect_<float> inter = a.rect & b.rect;
         return inter.area();
     }
+
+private:
+    float mScaleOut[RESULT_YOLO_IDX_MAX];
+    int mZeropointOut[RESULT_YOLO_IDX_MAX];
 
 };
 

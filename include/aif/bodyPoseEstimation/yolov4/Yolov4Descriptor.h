@@ -12,6 +12,13 @@
 
 namespace aif {
 
+enum
+{
+    RESULT_YOLO_IDX_0 = 0,
+    RESULT_YOLO_IDX_1,
+    RESULT_YOLO_IDX_MAX
+};
+
 class Yolov4Descriptor: public Descriptor
 {
 public:
