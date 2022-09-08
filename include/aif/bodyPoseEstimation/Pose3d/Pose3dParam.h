@@ -54,10 +54,6 @@ public:
 
     /* TODO: array!! */
     std::vector<float> pose2DJoints;
-/*    bool useFp16;
-    int optProfMin;
-    int optProfOpt;
-    int optProfMax;*/
 
 };
 

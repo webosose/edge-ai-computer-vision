@@ -40,6 +40,50 @@ Pose3dDetector::normalizeJoints( const float x, const float y, const int width, 
     return p;
 }
 
+t_aif_status
+Pose3dDetector::detect(const cv::Mat &img,
+                       std::shared_ptr<Descriptor> &descriptor)
+{
+    try {
+        mIsSecondDetect = false;
+        for (int i = 0; i < mBatchSize; i++) {
+            Stopwatch sw;
+            // prepare input tensors
+            sw.start();
+            if (fillInputTensor(img) != kAifOk) {
+                throw std::runtime_error("fill input tensor failed!!");
+            }
+            TRACE("fillInputTensor(): ", sw.getMs(), "ms");
+            sw.stop();
+
+            // start to inference
+            sw.start();
+            TfLiteStatus res = m_interpreter->Invoke();
+            if (res != kTfLiteOk) {
+                throw std::runtime_error("tflite interpreter invoke failed!!");
+            }
+            TRACE("m_interpreter->Invoke(): ", sw.getMs(), "ms");
+            sw.stop();
+
+            // start to postProcess
+            sw.start();
+            if (postProcessing(img, descriptor) == kAifError) {
+                throw std::runtime_error("postProcessing failed!!");
+            }
+            TRACE("postProcessing(): ", sw.getMs(), "ms");
+            sw.stop();
+            mIsSecondDetect = (mIsSecondDetect) ? false : true;
+        }
+        return kAifOk;
+    } catch (const std::exception &e) {
+        Loge(__func__, "Error: ", e.what());
+        return kAifError;
+    } catch (...) {
+        Loge(__func__, "Error: Unknown exception occured!!");
+        return kAifError;
+    }
+}
+
 
 std::shared_ptr<DetectorParam> Pose3dDetector::createParam()
 {
@@ -183,7 +227,6 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
             pose3dDescriptor->addJoints3D(mResults[RESULT_3D_JOINT], mResults[RESULT_3D_TRAJ][0]);
         }
 
-        mIsSecondDetect = (mIsSecondDetect) ? false : true;
         return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -202,14 +245,8 @@ Pose3dDetector::initializeParam()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
 
-    mMaxInputs = ( param->numMaxPerson < 1 ) ? 1 : param->numMaxPerson;
-    mBatchSize = ( param->maxBatchSize < 1 ) ? 1 : param->maxBatchSize;
-
-    if ( mMaxInputs < mBatchSize )
-    {
-        // TODO: log warning or info
-        mBatchSize = mMaxInputs;
-    }
+    mMaxInputs = 1;
+    mBatchSize = 1;
 
     if ( param->flipPoses == true )
     {
@@ -410,7 +447,7 @@ Pose3dDetector::fillFlippedJoints( uint8_t* inputTensorBuff)
         for ( auto& j2d : *it )
         {
             auto flipped_idx = param->flipPoseMap[idx];
-            inputTensorBuff[2*flipped_idx] = QUANT(j2d.x) * -1.f;
+            inputTensorBuff[2*flipped_idx] = QUANT((j2d.x) * -1.f);
             inputTensorBuff[2*flipped_idx + 1] = QUANT(j2d.y);
             idx++;
         }

@@ -23,10 +23,12 @@ class Pose3dDetector : public Detector
 public:
     using Joints2D = std::vector<Joint2D>;
     using JointQueue = std::deque<Joints2D>;
-//    using JointQueueMap = std::unordered_map<int, JointQueue>;
 
     Pose3dDetector(const std::string& modelPath);
     virtual ~Pose3dDetector();
+
+    t_aif_status detect(const cv::Mat &img,
+                        std::shared_ptr<Descriptor> &descriptor) override;
 
 protected:
     std::shared_ptr<DetectorParam> createParam() override;
@@ -55,7 +57,6 @@ private:
     int mNumJointsIn;
     int mNumJointsOut[RESULT_3D_IDX_MAX];
     bool mIsSecondDetect;
-    //JointQueueMap mJoints_Q;
     JointQueue mJoints_Q;
     cv::Mat mCameraMatrix;
     cv::Mat mDistCoeff;
@@ -67,7 +68,6 @@ private:
 
     uint8_t *mResultForFirstBatch[RESULT_3D_IDX_MAX];
     std::vector<Joint3D> mResults[RESULT_3D_IDX_MAX];
-
 };
 
 } // end of namespace aif

@@ -48,11 +48,6 @@ bool FitTvPose3dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
             Loge(m_id, ": failed to detect ", m_model);
             return false;
         }
-        res = m_detector->detect(input, descriptor);
-        if (res != kAifOk) {
-            Loge(m_id, ": failed to detect ", m_model);
-            return false;
-        }
 
         fitTvDescriptor->addDetectorOperationResult(m_id, m_model, descriptor);
     }
