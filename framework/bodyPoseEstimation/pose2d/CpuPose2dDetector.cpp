@@ -48,13 +48,14 @@ t_aif_status CpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         int width = m_modelInfo.width;
         int channels = m_modelInfo.channels;
 
+        //cv::imwrite("./crop_input.jpg", img);
         cv::Mat inputImg;
         getPaddedImage(img, cv::Size(width, height), inputImg);
+        //cv::imwrite("./pad_input.jpg", inputImg);
 
-        //cv::imwrite("./padded_cpu.jpg", inputImg);
         //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
         inputImg.convertTo(inputImg, CV_32FC3);
-        inputImg /= 255.0f;
+        normalizeImage(inputImg);
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
         std::memcpy(inputTensor, inputImg.ptr<float>(0), width * height * channels * sizeof(float));
@@ -107,6 +108,22 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 
     delete [] buffer;
     return kAifOk;
+}
+
+void CpuPose2dDetector::normalizeImage(cv::Mat& img) const
+{
+    const float meanBGR[3] = { 0.406, 0.456, 0.485 };
+    const float stdBGR[3] = { 4.44, 4.46, 4.36 };
+
+    auto dataPtr = reinterpret_cast<float*>(img.data);
+    auto total = img.total();
+
+    for (auto i = 0; i < total; i++ ) {
+        float* localPtr = dataPtr + i * 3;
+        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0];
+        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1];
+        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2];
+    }
 }
 
 } // namespace aif

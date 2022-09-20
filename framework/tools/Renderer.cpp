@@ -121,4 +121,32 @@ cv::Mat Renderer::drawPose2d(const cv::Mat &img, const std::vector<std::vector<f
     return temp;
 }
 
+cv::Mat Renderer::drawRects(
+        const cv::Mat &img,
+        const std::vector<cv::Rect>& rects,
+        cv::Scalar color,
+        int thickness)
+{
+    cv::Mat temp = img;
+    for (const auto& rect : rects) {
+        cv::rectangle(img, rect, color, thickness);
+    }
+    return temp;
+}
+
+cv::Mat Renderer::drawBoxes(
+        const cv::Mat &img,
+        const std::vector<BBox>& boxes,
+        cv::Scalar color,
+        int thickness)
+{
+    cv::Mat temp = img;
+    for (const auto& box: boxes) {
+        cv::Rect rect(box.xmin, box.ymin, box.width, box.height);
+        cv::rectangle(img, rect, color, thickness);
+    }
+    return temp;
+}
+
+
 }

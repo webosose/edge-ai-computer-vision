@@ -219,6 +219,12 @@ IF(WITH_EXTRA_MODELS)
     install(FILES ${EXTRA_MODELS} DESTINATION ${AIF_INSTALL_DIR}/model)
 ENDIF(WITH_EXTRA_MODELS)
 
+IF(WITH_FITTV)
+    file(GLOB FITTV_MODELS "${CMAKE_SOURCE_DIR}/extra_models/FitTV*.tflite")
+    file(GLOB FITTV_MODELS "${CMAKE_SOURCE_DIR}/extra_models/pose2d*.tflite")
+    install(FILES ${FITTV_MODELS} DESTINATION ${AIF_INSTALL_DIR}/model)
+ENDIF(WITH_FITTV)
+
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/log")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/tools")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/base")

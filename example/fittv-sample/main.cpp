@@ -59,14 +59,11 @@ int main(int argc, char* argv[])
                     "operation" : {
                         "type" : "fittv_pose2d_detector",
                         "config": {
-                            "model": "pose2d_resnet_npu",
+                            "model": "pose2d_resnet_cpu",
                             "param": {
-                                "delegates": [
-                                    {
-                                        "name": "npu_delegate",
-                                        "option": {}
-                                    }
-                                ]
+                                "autoDelegate": {
+                                    "policy": "MIN_LATENCY"
+                                }
                             }
                         }
                     }
@@ -106,17 +103,21 @@ int main(int argc, char* argv[])
         })";
 
     std::string inputPath = R"(/usr/share/aif/images/person.jpg)";
+    std::string outputPath  = R"(./res.jpg)";
 
     if (argc == 2) {
-        std::cout << "Usage: fittv-pipe-sample <config-file-path> <input-file-path>" << std::endl;
-        std::cout << "Example: pipe-sample face.json " << inputPath << std::endl;
+        std::cout << "Usage: fittv-sample <config-file-path> <input-file-path>" << std::endl;
+        std::cout << "Example: fittv-sample face.json " << inputPath << std::endl;
         std::cout << "Example Config Json: " << std::endl << config << std::endl;
         return 0;
     }
     std::string configPath;
-    if (argc == 3) {
+    if (argc >= 3) {
         configPath = argv[1];
         inputPath = argv[2];
+    }
+    if (argc >= 4) {
+        outputPath = argv[3];
     }
 
     if (!configPath.empty()) {
@@ -145,14 +146,18 @@ int main(int argc, char* argv[])
         std::cout << "failed to build pipe" << std::endl;
     }
 
-    std::cout << "Result: " << std::endl << pipe.getDescriptor()->getResult() << std::endl;
+    std::cout << "Input: " << inputPath << std::endl;
+    std::cout << "Output: " << std::endl << pipe.getDescriptor()->getResult() << std::endl;
     auto fd = std::dynamic_pointer_cast<FitTvPoseDescriptor>(pipe.getDescriptor());
-
     cv::Mat result = fd->getImage();
     for (auto& keyPoints : fd->getKeyPoints()) {
         result = Renderer::drawPose2d(result, keyPoints);
     }
-    cv::imwrite("./res.jpg", result);
+
+    result = Renderer::drawRects(result, fd->getCropRects(), cv::Scalar(255, 0, 0), 1);
+    result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
+
+    cv::imwrite(outputPath, result);
     AIVision::deinit();
 
     return 0;

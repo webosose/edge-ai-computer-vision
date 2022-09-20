@@ -8,6 +8,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
+#include <aif/bodyPoseEstimation/common.h>
 
 namespace aif {
 
@@ -16,6 +17,18 @@ public:
     static cv::Mat drawPose2d(
             const cv::Mat &img,
             const std::vector<std::vector<float>>& keyPoints);
+
+    static cv::Mat drawRects(
+            const cv::Mat &img,
+            const std::vector<cv::Rect>& rects,
+            cv::Scalar color = cv::Scalar(255, 0, 0),
+            int thickness = 1);
+
+    static cv::Mat drawBoxes(
+            const cv::Mat &img,
+            const std::vector<BBox>& boxes,
+            cv::Scalar color = cv::Scalar(255, 0, 0),
+            int thickness = 1);
 };
 
 }

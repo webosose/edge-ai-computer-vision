@@ -20,7 +20,7 @@ namespace aif {
 BodyPoseEstimationParam::BodyPoseEstimationParam()
     : orgImgWidth(640)
     , orgImgHeight(480)
-    , numMaxPerson(4)
+    , numMaxPerson(1)
     , hasIntrinsics(true)
     , timeLogIntervalMs(0)
 {

@@ -25,6 +25,7 @@ class FitTvPersonCropOperation : public BridgeOperation {
 
     private:
         std::vector<cv::Rect> getCropRects(const std::shared_ptr<NodeInput>& input) const;
+        BBox fixBbox(const std::shared_ptr<NodeInput>& input, const BBox& bbox) const;
 
 };
 

@@ -3,9 +3,10 @@ project (edgeai-vision)
 
 OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
 OPTION(WITH_EXTRA_MODELS "Enable Extra Models" ON)
-OPTION(WITH_EXAMPLES "Enable Examples" ON)
+OPTION(WITH_EXAMPLES "Enable Examples" OFF)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
+OPTION(WITH_FITTV "Enable FitTV Model and Example" ON)
 
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
@@ -33,4 +34,9 @@ IF(WITH_HOST_TEST)        ### for meta-shift unit test ###
 ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test)
     add_subdirectory(test/test-dl)
+ENDIF()
+
+IF(WITH_FITTV)
+    ADD_DEFINITIONS(-DUSE_FITTV)
+    add_subdirectory(example)
 ENDIF()

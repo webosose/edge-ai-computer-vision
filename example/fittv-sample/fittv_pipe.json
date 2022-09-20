@@ -39,15 +39,12 @@
             "operation" : {
                 "type" : "fittv_pose2d_detector",
                 "config": {
-                    "model": "pose2d_resnet_npu",
+                    "model": "pose2d_resnet_cpu",
                     "param": {
-                        "delegates": [
-                            {
-                                "name": "npu_delegate",
-                                "option": {}
-                            }
-                        ]
-		    }
+                        "autoDelegate": {
+                            "policy": "MIN_LATENCY"
+                        }
+                    }
                 }
             }
         },

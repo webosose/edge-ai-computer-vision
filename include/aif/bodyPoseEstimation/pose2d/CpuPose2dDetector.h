@@ -29,6 +29,7 @@ class CpuPose2dDetector : public Pose2dDetector
         t_aif_status postProcessing(const cv::Mat& img,
                 std::shared_ptr<Descriptor>& descriptor) override;
 
+        void normalizeImage(cv::Mat& img) const;
 };
 
 DetectorFactoryRegistration<CpuPose2dDetector, Pose2dDescriptor>
