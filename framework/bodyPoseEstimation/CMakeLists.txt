@@ -7,7 +7,7 @@ set(BODYPOSEESTIMATION_SRC
 )
 
 
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/yolov4")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/personDetect")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/pose2d")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Pose3d")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/fittv")

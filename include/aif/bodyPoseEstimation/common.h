@@ -36,8 +36,12 @@ public:
     int imgWidth;
     int imgHeight;
 
+    int c0; // score
+    int c1; // class
+
     BBox() {}
-    BBox( int width, int height );
+    BBox( float width, float height );
+    BBox( float x0, float y0, float x1, float y1, int score_, int class_);
     void addXyxy( float xmin_, float ymin_, float xmax_, float ymax_, bool clip=true );
     void addTlhw( float xmin_, float ymin_, float width_, float height_ );
 

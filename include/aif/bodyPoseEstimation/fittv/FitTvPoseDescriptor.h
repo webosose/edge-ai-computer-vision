@@ -7,7 +7,7 @@
 #define AIF_FITTV_POSE_DESCRIPTOR_H
 
 #include <aif/pipe/PipeDescriptor.h>
-#include <aif/bodyPoseEstimation/yolov4/Yolov4Descriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/PersonDetectDescriptor.h>
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
 #include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
 
@@ -47,7 +47,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
    private:
         bool addPersonDetectorResult(
                 const std::string& id,
-                const std::shared_ptr<Yolov4Descriptor> descriptor);
+                const std::shared_ptr<PersonDetectDescriptor> descriptor);
         bool addPose2dDetectorResult(
                 const std::string& id,
                 const std::shared_ptr<Pose2dDescriptor> descriptor);

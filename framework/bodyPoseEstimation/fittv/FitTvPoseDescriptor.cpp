@@ -37,9 +37,10 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
         const std::string& model,
         const std::shared_ptr<Descriptor>& descriptor)
 {
-    if (model.rfind("person_yolov4", 0) == 0) {
-        auto yolov4 = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
-        return addPersonDetectorResult(nodeId, yolov4);
+    if ((model.rfind("person_yolov4", 0) == 0) ||
+        (model.rfind("person_yolov3", 0) == 0)) {
+        auto person = std::dynamic_pointer_cast<PersonDetectDescriptor>(descriptor);
+        return addPersonDetectorResult(nodeId, person);
     }
     else if (model.rfind("pose2d_resnet", 0) == 0) {
         auto pose2d = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
@@ -54,7 +55,7 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
 
 bool FitTvPoseDescriptor::addPersonDetectorResult(
         const std::string& nodeId,
-        const std::shared_ptr<Yolov4Descriptor> descriptor)
+        const std::shared_ptr<PersonDetectDescriptor> descriptor)
 {
     Logi("addPersonDectectorResult: ", descriptor->toStr());
     m_type.addType(NodeType::INFERENCE);

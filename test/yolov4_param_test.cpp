@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/yolov4/Yolov4Param.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov4/Yolov4Param.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

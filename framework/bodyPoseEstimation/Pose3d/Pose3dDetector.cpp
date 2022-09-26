@@ -114,7 +114,7 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
         std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
 
         if (m_interpreter == nullptr) {
-            throw std::runtime_error("yolov4_pytorch.tflite interpreter not initialized!!");
+            throw std::runtime_error("pose3d.tflite interpreter not initialized!!");
         }
 #if 1
         std::cout << "Pose3D start with imageJoints[idx] " << joints_mat.at<double>(0,0) << std::endl;

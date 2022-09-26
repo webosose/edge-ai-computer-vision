@@ -5,6 +5,7 @@
 
 #include <aif/base/AIVision.h>
 #include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov4/Yolov4Descriptor.h>
 #include <aif/pipe/PipeDescriptorFactory.h>
 #include <aif/base/DetectorFactory.h>
 #include <gtest/gtest.h>
