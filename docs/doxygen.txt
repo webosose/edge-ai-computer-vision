@@ -112,7 +112,9 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ./README.md ../include/aif/facade/EdgeAIVision.h
+INPUT                  = ./README.md \
+                        ../include/aif/facade/EdgeAIVision.h \
+                        ../include/aif/facade/EdgeAIVisionC.h
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
