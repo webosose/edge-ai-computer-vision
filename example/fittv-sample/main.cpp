@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
                     "operation" : {
                         "type" : "detector",
                         "config": {
-                            "model": "person_yolov4_npu",
+                            "model": "person_yolov3_npu",
                             "param": {
                                 "delegates": [
                                     {

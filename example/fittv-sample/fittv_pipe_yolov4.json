@@ -9,7 +9,7 @@
             "operation" : {
                 "type" : "detector",
                 "config": {
-                    "model": "person_yolov3_npu",
+                    "model": "person_yolov4_npu",
                     "param": {
                         "delegates": [
                             {

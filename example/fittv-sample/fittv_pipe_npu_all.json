@@ -1,5 +1,5 @@
 {
-    "name" : "fittv_pipe",
+    "name" : "fittv_pipe_npu_all",
     "descriptor": "fittv_pose",
     "nodes": [
         {
@@ -39,11 +39,14 @@
             "operation" : {
                 "type" : "fittv_pose2d_detector",
                 "config": {
-                    "model": "pose2d_resnet_cpu",
+                    "model": "pose2d_resnet_npu",
                     "param": {
-                        "autoDelegate": {
-                            "policy": "MIN_LATENCY"
-                        }
+                        "delegates": [
+                            {
+                                "name": "npu_delegate",
+                                "option": {}
+                            }
+                        ]
                     }
                 }
             }

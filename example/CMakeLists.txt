@@ -5,7 +5,6 @@ IF("${AIF_INSTALL_EXAMPLE_DIR}" STREQUAL "")
     set(AIF_INSTALL_EXAMPLE_DIR "${AIF_INSTALL_DIR}/example")
 ENDIF()
 
-
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/face)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/websocket-service)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-detect-sample)
@@ -20,9 +19,7 @@ IF(WITH_EXTRA_MODELS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/handlandmark-sample)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/palm-sample)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/websocket-service)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pipe-sample)
 ELSEIF(WITH_FITTV)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fittv-sample)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pose2d-sample)
 ENDIF()
-

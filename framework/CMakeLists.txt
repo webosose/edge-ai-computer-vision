@@ -220,8 +220,9 @@ IF(WITH_EXTRA_MODELS)
 ENDIF(WITH_EXTRA_MODELS)
 
 IF(WITH_FITTV)
-    file(GLOB FITTV_MODELS "${CMAKE_SOURCE_DIR}/extra_models/FitTV*.tflite")
-    file(GLOB FITTV_MODELS "${CMAKE_SOURCE_DIR}/extra_models/pose2d*.tflite")
+    file(GLOB FITTV_MODELS
+        "${CMAKE_SOURCE_DIR}/extra_models/FitTV*.tflite"
+        "${CMAKE_SOURCE_DIR}/extra_models/pose2d*.tflite")
     install(FILES ${FITTV_MODELS} DESTINATION ${AIF_INSTALL_DIR}/model)
 ENDIF(WITH_FITTV)
 

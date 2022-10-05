@@ -80,8 +80,8 @@ BBox FitTvPersonCropOperation::fixBbox(const std::shared_ptr<NodeInput>& input, 
     int modelInputWidth = 192;
     int modelInputHeight = 256;
 
-    float scalex = std::max( bbox.width, 10.0f );
-    float scaley = std::max( bbox.height, 10.0f );
+    float scalex = std::max( static_cast<float>(bbox.width), 10.0f );
+    float scaley = std::max( static_cast<float>(bbox.height), 10.0f );
     float arrayExpand = 1.0f;
     if ( bbox.width / bbox.height < 0.66 )
     {
