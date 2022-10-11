@@ -2,7 +2,7 @@ var indexSectionsWithContent =
 {
   0: "cdefgiops",
   1: "e",
-  2: "cdgis",
+  2: "cdgips",
   3: "d",
   4: "fps",
   5: "o"

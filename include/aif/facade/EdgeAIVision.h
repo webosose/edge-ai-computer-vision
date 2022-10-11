@@ -99,8 +99,8 @@ class EdgeAIVision {
                           std::string& output);
 
     /**
-     * @brief create detector with pipeline config
-     * @param id pipe idnetifier
+     * @brief create pipe with pipeline config
+     * @param id pipe identifier 
      * @param option pipe configuration
      * @return return true if success to create pipe
      */
@@ -115,7 +115,7 @@ class EdgeAIVision {
 
     /**
      * @brief detect the result from input image
-     * @param id detector type
+     * @param id pipe identifier 
      * @param input input image data
      * @param output output result (json string)
      * @return return true if success to detect the result
@@ -127,7 +127,7 @@ class EdgeAIVision {
 
     /**
      * @brief detect the result from input image file
-     * @param id detector type
+     * @param id pipe identifier 
      * @param inputPath input image file path
      * @param output output result (json string)
      * @return return true if success to detect the result from input image file
@@ -135,11 +135,11 @@ class EdgeAIVision {
     bool pipeDetectFromFile(
             const std::string& id,
             const std::string& inputPath,
-            std::string& ouput);
+            std::string& output);
 
     /**
      * @brief detect the result from base64 input image
-     * @param type detector type
+     * @param id pipe identifier 
      * @param input base64 input image
      * @param output output result (json string)
      * @return return true if success to detect the result from input image data
@@ -147,7 +147,7 @@ class EdgeAIVision {
     bool pipeDetectFromBase64(
             const std::string& id,
             const std::string& input,
-            std::string& ouput);
+            std::string& output);
 
   private:
     static std::once_flag s_onceFlag;
@@ -164,6 +164,8 @@ class EdgeAIVision {
 
 
 /**@example face/main.cpp
+/**@example pipe-sample/main.cpp
+/**@example fittv-sample/main.cpp
  * Simple example of how to use the Edge AI Vision apis.
  */
 
