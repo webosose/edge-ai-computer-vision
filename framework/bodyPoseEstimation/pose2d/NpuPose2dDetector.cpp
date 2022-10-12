@@ -75,6 +75,9 @@ t_aif_status NpuPose2dDetector::preProcessing()
 
 t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
 {
+    Stopwatch sw;
+    sw.start();
+
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
     if (output == nullptr) {
@@ -117,6 +120,10 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     }
 
     delete [] buffer;
+
+    TRACE("postProcessing(): ", sw.getMs(), "ms");
+    sw.stop();
+
     return kAifOk;
 }
 

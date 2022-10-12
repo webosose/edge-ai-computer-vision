@@ -98,16 +98,13 @@ t_aif_status Yolov3Detector::preProcessing()
 t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
 {
     try {
-/* TODO: dequantization and output numbering */
+        /* TODO: dequantization and output numbering */
+
+        Stopwatch sw;
+        sw.start();
         const std::vector<int> &outputs = m_interpreter->outputs();
         TfLiteTensor *output_1 = m_interpreter->tensor(outputs[1]);
-            for (int i = 0; i < output_1->dims->size; i++) {
-                std::cout << "output[1] : " << output_1->dims->data[i] << std::endl;
-            }
         TfLiteTensor *output_2 = m_interpreter->tensor(outputs[2]);
-            for (int i = 0; i < output_2->dims->size; i++) {
-                std::cout << "output[2] : " << output_2->dims->data[i] << std::endl;
-            }
 
         OBD_ComputeResult(output_1->data.uint8, output_2->data.uint8);
 
@@ -121,6 +118,8 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
 
             yolov3Descriptor->addPerson(m_bodyResult.res_val[i], finalBbox);
         }
+        TRACE("postProcessing(): ", sw.getMs(), "ms");
+        sw.stop();
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
         return kAifError;
@@ -143,7 +142,7 @@ Yolov3Detector::getPaddedImage(const cv::Mat& src, cv::Mat& dst)
     // r : 0.5625 ( 270/480 < 480/640)
     // r : 0.28125 ( 270/960 vs. 480/1280)
     m_ImgResizingScale = std::min( m_modelInfo.width / (srcW * 1.0), m_modelInfo.height / (srcH * 1.0) );
-    Logi(__func__, " m_ImgResizingScale = " , m_ImgResizingScale);
+    TRACE(__func__, " m_ImgResizingScale = " , m_ImgResizingScale);
 
 
     int width = srcW * m_ImgResizingScale;
@@ -164,8 +163,7 @@ Yolov3Detector::getPaddedImage(const cv::Mat& src, cv::Mat& dst)
     int rightBorder = m_modelInfo.width - width - m_leftBorder;
     int bottomBorder = m_modelInfo.height - height - m_topBorder;
 
-    std::cout << "lb, tb, rb, bb: " << m_leftBorder << ", " << m_topBorder << ", " << rightBorder << " , " << bottomBorder << std::endl;
-
+    TRACE(__func__, "lb, tb, rb, bb: ", m_leftBorder, ", ", m_topBorder, ", ", rightBorder, " , ", bottomBorder);
 
     cv::copyMakeBorder(inputImg, dst, m_topBorder, bottomBorder, m_leftBorder, rightBorder, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
     m_paddedSize = cv::Size(
@@ -186,26 +184,25 @@ Yolov3Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &resu
         m_ImgResizingScale = std::min( m_modelInfo.width / (img_width * 1.0), m_modelInfo.height / (img_height * 1.0) );
     }
 
-    Logi(__func__, "m_ImgResizingScale = " , m_ImgResizingScale);
+    TRACE(__func__, "m_ImgResizingScale = " , m_ImgResizingScale);
     // scale : 0.5625 ( 270/480 < 480/640)
 
-#if 1
-    printf("---------------BEFORE------------\n");
-    printf("[BODY_Result] res_cnt = %d\n", m_bodyResult.res_cnt);
-    printf("---------------------------\n");
+    TRACE("---------------BEFORE------------");
+    TRACE("[BODY_Result] res_cnt = ", m_bodyResult.res_cnt);
+    TRACE("---------------------------");
 
     for(int idx = 0; idx < m_bodyResult.res_cnt; idx++)
     {
-        printf(" res_val[%d] = %d\n", idx, m_bodyResult.res_val[idx]);
-        printf(" res_cls[%d] = %d\n", idx, m_bodyResult.res_cls[idx]);
-        printf(" tpr_cnt[%d] = %d\n", idx, m_bodyResult.tpr_cnt[idx]);
-        printf(" pos_x0[%d] = %d\n", idx, m_bodyResult.pos_x0[idx]);
-        printf(" pos_x1[%d] = %d\n", idx, m_bodyResult.pos_x1[idx]);
-        printf(" pos_y0[%d] = %d\n", idx, m_bodyResult.pos_y0[idx]);
-        printf(" pos_y1[%d] = %d\n", idx, m_bodyResult.pos_y1[idx]);
-        printf("---------------------------\n");
+        TRACE(" res_val[", idx, "] = ", m_bodyResult.res_val[idx]);
+        TRACE(" res_cls[", idx, "] = ", m_bodyResult.res_cls[idx]);
+        TRACE(" tpr_cnt[", idx, "] = ", m_bodyResult.tpr_cnt[idx]);
+        TRACE(" pos_x0[", idx, "] = ", m_bodyResult.pos_x0[idx]);
+        TRACE(" pos_x1[", idx, "] = ", m_bodyResult.pos_x1[idx]);
+        TRACE(" pos_y0[", idx, "] = ", m_bodyResult.pos_y0[idx]);
+        TRACE(" pos_y1[", idx, "] = ", m_bodyResult.pos_y1[idx]);
+        TRACE("---------------------------");
     }
-#endif
+
     for (int i = 0; i < result.res_cnt; i++) {
         int x0 = ( (result.pos_x0[i] - m_leftBorder )/ m_ImgResizingScale ) + off_x;
         int y0 = ( (result.pos_y0[i] - m_topBorder ) / m_ImgResizingScale ) + off_y;
@@ -218,23 +215,21 @@ Yolov3Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &resu
         result.pos_y1[i] = std::max( std::min( y1, img_height - 1 ), 0 );
     }
 
-#if 1
-    printf("-------------AFTER--------------\n");
-    printf("[BODY_Result] res_cnt = %d\n", m_bodyResult.res_cnt);
-    printf("---------------------------\n");
+    TRACE("-------------AFTER--------------");
+    TRACE("[BODY_Result] res_cnt = ", m_bodyResult.res_cnt);
+    TRACE("---------------------------");
 
     for(int idx = 0; idx < m_bodyResult.res_cnt; idx++)
     {
-        printf(" res_val[%d] = %d\n", idx, m_bodyResult.res_val[idx]);
-        printf(" res_cls[%d] = %d\n", idx, m_bodyResult.res_cls[idx]);
-        printf(" tpr_cnt[%d] = %d\n", idx, m_bodyResult.tpr_cnt[idx]);
-        printf(" pos_x0[%d] = %d\n", idx, m_bodyResult.pos_x0[idx]);
-        printf(" pos_x1[%d] = %d\n", idx, m_bodyResult.pos_x1[idx]);
-        printf(" pos_y0[%d] = %d\n", idx, m_bodyResult.pos_y0[idx]);
-        printf(" pos_y1[%d] = %d\n", idx, m_bodyResult.pos_y1[idx]);
-        printf("---------------------------\n");
+        TRACE(" res_val[", idx, "] = ", m_bodyResult.res_val[idx]);
+        TRACE(" res_cls[", idx, "] = ", m_bodyResult.res_cls[idx]);
+        TRACE(" tpr_cnt[", idx, "] = ", m_bodyResult.tpr_cnt[idx]);
+        TRACE(" pos_x0[", idx, "] = ", m_bodyResult.pos_x0[idx]);
+        TRACE(" pos_x1[", idx, "] = ", m_bodyResult.pos_x1[idx]);
+        TRACE(" pos_y0[", idx, "] = ", m_bodyResult.pos_y0[idx]);
+        TRACE(" pos_y1[", idx, "] = ", m_bodyResult.pos_y1[idx]);
+        TRACE("---------------------------");
     }
-#endif
 }
 
 
@@ -245,7 +240,7 @@ Yolov3Detector::OBD_ComputeResult(uint8_t* obd_lb_addr, uint8_t* obd_mb_addr)
     CV_BOX(BoxType::LB_BOX, obd_lb_addr, bbox);
     CV_BOX(BoxType::MB_BOX, obd_mb_addr, bbox);
 
-	printf("num_bbox [%d] : MAX_BOX [%d]\n", bbox.size(), MAX_BOX);
+    TRACE(" num_bbox [", bbox.size(), "] : MAX_BOX[", MAX_BOX, "]");
 
 	// NMS
 	int num_nms = 0;
@@ -316,9 +311,8 @@ Yolov3Detector::CV_BOX(BoxType boxType, uint8_t *obd_addr, std::vector<BBox> &bb
                 }
 
                 CO = cal_confidence(LUT_CONF[boxIdx],obd_addr[cnt+4],max);
-                if(CO > param->thresh_score[1]) /* low threshold */
+                if( CO > param->thresh_score[1]) /* low threshold */
                 {
-                    std::cout << "CO: " << CO << " param->thresh_score[1]: " << param->thresh_score[1] << std::endl;
                     bbox.emplace_back(BX0, BY0, BX1, BY1, CO, max_id);
 					//printf("%3d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", box_idx, BX0, BY0, BX1, BY1, max_id, CO);
                 }
@@ -328,7 +322,7 @@ Yolov3Detector::CV_BOX(BoxType boxType, uint8_t *obd_addr, std::vector<BBox> &bb
         }
     }
 
-    printf("%s: %d\n", __FUNCTION__, bbox.size() - numBox_before);
+    TRACE(__FUNCTION__, ": " , bbox.size() - numBox_before);
 
 }
 
@@ -441,7 +435,7 @@ Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
 		}
 	}
 
-	printf("%s: %d\n", __FUNCTION__, res_nms.size());
+    TRACE(__FUNCTION__, ": " , res_nms.size());
     return res_nms;
 }
 
@@ -464,7 +458,7 @@ Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, 
 		int _score = (bbox[idx_nms].c0);
 		int _class = (bbox[idx_nms].c1);
 
-		printf("%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", idx, _x0, _y0, _x1, _y1, _class, _score);
+		//printf("%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", idx, _x0, _y0, _x1, _y1, _class, _score);
 
         selState = ((_class == eOBD_PERSON) || (_class == eOBD_FACE)) ? 0 : 1; // objects execept for person, face
 
@@ -484,7 +478,7 @@ Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, 
 				m_obd_result.res_cnt++;
 			}
 
-			printf("%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", m_obd_result.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
+			//printf("%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", m_obd_result.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
 			if (m_obd_result.res_cnt >= OBD_RESULT_NUM) break;
 		}
 //			else //only for person & face
@@ -503,7 +497,7 @@ Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, 
 					m_bodyResult.tpr_cnt[m_bodyResult.res_cnt] = tcnt_init[_class];
 					m_bodyResult.res_cnt++;
 				}
-			    printf("person%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n",m_bodyResult.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
+			    //printf("person%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n",m_bodyResult.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
 			}
 			else if(_class == eOBD_FACE && m_faceResult.res_cnt < OBD_RESULT_NUM)
 			{
@@ -518,7 +512,7 @@ Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, 
 					m_faceResult.res_val[m_faceResult.res_cnt] = _score;
 					m_faceResult.tpr_cnt[m_faceResult.res_cnt] = tcnt_init[_class];
 
-					printf("face%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", m_faceResult.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
+					//printf("face%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", m_faceResult.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
 					m_faceResult.res_cnt++;
 				}
 			}

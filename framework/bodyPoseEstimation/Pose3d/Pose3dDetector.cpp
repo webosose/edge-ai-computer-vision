@@ -116,12 +116,12 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
         if (m_interpreter == nullptr) {
             throw std::runtime_error("pose3d.tflite interpreter not initialized!!");
         }
-#if 1
-        std::cout << "Pose3D start with imageJoints[idx] " << joints_mat.at<double>(0,0) << std::endl;
-        std::cout << "Pose3D start with imageJoints[idx] " << joints_mat.at<double>(0,1) << std::endl;
-        std::cout << "Pose3D start with imageJoints[idx] " << joints_mat.at<double>(1,0) << std::endl;
-        std::cout << "Pose3D start with imageJoints[idx] " << joints_mat.at<double>(1,1) << std::endl;
-#endif
+
+        TRACE("Pose3D start with imageJoint[idx] ", joints_mat.at<double>(0,0));
+        TRACE("Pose3D start with imageJoints[idx] ", joints_mat.at<double>(0,1));
+        TRACE("Pose3D start with imageJoints[idx] ", joints_mat.at<double>(1,0));
+        TRACE("Pose3D start with imageJoints[idx] ", joints_mat.at<double>(1,1));
+
         if ( (joints_mat.rows != mNumJointsIn) || (joints_mat.cols != 2) ) /* 41 x 2 */
         {
             throw std::runtime_error("joints_mat input size is wrong!");
@@ -166,7 +166,7 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
             throw std::runtime_error("if mIsSecondDetect is true, flipPoses should be true");
         }
 
-        Logi(__func__, "current mJoints_Q size is ", mJoints_Q.size());
+        Logv(__func__, "current mJoints_Q size is ", mJoints_Q.size());
         return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -317,7 +317,7 @@ Pose3dDetector::getInputTensorInfo(TfLiteTensor *input)
     mScaleIn = q_params->scale->data[0];
     mZeropointIn = q_params->zero_point->data[0];
 
-    Logi( __func__, " mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
+    TRACE( __func__, " mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
 }
 
 int
@@ -348,7 +348,7 @@ Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
     mScaleOut[idx] = q_params->scale->data[0];
     mZeropointOut[idx] = q_params->zero_point->data[0];
 
-    Logi( __func__, " mScaleOut[" , idx , "]: " , mScaleOut[idx] , " mZeropointOut[" , idx , "]: " , mZeropointOut);
+    TRACE( __func__, " mScaleOut[" , idx , "]: " , mScaleOut[idx] , " mZeropointOut[" , idx , "]: " , mZeropointOut);
     return idx;
 }
 
@@ -357,7 +357,7 @@ Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
 void
 Pose3dDetector::fillJoints( uint8_t* inputTensorBuff )
 {
-    Logi(__func__);
+    TRACE(__func__);
 
     auto QUANT = [this](float data) {
         return static_cast<uint8_t>(( data / mScaleIn ) + mZeropointIn);
@@ -406,7 +406,7 @@ Pose3dDetector::fillJoints( uint8_t* inputTensorBuff )
 void
 Pose3dDetector::fillFlippedJoints( uint8_t* inputTensorBuff)
 {
-    Logi(__func__);
+    TRACE(__func__);
 
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
 
@@ -461,7 +461,7 @@ Pose3dDetector::postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output)
 {
     // first batch, just only save the value
     // alloc for saving it
-    Logi(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
+    TRACE(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
 
     if (!mResultForFirstBatch[outputIdx]) {
         mResultForFirstBatch[outputIdx] = reinterpret_cast<uint8_t*>(std::malloc(output->bytes));
@@ -473,7 +473,7 @@ Pose3dDetector::postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output)
 void
 Pose3dDetector::postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output)
 {
-    Logi(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
+    TRACE(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
 
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
     if (!param->flipPoses) {

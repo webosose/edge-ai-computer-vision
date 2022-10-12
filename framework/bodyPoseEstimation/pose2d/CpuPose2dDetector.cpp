@@ -79,6 +79,8 @@ t_aif_status CpuPose2dDetector::preProcessing()
 
 t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
 {
+    Stopwatch sw;
+    sw.start();
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
 
@@ -107,6 +109,10 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     }
 
     delete [] buffer;
+
+    TRACE("postProcessing(): ", sw.getMs(), "ms");
+    sw.stop();
+
     return kAifOk;
 }
 

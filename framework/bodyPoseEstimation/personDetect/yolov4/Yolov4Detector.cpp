@@ -87,6 +87,8 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
     float *outConcatTensor_deq = nullptr; /* for dequantized output tensors */
 
     try {
+        Stopwatch sw;
+        sw.start();
         std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
 
         uint8_t* outTensorDataArr[2];
@@ -102,7 +104,7 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             throw std::runtime_error("can't get new dequantized output memory !!");
         }
 
-        Logi(__func__, " outConcatTotalSize: ", outConcatTotalSize, " outConcatDimSize: " , outConcatDimSize, " outConcatTensor_deq: ", outConcatTensor_deq);
+        TRACE(__func__, " outConcatTotalSize: ", outConcatTotalSize, " outConcatDimSize: " , outConcatDimSize, " outConcatTensor_deq: ", outConcatTensor_deq);
         transformToImageCoordinates(outTensorDataArr, outConcatTensor_deq, param);
 
         std::vector<Object> proposals;
@@ -123,7 +125,7 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
         auto ry = static_cast<float>(m_modelInfo.height) / roi_img_height;
         auto scale = std::min( rx, ry );
 
-        Logi(__func__, " count: ", count);
+        TRACE(__func__, " count: ", count);
         std::vector<std::pair<BBox,float>> before_filtered;
         for (auto i = 0; i < count; i++ )
         {
@@ -181,6 +183,8 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
         }
         free(outConcatTensor_deq);
 
+        TRACE("postProcessing(): ", sw.getMs(), "ms");
+        sw.stop();
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
         if (outConcatTensor_deq) {
@@ -271,14 +275,14 @@ void Yolov4Detector::getOutputTensorInfo(uint8_t **outTensorDataArr,
         mScaleOut[index] = q_params->scale->data[0];
         mZeropointOut[index] = q_params->zero_point->data[0];
 
-        Logi( __func__, " mScaleOut[" , index , "]: " , mScaleOut[index] , " mZeropointOut[" , index , "]: " , mZeropointOut[index]);
+        TRACE( __func__, " mScaleOut[" , index , "]: " , mScaleOut[index] , " mZeropointOut[" , index , "]: " , mZeropointOut[index]);
     }
 }
 
 void Yolov4Detector::transformToImageCoordinates(uint8_t **outTensorDataArr, float *target_outTensor_deq,
                                                  std::shared_ptr<Yolov4Param> &param)
 {
-    Logi(__func__, " target_outTensor_deq addr: 0x", target_outTensor_deq);
+    //Logv(__func__, " target_outTensor_deq addr: 0x", target_outTensor_deq);
     try {
         const std::vector<int> strides = param->strides;
         const int numOutChannels = param->numOutChannels;
@@ -366,7 +370,7 @@ void Yolov4Detector::generateYolov4Proposals( std::vector<Object>& objects , std
         // WARNING: If mTargetClasses.size() > 1 (not Person class only), objects can exceed num_cells
         objects.resize( num_cells );
 
-        Logi(__func__, " num_cells: ", num_cells, " numOutChannels: ", numOutChannels);
+        TRACE(__func__, " num_cells: ", num_cells, " numOutChannels: ", numOutChannels);
 
 /*       TODO: #pragma omp parallel for*/
         for ( auto i = 0U; i < num_cells; i++ )
@@ -481,7 +485,7 @@ Yolov4Detector::nmsSortedBboxes(std::shared_ptr<Yolov4Param> &param,  const std:
     picked.clear();
 
     const int n = objects.size();
-    Logi(__func__, " n: ", n);
+    TRACE(__func__, " n: ", n);
 
     std::vector<float> areas( n );
     for ( int i = 0; i < n; i++ )
