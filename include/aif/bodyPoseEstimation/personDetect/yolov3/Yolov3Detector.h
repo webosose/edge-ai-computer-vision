@@ -103,6 +103,7 @@ private:
     std::vector<int> fw_nms(std::vector<BBox> &bbox);
     void Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, std::vector<int> &res_nms);
     void getPaddedImage(const cv::Mat& src, cv::Mat& dst);
+    void FaceMatching();
 
 private:
 
@@ -113,6 +114,7 @@ private:
     cv::Size m_paddedSize;
     int m_leftBorder;
     int m_topBorder;
+    bool m_IsBodyDetect; // Body or Face ?
 
 
     static constexpr int tcnt_init[eOBD_MAX] = {tcnt_init_PERSON, tcnt_init_FACE, tcnt_init_OBJ, tcnt_init_OBJ,

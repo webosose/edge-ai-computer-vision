@@ -27,7 +27,7 @@ Yolov3Descriptor::~Yolov3Descriptor()
 {
 }
 
-void Yolov3Descriptor::addPerson(float score, const BBox &bbox)
+void Yolov3Descriptor::addPerson(float score, const BBox &bbox, bool isBodyDetect)
 {
     m_scores.push_back(score);
     m_boxes.push_back(bbox);
@@ -53,6 +53,7 @@ void Yolov3Descriptor::addPerson(float score, const BBox &bbox)
 
     m_root["persons"].PushBack(person, allocator);
     m_personCount++;
+    m_IsBodyDetect = isBodyDetect;
 }
 
 void Yolov3Descriptor::drawBbox(std::string imgPath)

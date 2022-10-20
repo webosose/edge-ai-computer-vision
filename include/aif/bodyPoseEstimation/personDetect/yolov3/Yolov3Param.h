@@ -36,6 +36,7 @@ public:
     t_aif_status fromJson(const std::string& param) override;
 
 public:
+    std::string detectObject; // body or face
     int lbbox_h;
     int lbbox_w;
     int mbbox_h;

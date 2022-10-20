@@ -18,7 +18,8 @@ static const char TAG[] = "<FPARAM>";
 namespace aif {
 
 Yolov3Param::Yolov3Param()
-    : lbbox_h(9)
+    : detectObject("body")
+    , lbbox_h(9)
     , lbbox_w(15)
     , mbbox_h(18)
     , mbbox_w(30)
@@ -37,7 +38,8 @@ Yolov3Param::~Yolov3Param()
 }
 
 Yolov3Param::Yolov3Param(const Yolov3Param& other)
-    : lbbox_h(other.lbbox_h)
+    : detectObject(other.detectObject)
+    , lbbox_h(other.lbbox_h)
     , lbbox_w(other.lbbox_w)
     , mbbox_h(other.mbbox_h)
     , mbbox_w(other.mbbox_w)
@@ -53,7 +55,8 @@ Yolov3Param::Yolov3Param(const Yolov3Param& other)
 }
 
 Yolov3Param::Yolov3Param(Yolov3Param&& other) noexcept
-    : lbbox_h(std::move(other.lbbox_h))
+    : detectObject(std::move(other.detectObject))
+    , lbbox_h(std::move(other.lbbox_h))
     , lbbox_w(std::move(other.lbbox_w))
     , mbbox_h(std::move(other.mbbox_h))
     , mbbox_w(std::move(other.mbbox_w))
@@ -75,6 +78,7 @@ Yolov3Param& Yolov3Param::operator=(const Yolov3Param& other)
         return *this;
     }
 
+    detectObject = other.detectObject;
     lbbox_h = other.lbbox_h;
     lbbox_w = other.lbbox_w;
     mbbox_h = other.mbbox_h;
@@ -97,6 +101,7 @@ Yolov3Param& Yolov3Param::operator=(Yolov3Param&& other) noexcept
         return *this;
     }
 
+    detectObject = std::move(other.detectObject);
     lbbox_h = std::move(other.lbbox_h);
     lbbox_w = std::move(other.lbbox_w);
     mbbox_h = std::move(other.mbbox_h);
@@ -115,6 +120,7 @@ Yolov3Param& Yolov3Param::operator=(Yolov3Param&& other) noexcept
 bool Yolov3Param::operator==(const Yolov3Param& other) const
 {
     return (
+        (detectObject == other.detectObject) &&
         (lbbox_h == other.lbbox_h) &&
         (lbbox_w == other.lbbox_w) &&
         (mbbox_h == other.mbbox_h) &&
@@ -138,6 +144,7 @@ bool Yolov3Param::operator!=(const Yolov3Param& other) const
 std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
 {
     os << "\n{\n";
+    os << "\tdetectObject: " << fp.detectObject << ",\n";
     os << "\tlbbox_h: " << fp.lbbox_h << ",\n";
     os << "\tlbbox_w: " << fp.lbbox_w << ",\n";
     os << "\tmbbox_h: " << fp.mbbox_h << ",\n";
@@ -184,6 +191,9 @@ t_aif_status Yolov3Param::fromJson(const std::string& param)
     payload.Parse(param.c_str());
     if (payload.HasMember("modelParam")) {
         rj::Value& modelParam = payload["modelParam"];
+        if (modelParam.HasMember("detectObject")) {
+            detectObject = modelParam["detectObject"].GetString();
+        }
         if (modelParam.HasMember("lbbox_h")) {
             lbbox_h = modelParam["lbbox_h"].GetInt();
         }

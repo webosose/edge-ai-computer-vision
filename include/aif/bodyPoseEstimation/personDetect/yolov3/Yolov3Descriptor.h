@@ -20,10 +20,12 @@ public:
 
     // TODO: implment add result
     //void addPerson(float score, const BBox &bbox);
-    virtual void addPerson(float score, const BBox &bbox);
+    virtual void addPerson(float score, const BBox &bbox, bool isBodyDetect = true);
     virtual void drawBbox(std::string imgPath);
     virtual void clear();
 
+private:
+    bool m_isBodyDetect;
 };
 
 } // end of namespace aif

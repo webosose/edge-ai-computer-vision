@@ -4,11 +4,11 @@
 #include <aif/log/Logger.h>
 
 #include <cstdio>
+#include <boost/algorithm/string/predicate.hpp>
 
 namespace aif {
 
 constexpr int Yolov3Detector::tcnt_init[];
-
 
 Yolov3Detector::Yolov3Detector(const std::string& modelPath)
     : Detector(modelPath)
@@ -18,6 +18,7 @@ Yolov3Detector::Yolov3Detector(const std::string& modelPath)
     , m_ImgResizingScale(1.f)
     , m_leftBorder(0)
     , m_topBorder(0)
+    , m_IsBodyDetect(true)
 {
 }
 
@@ -68,16 +69,11 @@ t_aif_status Yolov3Detector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("image resize failed!!");
         }
 
-        img_resized.convertTo(img_resized, CV_8U);
+        //img_resized.convertTo(img_resized, CV_8UC3); not needed
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                const auto &rgb = img_resized.at<cv::Vec3b>(i, j);
-                m_interpreter->typed_input_tensor<uint8_t>(0)[i * width * channels + j * channels + 0] = rgb[2];
-                m_interpreter->typed_input_tensor<uint8_t>(0)[i * width * channels + j * channels + 1] = rgb[1];
-                m_interpreter->typed_input_tensor<uint8_t>(0)[i * width * channels + j * channels + 2] = rgb[0];
-            }
-        }
+        uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
+        std::memcpy(inputTensor, img_resized.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
+
         return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -92,6 +88,25 @@ t_aif_status Yolov3Detector::fillInputTensor(const cv::Mat& img)/* override*/
 
 t_aif_status Yolov3Detector::preProcessing()
 {
+    try {
+        std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
+
+        if (boost::iequals(param->detectObject, "body")) {
+            m_IsBodyDetect = true;
+        } else if (boost::iequals(param->detectObject, "face")) {
+            m_IsBodyDetect = false;
+        } else {
+            throw std::runtime_error("invalid param, not body nor face");
+        }
+
+        return kAifOk;
+    } catch (const std::exception& e) {
+        Loge(__func__,"Error: ", e.what());
+        return kAifError;
+    } catch(...) {
+        Loge(__func__,"Error: Unknown exception occured!!");
+        return kAifError;
+    }
     return kAifOk;
 }
 
@@ -106,17 +121,25 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
         TfLiteTensor *output_1 = m_interpreter->tensor(outputs[1]);
         TfLiteTensor *output_2 = m_interpreter->tensor(outputs[2]);
 
+        t_pqe_obd_result *result = nullptr;
+
+        if (m_IsBodyDetect) {
+            result = &m_bodyResult;
+        } else {
+            result = &m_faceResult;
+        }
+
         OBD_ComputeResult(output_1->data.uint8, output_2->data.uint8);
 
-        transform2OriginCoord(img, m_bodyResult);
+        transform2OriginCoord(img, *result);
 
         std::shared_ptr<Yolov3Descriptor> yolov3Descriptor = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
-        for (int i=0; i< m_bodyResult.res_cnt; i++) {
+        for (int i=0; i< result->res_cnt; i++) {
             BBox finalBbox( img.cols , img.rows );
-            finalBbox.addXyxy(m_bodyResult.pos_x0[i], m_bodyResult.pos_y0[i],
-                         m_bodyResult.pos_x1[i], m_bodyResult.pos_y1[i], false);
+            finalBbox.addXyxy(result->pos_x0[i], result->pos_y0[i],
+                         result->pos_x1[i], result->pos_y1[i], false);
 
-            yolov3Descriptor->addPerson(m_bodyResult.res_val[i], finalBbox);
+            yolov3Descriptor->addPerson(result->res_val[i], finalBbox, m_IsBodyDetect);
         }
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();
@@ -151,7 +174,7 @@ Yolov3Detector::getPaddedImage(const cv::Mat& src, cv::Mat& dst)
     // 360 x 270
 
     cv::Mat inputImg;
-    cv::resize(src, inputImg, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
+    cv::resize(src, inputImg, cv::Size(width, height), 0, 0, cv::INTER_LINEAR); // AREA
 
     m_leftBorder = 0;
     m_topBorder = 0;
@@ -188,18 +211,22 @@ Yolov3Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &resu
     // scale : 0.5625 ( 270/480 < 480/640)
 
     TRACE("---------------BEFORE------------");
-    TRACE("[BODY_Result] res_cnt = ", m_bodyResult.res_cnt);
+    if (m_IsBodyDetect) {
+        TRACE("[BODY_Result] res_cnt = ", m_bodyResult.res_cnt);
+    } else {
+        TRACE("[FACE_Result] res_cnt = ", m_faceResult.res_cnt);
+    }
     TRACE("---------------------------");
 
-    for(int idx = 0; idx < m_bodyResult.res_cnt; idx++)
+    for(int idx = 0; idx < result.res_cnt; idx++)
     {
-        TRACE(" res_val[", idx, "] = ", m_bodyResult.res_val[idx]);
-        TRACE(" res_cls[", idx, "] = ", m_bodyResult.res_cls[idx]);
-        TRACE(" tpr_cnt[", idx, "] = ", m_bodyResult.tpr_cnt[idx]);
-        TRACE(" pos_x0[", idx, "] = ", m_bodyResult.pos_x0[idx]);
-        TRACE(" pos_x1[", idx, "] = ", m_bodyResult.pos_x1[idx]);
-        TRACE(" pos_y0[", idx, "] = ", m_bodyResult.pos_y0[idx]);
-        TRACE(" pos_y1[", idx, "] = ", m_bodyResult.pos_y1[idx]);
+        TRACE(" res_val[", idx, "] = ", result.res_val[idx]);
+        TRACE(" res_cls[", idx, "] = ", result.res_cls[idx]);
+        TRACE(" tpr_cnt[", idx, "] = ", result.tpr_cnt[idx]);
+        TRACE(" pos_x0[", idx, "] = ", result.pos_x0[idx]);
+        TRACE(" pos_x1[", idx, "] = ", result.pos_x1[idx]);
+        TRACE(" pos_y0[", idx, "] = ", result.pos_y0[idx]);
+        TRACE(" pos_y1[", idx, "] = ", result.pos_y1[idx]);
         TRACE("---------------------------");
     }
 
@@ -216,18 +243,22 @@ Yolov3Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &resu
     }
 
     TRACE("-------------AFTER--------------");
-    TRACE("[BODY_Result] res_cnt = ", m_bodyResult.res_cnt);
+    if (m_IsBodyDetect) {
+        TRACE("[BODY_Result] res_cnt = ", m_bodyResult.res_cnt);
+    } else {
+        TRACE("[FACE_Result] res_cnt = ", m_faceResult.res_cnt);
+    }
     TRACE("---------------------------");
 
-    for(int idx = 0; idx < m_bodyResult.res_cnt; idx++)
+    for(int idx = 0; idx < result.res_cnt; idx++)
     {
-        TRACE(" res_val[", idx, "] = ", m_bodyResult.res_val[idx]);
-        TRACE(" res_cls[", idx, "] = ", m_bodyResult.res_cls[idx]);
-        TRACE(" tpr_cnt[", idx, "] = ", m_bodyResult.tpr_cnt[idx]);
-        TRACE(" pos_x0[", idx, "] = ", m_bodyResult.pos_x0[idx]);
-        TRACE(" pos_x1[", idx, "] = ", m_bodyResult.pos_x1[idx]);
-        TRACE(" pos_y0[", idx, "] = ", m_bodyResult.pos_y0[idx]);
-        TRACE(" pos_y1[", idx, "] = ", m_bodyResult.pos_y1[idx]);
+        TRACE(" res_val[", idx, "] = ", result.res_val[idx]);
+        TRACE(" res_cls[", idx, "] = ", result.res_cls[idx]);
+        TRACE(" tpr_cnt[", idx, "] = ", result.tpr_cnt[idx]);
+        TRACE(" pos_x0[", idx, "] = ", result.pos_x0[idx]);
+        TRACE(" pos_x1[", idx, "] = ", result.pos_x1[idx]);
+        TRACE(" pos_y0[", idx, "] = ", result.pos_y0[idx]);
+        TRACE(" pos_y1[", idx, "] = ", result.pos_y1[idx]);
         TRACE("---------------------------");
     }
 }
@@ -242,17 +273,20 @@ Yolov3Detector::OBD_ComputeResult(uint8_t* obd_lb_addr, uint8_t* obd_mb_addr)
 
     TRACE(" num_bbox [", bbox.size(), "] : MAX_BOX[", MAX_BOX, "]");
 
-	// NMS
-	int num_nms = 0;
+    // NMS
+    int num_nms = 0;
     std::vector<int> res_nms;
-	if(bbox.size() <= MAX_BOX)
-	{
-		res_nms = fw_nms(bbox);
-		num_nms = GET_CLIP(res_nms.size(), MAX_BOX);
-	}
+    if(bbox.size() <= MAX_BOX)
+    {
+        res_nms = fw_nms(bbox);
+        num_nms = GET_CLIP(res_nms.size(), MAX_BOX);
+    }
 
-	Classify_OBD_Result(bbox, num_nms, res_nms);
+    Classify_OBD_Result(bbox, num_nms, res_nms);
 
+    if (m_IsBodyDetect == false) {
+        FaceMatching();
+    }
 }
 
 void
@@ -527,6 +561,146 @@ Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, 
 
 }
 
+void
+Yolov3Detector::FaceMatching()
+{
+    std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
 
+    // face-body matching
+    int idx, fid, bid, oid, max_id;
+    int i_x0, i_y0, i_x1, i_y1;
+    int i_dist, max_dist, i_conf, max_conf;
+    long int f_area, i_area, max_area, th_area;
+    int th_score;
+
+    t_pqe_obd_result faceInput;
+    faceInput.res_cnt = GET_CLIP((m_faceResult).res_cnt, OBD_RESULT_NUM);
+    (m_faceResult).res_cnt = 0;
+    for(idx = 0; idx < faceInput.res_cnt; idx++)
+    {
+        faceInput.res_val[idx] = (m_faceResult).res_val[idx];
+        faceInput.res_cls[idx] = (m_faceResult).res_cls[idx];
+        faceInput.tpr_cnt[idx] = (m_faceResult).tpr_cnt[idx];
+        faceInput.pos_x0 [idx] = (m_faceResult).pos_x0 [idx];
+        faceInput.pos_x1 [idx] = (m_faceResult).pos_x1 [idx];
+        faceInput.pos_y0 [idx] = (m_faceResult).pos_y0 [idx];
+        faceInput.pos_y1 [idx] = (m_faceResult).pos_y1 [idx];
+
+        (m_faceResult).res_val[idx] = 0;
+        (m_faceResult).res_cls[idx] = 0;
+        (m_faceResult).tpr_cnt[idx] = 0;
+        (m_faceResult).pos_x0 [idx] = 0;
+        (m_faceResult).pos_x1 [idx] = 0;
+        (m_faceResult).pos_y0 [idx] = 0;
+        (m_faceResult).pos_y1 [idx] = 0;
+    }
+
+    for (fid = 0; fid < faceInput.res_cnt; fid++)
+    {
+        f_area = std::max(faceInput.pos_x1[fid] - faceInput.pos_x0[fid], 0) * std::max(faceInput.pos_y1[fid] - faceInput.pos_y0[fid], 0);
+        th_area = (f_area*9)>>4;
+        max_area = 0;
+        max_dist = 0;
+        max_conf = 0;
+        max_id = -1;
+
+        for (bid = 0; bid < (m_bodyResult).res_cnt; bid++)
+        {
+            i_x0 = std::max(faceInput.pos_x0[fid], (m_bodyResult).pos_x0[bid]);
+            i_y0 = std::max(faceInput.pos_y0[fid], (m_bodyResult).pos_y0[bid]);
+            i_x1 = std::min(faceInput.pos_x1[fid], (m_bodyResult).pos_x1[bid]);
+            i_y1 = std::min(faceInput.pos_y1[fid], (m_bodyResult).pos_y1[bid]);
+            i_area = std::max(i_x1 - i_x0, 0) * std::max(i_y1 - i_y0, 0);
+            i_dist = abs(faceInput.pos_x0[fid] + faceInput.pos_x1[fid] - (m_bodyResult).pos_x0[bid] - (m_bodyResult).pos_x1[bid]);
+            i_conf = (m_bodyResult).res_val[bid];
+
+            if(i_area > max_area)
+            {
+                max_area = i_area;
+                max_dist = i_dist;
+                max_conf = i_conf;
+                max_id = bid;
+            }
+            else if((max_id != -1) && (i_area == max_area) && (i_dist < max_dist))
+            {
+                // select near x
+                max_area = i_area;
+                max_dist = i_dist;
+                max_conf = i_conf;
+                max_id = bid;
+            }
+        }
+
+        if((max_id != -1) && (max_area > th_area) && (max_conf > param->thresh_score[0]))
+        {
+            if(((m_faceResult).res_cnt >= 0) && ((m_faceResult).res_cnt < OBD_RESULT_NUM))
+            {
+                (m_faceResult).res_val[(m_faceResult).res_cnt] = faceInput.res_val[fid];
+                (m_faceResult).res_cls[(m_faceResult).res_cnt] = faceInput.res_cls[fid];
+                (m_faceResult).tpr_cnt[(m_faceResult).res_cnt] = faceInput.tpr_cnt[fid];
+                (m_faceResult).pos_x0 [(m_faceResult).res_cnt] = faceInput.pos_x0 [fid];
+                (m_faceResult).pos_x1 [(m_faceResult).res_cnt] = faceInput.pos_x1 [fid];
+                (m_faceResult).pos_y0 [(m_faceResult).res_cnt] = faceInput.pos_y0 [fid];
+                (m_faceResult).pos_y1 [(m_faceResult).res_cnt] = faceInput.pos_y1 [fid];
+
+                (m_faceResult).res_cnt = std::min(std::max((m_faceResult).res_cnt+1, 0), OBD_RESULT_NUM);
+            }
+        }
+        else
+        {
+            max_id = -1;
+            // No person-face matching
+            for (oid = 0; oid < m_obd_result.res_cnt; oid++)
+            {
+                if((m_obd_result.res_cls[oid] == eOBD_CAT) || (m_obd_result.res_cls[oid] == eOBD_DOG))
+                {
+                    i_x0 = std::max(faceInput.pos_x0[fid], (m_obd_result).pos_x0[oid]);
+                    i_y0 = std::max(faceInput.pos_y0[fid], (m_obd_result).pos_y0[oid]);
+                    i_x1 = std::min(faceInput.pos_x1[fid], (m_obd_result).pos_x1[oid]);
+                    i_y1 = std::min(faceInput.pos_y1[fid], (m_obd_result).pos_y1[oid]);
+                    i_area = std::max(i_x1 - i_x0, 0) * std::max(i_y1 - i_y0, 0);
+                    i_dist = std::abs(faceInput.pos_x0[fid] + faceInput.pos_x1[fid] - (m_obd_result).pos_x0[oid] - (m_obd_result).pos_x1[oid]);
+                    i_conf = (m_obd_result).res_val[bid];
+
+                    if(i_area > max_area)
+                    {
+                        max_area = i_area;
+                        max_dist = i_dist;
+                        max_conf = i_conf;
+                        max_id = oid;
+                        printf("max id: %d, area: %ld (%ld) %s\n", max_id, max_area, th_area, (max_area>th_area ? "":"X"));
+                    }
+                    else if((max_id != -1) && (i_area == max_area) && (i_dist < max_dist))
+                    {
+                        // select near x
+                        max_area = i_area;
+                        max_dist = i_dist;
+                        max_conf = i_conf;
+                        max_id = oid;
+                        printf("max id: %d, area: %ld (%ld) %s\n", max_id, max_area, th_area, (max_area>th_area ? "":"X"));
+                    }
+                }
+            }
+
+            th_score = ((max_id != -1) && (max_area > th_area) && (max_conf > param->thresh_score[0])) ? param->thresh_score[3] : 40000; //TH_SCORE_M;
+
+            if(faceInput.res_val[fid] > th_score)
+            {
+                if(((m_faceResult).res_cnt >= 0) && ((m_faceResult).res_cnt < OBD_RESULT_NUM))
+                {
+                    (m_faceResult).res_val[(m_faceResult).res_cnt] = faceInput.res_val[fid];
+                    (m_faceResult).res_cls[(m_faceResult).res_cnt] = faceInput.res_cls[fid];
+                    (m_faceResult).tpr_cnt[(m_faceResult).res_cnt] = faceInput.tpr_cnt[fid];
+                    (m_faceResult).pos_x0 [(m_faceResult).res_cnt] = faceInput.pos_x0 [fid];
+                    (m_faceResult).pos_x1 [(m_faceResult).res_cnt] = faceInput.pos_x1 [fid];
+                    (m_faceResult).pos_y0 [(m_faceResult).res_cnt] = faceInput.pos_y0 [fid];
+                    (m_faceResult).pos_y1 [(m_faceResult).res_cnt] = faceInput.pos_y1 [fid];
+
+                    (m_faceResult).res_cnt = std::min(std::max((m_faceResult).res_cnt+1, 0), OBD_RESULT_NUM);
+                }
+            }
+        }
+    }
+}
 
 } // end of namespace aif

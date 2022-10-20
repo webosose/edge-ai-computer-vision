@@ -51,15 +51,6 @@ protected:
     }
 
     std::string basePath;
-    /*std::string use_npu_delegate {
-        "{"
-        "  \"delegates\" : ["
-        "    {"
-        "      \"name\": \"npu_delegate\""
-        "    }"
-        "  ]"
-        "}"
-    };*/
 
     std::string use_npu_delegate {
         "{"
@@ -71,7 +62,6 @@ protected:
         "    }"
         "  ]"
         "}"};
-
 
     std::string use_npu_delegate_and_people {
         "{"
@@ -88,7 +78,27 @@ protected:
         "}"};
 
 
-
+    std::string use_npu_delegate_and_face_detect {
+        "{"
+        "  \"delegates\" : ["
+        "    {"
+        "      \"name\": \"npu_delegate\","
+        "      \"option\": {"
+        "       }"
+        "    }"
+        "  ],"
+        "  \"modelParam\" : {"
+        "    \"detectObject\": \"face\","
+        "    \"thresh_score\" : ["
+        "                       0,"
+        "                       24000,"     // make higher : low score bbox not detected.
+        "                       35000,"
+        "                       58981"
+        "    ],"
+        "    \"thresh_iou_sc_nms\" : 115,"  // make higher : duplicated bboxes can be detected.
+        "    \"thresh_iou_sc_sur\" : 200"
+        "  }"
+        "}"};
 
 };
 
@@ -106,6 +116,12 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
     auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/person.jpg");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 1);
+
+    foundYolov3s->clear();
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/FitTV_sample_000000.jpg");
     std::cout << foundYolov3s->toStr() << std::endl;
@@ -124,11 +140,54 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     foundYolov3s->drawBbox(basePath + "/images/yoga.png");
     std::cout << foundYolov3s->toStr() << std::endl;
     EXPECT_EQ(foundYolov3s->size(), 1);
+
 }
 
-TEST_F(Yolov3DetectorTest, 03_yolov3_detect_side_person)
+TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
+{
+    auto fd = std::dynamic_pointer_cast<Yolov3Detector>(DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_face_detect));
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 270);
+    EXPECT_EQ(modelInfo.width, 480);
+    EXPECT_EQ(modelInfo.channels, 3);
+
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
+
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/person.jpg");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 1);
+
+
+    foundYolov3s->clear();
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/FitTV_sample_000000.jpg");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 0); /* far away, mask man */
+
+
+    foundYolov3s->clear();
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/test_arms.png", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/test_arms.png");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 0); /* not detected */
+
+
+    foundYolov3s->clear();
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/yoga.png", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/yoga.png");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 0); /* not detected */
+}
+
+TEST_F(Yolov3DetectorTest, 03_yolov3_detect_90_pose_person)
 {
     auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate);
+    //auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_face_detect);
+
     EXPECT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
     auto modelInfo = fd->getModelInfo();
