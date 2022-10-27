@@ -139,7 +139,13 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             finalBbox.addXyxy(result->pos_x0[i], result->pos_y0[i],
                          result->pos_x1[i], result->pos_y1[i], false);
 
-            yolov3Descriptor->addPerson(result->res_val[i], finalBbox, m_IsBodyDetect);
+            if (m_IsBodyDetect) {
+                yolov3Descriptor->addPerson(result->res_val[i], finalBbox);
+            } else {
+                yolov3Descriptor->addFace(result->res_val[i],
+                                          finalBbox.xmin, finalBbox.ymin,
+                                          finalBbox.width, finalBbox.height);
+            }
         }
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();

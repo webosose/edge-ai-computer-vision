@@ -19,7 +19,7 @@ public:
     virtual ~PersonDetectDescriptor() {}
 
     // TODO: implment add result
-    virtual void addPerson(float score, const BBox &bbox, bool isBodyDetect = true) = 0;
+    virtual void addPerson(float score, const BBox &bbox) = 0;
     virtual void drawBbox(std::string imgPath) = 0;
     size_t size() const { return m_personCount; }
     virtual void clear() = 0;

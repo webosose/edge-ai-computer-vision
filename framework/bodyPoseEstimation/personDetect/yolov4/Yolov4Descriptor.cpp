@@ -27,7 +27,7 @@ Yolov4Descriptor::~Yolov4Descriptor()
 }
 
 
-void Yolov4Descriptor::addPerson(float score, const BBox &bbox, bool isBodyDetect)
+void Yolov4Descriptor::addPerson(float score, const BBox &bbox)
 {
     m_scores.push_back(score);
     m_boxes.push_back(bbox);
@@ -69,18 +69,20 @@ void Yolov4Descriptor::drawBbox(std::string imgPath)
     std::string outImagePath = imgPath.substr(0, found) + "_out" + imgPath.substr(found);
     cv::Mat image = cv::imread(imgPath, cv::IMREAD_COLOR);
 
-    for (int i = 0; i < m_root["persons"].Size(); i++) {
-        if (m_root["persons"][i].HasMember("bbox")) {
-            auto xmin = m_root["persons"][i]["bbox"][0].GetDouble();
-            auto ymin = m_root["persons"][i]["bbox"][1].GetDouble();
-            auto xmax = m_root["persons"][i]["bbox"][2].GetDouble();
-            auto ymax = m_root["persons"][i]["bbox"][3].GetDouble();
+    if (m_root.HasMember("persons")) {
+        for (int i = 0; i < m_root["persons"].Size(); i++) {
+            if (m_root["persons"][i].HasMember("bbox")) {
+                auto xmin = m_root["persons"][i]["bbox"][0].GetDouble();
+                auto ymin = m_root["persons"][i]["bbox"][1].GetDouble();
+                auto xmax = m_root["persons"][i]["bbox"][2].GetDouble();
+                auto ymax = m_root["persons"][i]["bbox"][3].GetDouble();
 
-            cv::Point lb(xmax, ymax);
-            cv::Point tr(xmin, ymin);
-            cv::rectangle(image, lb, tr, cv::Scalar(0, 255, 0), 3);
+                cv::Point lb(xmax, ymax);
+                cv::Point tr(xmin, ymin);
+                cv::rectangle(image, lb, tr, cv::Scalar(0, 255, 0), 3);
 
-            cv::imwrite(outImagePath, image);
+                cv::imwrite(outImagePath, image);
+            }
         }
     }
 }
@@ -88,6 +90,9 @@ void Yolov4Descriptor::drawBbox(std::string imgPath)
 void Yolov4Descriptor::clear()
 {
     m_personCount = 0;
+
+    m_scores.clear();
+    m_boxes.clear();
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     m_root.RemoveMember("persons");

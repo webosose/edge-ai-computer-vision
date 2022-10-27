@@ -20,12 +20,21 @@ public:
 
     // TODO: implment add result
     //void addPerson(float score, const BBox &bbox);
-    virtual void addPerson(float score, const BBox &bbox, bool isBodyDetect = true);
+    virtual void addPerson(float score, const BBox &bbox);
     virtual void drawBbox(std::string imgPath);
     virtual void clear();
 
+    void addFace(    /* only if face detect */
+        float score,
+        float region_x,
+        float region_y,
+        float region_w,
+        float region_h);
+    size_t sizeOfFaces() const { return m_faceCount; }
+
 private:
     bool m_isBodyDetect;
+    bool m_faceCount; /* only if face detect */
 };
 
 } // end of namespace aif

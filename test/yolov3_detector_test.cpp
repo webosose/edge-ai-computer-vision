@@ -120,12 +120,14 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     foundYolov3s->drawBbox(basePath + "/images/person.jpg");
     std::cout << foundYolov3s->toStr() << std::endl;
     EXPECT_EQ(foundYolov3s->size(), 1);
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
 
     foundYolov3s->clear();
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/FitTV_sample_000000.jpg");
     std::cout << foundYolov3s->toStr() << std::endl;
     EXPECT_EQ(foundYolov3s->size(), 1);
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
 
 
     foundYolov3s->clear();
@@ -133,6 +135,7 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     foundYolov3s->drawBbox(basePath + "/images/test_arms.png");
     std::cout << foundYolov3s->toStr() << std::endl;
     EXPECT_EQ(foundYolov3s->size(), 1);
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
 
 
     foundYolov3s->clear();
@@ -140,6 +143,7 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     foundYolov3s->drawBbox(basePath + "/images/yoga.png");
     std::cout << foundYolov3s->toStr() << std::endl;
     EXPECT_EQ(foundYolov3s->size(), 1);
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
 
 }
 
@@ -159,28 +163,32 @@ TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/person.jpg");
     std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->size(), 1);
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 1);
+    EXPECT_EQ(foundYolov3s->size(), 0);
 
 
     foundYolov3s->clear();
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/FitTV_sample_000000.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/FitTV_sample_000000.jpg");
     std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->size(), 0); /* far away, mask man */
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0); /* far away, mask man */
+    EXPECT_EQ(foundYolov3s->size(), 0);
 
 
     foundYolov3s->clear();
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/test_arms.png", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/test_arms.png");
     std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->size(), 0); /* not detected */
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0); /* not detected */
+    EXPECT_EQ(foundYolov3s->size(), 0);
 
 
     foundYolov3s->clear();
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/yoga.png", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/yoga.png");
     std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->size(), 0); /* not detected */
+    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0); /* not detected */
+    EXPECT_EQ(foundYolov3s->size(), 0);
 }
 
 TEST_F(Yolov3DetectorTest, 03_yolov3_detect_90_pose_person)
