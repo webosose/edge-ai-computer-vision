@@ -113,8 +113,6 @@ t_aif_status Yolov3Detector::preProcessing()
 t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
 {
     try {
-        /* TODO: dequantization and output numbering */
-
         Stopwatch sw;
         sw.start();
         const std::vector<int> &outputs = m_interpreter->outputs();
@@ -133,16 +131,31 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
 
         transform2OriginCoord(img, *result);
 
+        std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
         std::shared_ptr<Yolov3Descriptor> yolov3Descriptor = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
+
+        std::vector<std::pair<BBox, float>> finalBboxList;
         for (int i=0; i< result->res_cnt; i++) {
             BBox finalBbox( img.cols , img.rows );
             finalBbox.addXyxy(result->pos_x0[i], result->pos_y0[i],
                          result->pos_x1[i], result->pos_y1[i], false);
+            finalBboxList.emplace_back(finalBbox, result->res_val[i]);
+        }
+
+        // sort boxes with area descending order
+        std::sort(finalBboxList.begin(), finalBboxList.end(),
+                  [](const std::pair<BBox,float> &a, const std::pair<BBox,float> &b) {
+                      return (a.first.width * a.first.height) > (b.first.width * b.first.height);
+                  } );
+
+        for (int i=0; (i<finalBboxList.size()) && (i < param->numMaxPerson); i++) {
+            float score = finalBboxList[i].second;
+            const BBox &finalBbox = finalBboxList[i].first;
 
             if (m_IsBodyDetect) {
-                yolov3Descriptor->addPerson(result->res_val[i], finalBbox);
+                yolov3Descriptor->addPerson(score, finalBbox);
             } else {
-                yolov3Descriptor->addFace(result->res_val[i],
+                yolov3Descriptor->addFace(score,
                                           finalBbox.xmin, finalBbox.ymin,
                                           finalBbox.width, finalBbox.height);
             }
