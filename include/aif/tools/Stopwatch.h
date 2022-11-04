@@ -30,6 +30,8 @@ public:
     //	get the number of milliseconds since the timer was started
     tick_t getMs();
 
+    int64_t getTimestamp();
+
     void sleep(unsigned ms);
 
 private:

@@ -36,6 +36,11 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     }
 
     fdescriptor->addCropRects(rects);
+
+    fdescriptor->addBridgeOperationResult(
+                 m_id,
+                 m_config->getType(),
+                 "person crop result");
     return true;
 }
 

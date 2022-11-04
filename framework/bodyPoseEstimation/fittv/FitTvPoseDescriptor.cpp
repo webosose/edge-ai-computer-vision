@@ -29,6 +29,9 @@ bool FitTvPoseDescriptor::addBridgeOperationResult(
         const std::string& operationType,
         const std::string& result)
 {
+    if (operationType.rfind("fittv_person_crop", 0) == 0) {
+        return addCropBridgeResult(nodeId, result);
+    }
     return true;
 }
 
@@ -51,6 +54,21 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
         return addPose3dDetectorResult(nodeId, pose3d);
     }
     return false;
+}
+
+bool FitTvPoseDescriptor::addCropBridgeResult(
+        const std::string& nodeId,
+        const std::string& result)
+{
+    Logi("addCropBridgeResult: ", result);
+    auto rects = getCropRects();
+    for (int i = 0; i < rects.size(); i++) {
+        if (!addCropRect(i+1, rects[i])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool FitTvPoseDescriptor::addPersonDetectorResult(
@@ -95,18 +113,50 @@ bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
         m_root.AddMember("poseEstimation", poses, allocator);
     }
     rj::Value pose(rj::kObjectType);
-    rj::Value jbox(rj::kObjectType);
-    jbox.AddMember("score", score, allocator);
-    jbox.AddMember("x", static_cast<int>(box.xmin), allocator);
-    jbox.AddMember("y", static_cast<int>(box.ymin), allocator);
-    jbox.AddMember("width", static_cast<int>(box.width), allocator);
-    jbox.AddMember("height", static_cast<int>(box.height), allocator);
+    rj::Value jbox(rj::kArrayType);
+    jbox.PushBack(static_cast<int>(box.xmin), allocator); // x
+    jbox.PushBack(static_cast<int>(box.ymin), allocator); // y
+    jbox.PushBack(static_cast<int>(box.width), allocator); //width
+    jbox.PushBack(static_cast<int>(box.height), allocator); //height
 
     pose.AddMember("bbox", jbox, allocator);
-    pose.AddMember("trackId", m_trackId++, allocator);
+    pose.AddMember("id", m_trackId++, allocator);
+    pose.AddMember("timestamp", m_startTime, allocator);
     m_root["poseEstimation"].PushBack(pose, allocator);
 
     m_boxes.push_back(box);
+    return true;
+}
+
+bool FitTvPoseDescriptor::addCropRect(int trackId, const cv::Rect& rect)
+{
+    int index = trackId - 1;
+
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
+        Loge("not exist bbox");
+        return false;
+    }
+
+    const auto& poses = m_root["poseEstimation"].GetArray();
+
+    if (trackId <= 0 ||
+        poses.Size() < trackId ||
+        !poses[index].HasMember("id")) {
+        Loge("cannot find trackId: ", trackId);
+        return false;
+    }
+
+    const auto& pose = poses[index].GetObject();
+
+    rj::Value cropbox(rj::kArrayType);
+    cropbox.PushBack(static_cast<int>(rect.x), allocator); // x
+    cropbox.PushBack(static_cast<int>(rect.y), allocator); // y
+    cropbox.PushBack(static_cast<int>(rect.width), allocator); //width
+    cropbox.PushBack(static_cast<int>(rect.height), allocator); //height
+
+    pose.AddMember("cropRect", cropbox, allocator);
+
     return true;
 }
 
@@ -129,7 +179,7 @@ bool FitTvPoseDescriptor::addPose2d(int trackId, const std::vector<std::vector<f
 
     if (trackId <= 0 ||
         poses.Size() < trackId ||
-        !poses[index].HasMember("trackId")) {
+        !poses[index].HasMember("id")) {
         Loge("cannot find trackId: ", trackId);
         return false;
     }
@@ -142,14 +192,14 @@ bool FitTvPoseDescriptor::addPose2d(int trackId, const std::vector<std::vector<f
             pos[1] += m_cropRects[index].x;
             pos[2] += m_cropRects[index].y;
         }
-        rj::Value keyPoint(rj::kObjectType);
-        keyPoint.AddMember("score", pos[0], allocator);
-        keyPoint.AddMember("x", static_cast<int>(pos[1]), allocator);
-        keyPoint.AddMember("y", static_cast<int>(pos[2]), allocator);
+        rj::Value keyPoint(rj::kArrayType);
+        keyPoint.PushBack(static_cast<int>(pos[1]), allocator); // x
+        keyPoint.PushBack(static_cast<int>(pos[2]), allocator); // y
+        keyPoint.PushBack(pos[0], allocator); // score
         pose2d.PushBack(keyPoint, allocator);
     }
 
-    pose.AddMember("pose2d", pose2d, allocator);
+    pose.AddMember("joints2D", pose2d, allocator);
     return true;
 }
 
@@ -169,7 +219,7 @@ bool FitTvPoseDescriptor::addPose3d(
     int index = trackId - 1;
     if (trackId <= 0 ||
         poses.Size() < trackId ||
-        !poses[index].HasMember("trackId")) {
+        !poses[index].HasMember("id")) {
         Loge("cannot find trackId: ", trackId);
         return false;
     }
@@ -177,19 +227,19 @@ bool FitTvPoseDescriptor::addPose3d(
     const auto& pose = poses[index].GetObject();
     rj::Value pose3d(rj::kArrayType);
     for(auto& pos: joint3ds) {
-        rj::Value joint3d(rj::kObjectType);
-        joint3d.AddMember("x", pos.x, allocator);
-        joint3d.AddMember("y", pos.y, allocator);
-        joint3d.AddMember("z", pos.z, allocator);
+        rj::Value joint3d(rj::kArrayType);
+        joint3d.PushBack(pos.x, allocator); // x
+        joint3d.PushBack(pos.y, allocator); // y
+        joint3d.PushBack(pos.z, allocator); // z
         pose3d.PushBack(joint3d, allocator);
     }
-    pose.AddMember("pose3d", pose3d, allocator);
+    pose.AddMember("joints3D", pose3d, allocator);
 
-    rj::Value pose3dPos(rj::kObjectType);
-    pose3dPos.AddMember("x", trajectory.x, allocator);
-    pose3dPos.AddMember("y", trajectory.y, allocator);
-    pose3dPos.AddMember("z", trajectory.z, allocator);
-    pose.AddMember("pose3dPos", pose3dPos, allocator);
+    rj::Value pose3dPos(rj::kArrayType);
+    pose3dPos.PushBack(trajectory.x, allocator); // x
+    pose3dPos.PushBack(trajectory.y, allocator); // y
+    pose3dPos.PushBack(trajectory.z, allocator); // z
+    pose.AddMember("joints3DPosition", pose3dPos, allocator);
 
     return true;
 }

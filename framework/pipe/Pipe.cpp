@@ -63,6 +63,8 @@ bool Pipe::detect(const cv::Mat& image)
     m_descriptor = PipeDescriptorFactory::get().create(m_config->getDescriptorId());
     m_descriptor->setImage(image);
 
+    m_descriptor->setStartTimestamp(sw.getTimestamp());
+
     std::shared_ptr<PipeNode> prevNode;
     for (auto& node : m_nodes) {
         if (!prevNode) {

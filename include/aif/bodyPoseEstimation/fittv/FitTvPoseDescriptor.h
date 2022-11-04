@@ -45,6 +45,9 @@ class FitTvPoseDescriptor : public PipeDescriptor
         const std::vector<cv::Mat>& getPose3dInputs() const { return m_pose3dInputs; }
 
    private:
+        bool addCropBridgeResult(
+                const std::string& nodeId,
+                const std::string& result);
         bool addPersonDetectorResult(
                 const std::string& id,
                 const std::shared_ptr<PersonDetectDescriptor> descriptor);
@@ -56,6 +59,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
                 const std::shared_ptr<Pose3dDescriptor> descriptor);
 
         bool addBBox(float scroe, const BBox& box);
+        bool addCropRect(int trackId, const cv::Rect& rect);
         bool addPose2d(int trackId, const std::vector<std::vector<float>>& keyPoints);
         bool addPose3d(int trackId,
                 const std::vector<Joint3D>& keyPoints,

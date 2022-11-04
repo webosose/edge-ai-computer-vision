@@ -43,6 +43,13 @@ tick_t Stopwatch::getMs() {
     return 0;
 }
 
+int64_t Stopwatch::getTimestamp() {
+    auto time_point = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::duration duration = time_point.time_since_epoch();
+
+    return duration.count();
+}
+
 void Stopwatch::sleep(unsigned ms)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));

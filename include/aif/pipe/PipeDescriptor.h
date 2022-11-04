@@ -29,6 +29,8 @@ class PipeDescriptor : public Descriptor {
         PipeDescriptor();
         virtual ~PipeDescriptor();
 
+        void setStartTimestamp(int64_t timestamp);
+
         void setImage(const cv::Mat& image);
         const NodeType& getType() const;
         const cv::Mat& getImage() const;
@@ -53,6 +55,7 @@ class PipeDescriptor : public Descriptor {
     protected:
         NodeType m_type;
         cv::Mat m_image;
+        int64_t m_startTime;
 };
 
 } // end of namespace aif

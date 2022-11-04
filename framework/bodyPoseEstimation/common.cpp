@@ -25,6 +25,16 @@ BBox::BBox( float x0, float y0, float x1, float y1, int score_, int class_)
     c_y = ymin + round( height / 2.0f );
 }
 
+BBox::BBox( float xmin_, float ymin_, float width_, float height_)
+    : xmin(xmin_)
+    , ymin(ymin_)
+    , width(width_)
+    , height(height_)
+{
+    xmax = xmin + width;
+    ymax = ymin + height;
+}
+
 void
 BBox::addXyxy( float xmin_, float ymin_, float xmax_, float ymax_, bool clip )
 {

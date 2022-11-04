@@ -15,6 +15,7 @@ namespace aif {
 
 PipeDescriptor::PipeDescriptor()
 : m_type(NodeType::NONE)
+, m_startTime(0)
 {
     m_root.SetObject();
 }
@@ -23,12 +24,16 @@ PipeDescriptor::~PipeDescriptor()
 {
 }
 
+void PipeDescriptor::setStartTimestamp(int64_t timestamp)
+{
+    m_startTime = timestamp;
+}
+
 void PipeDescriptor::setImage(const cv::Mat& image)
 {
     m_type.addType(NodeType::IMAGE);
     m_image = image;
 }
-
 
 const NodeType& PipeDescriptor::getType() const
 {
@@ -74,26 +79,26 @@ std::string PipeDescriptor::getResult(const std::string& nodeId) const
 }
 
 bool PipeDescriptor::addBridgeOperationResult(
-        const std::string& nodeId, 
+        const std::string& nodeId,
         const std::string& operationType,
         const std::string& result)
 {
     Logi(nodeId, ": add bridge operation result");
     Logi(operationType, " : ",  result);
 
-    return addStringResult(nodeId, result);    
+    return addStringResult(nodeId, result);
 }
 
 bool PipeDescriptor::addDetectorOperationResult(
-        const std::string& nodeId, 
-        const std::string& model, 
+        const std::string& nodeId,
+        const std::string& model,
         const std::shared_ptr<Descriptor>& descriptor)
 {
     std::string result = descriptor->toStr();
     Logi(nodeId, ": add detector operation result - ", result);
     Logi(model, " : ",  result);
 
-    return addStringResult(nodeId, result);    
+    return addStringResult(nodeId, result);
 }
 
 bool PipeDescriptor::addStringResult(

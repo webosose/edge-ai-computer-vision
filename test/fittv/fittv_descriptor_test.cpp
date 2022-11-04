@@ -38,6 +38,7 @@ protected:
     }
 
     std::string personId{"person_yolov4_npu"};
+    std::string cropId{"fittv_person_crop"};
     std::string pose2dId{"pose2d_resnet_npu"};
     std::string pose3dId{"pose3d_videopose3d_npu"};
 
@@ -53,6 +54,19 @@ protected:
             yd->addPerson((float)i, box);
         }
         return yd;
+    }
+
+    std::vector<cv::Rect> makeCropRects(int numPerson)
+    {
+         std::vector<cv::Rect> rects;
+         int margin = 5;
+         for (int i = 1; i <= numPerson; i++) {
+            int x1 = i * 10 - margin; int y1 = i * 20 - margin;
+            int x2 = i * 100 + margin; int y2 = i * 200 + margin;
+            cv::Rect rect(x1, y1, x2 - x1, y2 - y1);
+            rects.push_back(rect);
+        }
+        return rects;
     }
 
     std::vector<std::shared_ptr<Pose2dDescriptor>> makePose2dDescriptor(int numPerson)
@@ -115,15 +129,56 @@ TEST_F(FitTVPoseDescriptorTest, addPersonDetectorResult)
         int x1 = i * 10; int y1 = i * 20;
         int x2 = i * 100; int y2 = i * 200;
         EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("bbox"));
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["score"].GetFloat(), (float)i);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["x"].GetInt(), x1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["y"].GetInt(), y1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["width"].GetInt(), x2 - x1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["height"].GetInt(), y2 - y1);
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][0].GetInt(), x1); // x
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][1].GetInt(), y1); // y
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][2].GetInt(), x2 - x1); // width
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][3].GetInt(), y2 - y1); // height
 
-        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("trackId"));
-        EXPECT_EQ(d["poseEstimation"][i-1]["trackId"].GetInt(), i);
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
+        EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);
     }
+
+    std::cout << "Output: " << std::endl << fd->getResult() << std::endl;
+}
+
+TEST_F(FitTVPoseDescriptorTest, addCropBridgeResult)
+{
+    std::shared_ptr<FitTvPoseDescriptor> fd =
+        std::dynamic_pointer_cast<FitTvPoseDescriptor>(PipeDescriptorFactory::get().create("fittv_pose"));
+    EXPECT_TRUE(fd);
+
+    int numPerson = 5;
+    auto yd = makeYoloDescriptor(numPerson);
+    EXPECT_TRUE(fd->addDetectorOperationResult("detect_person", personId, yd));
+
+    auto rects = makeCropRects(numPerson);
+    fd->addCropRects(rects);
+    EXPECT_TRUE(fd->addBridgeOperationResult("person_crop", cropId, "null"));
+
+    auto json = fd->toStr();
+    rj::Document d;
+    d.Parse(json.c_str());
+
+    EXPECT_TRUE(d.IsObject());
+    EXPECT_TRUE(d.HasMember("poseEstimation"));
+    EXPECT_TRUE(d["poseEstimation"].IsArray());
+    EXPECT_TRUE(d["poseEstimation"].Size() == numPerson);
+
+    int margin = 5;
+    for (int i = 1; i <= numPerson; i++) {
+        int x1 = i * 10 - margin; int y1 = i * 20 - margin;
+        int x2 = i * 100 + margin; int y2 = i * 200 + margin;
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("cropRect"));
+        EXPECT_EQ(d["poseEstimation"][i-1]["cropRect"][0].GetInt(), x1); // x
+        EXPECT_EQ(d["poseEstimation"][i-1]["cropRect"][1].GetInt(), y1); // y
+        EXPECT_EQ(d["poseEstimation"][i-1]["cropRect"][2].GetInt(), x2 - x1); // width
+        EXPECT_EQ(d["poseEstimation"][i-1]["cropRect"][3].GetInt(), y2 - y1); // height
+
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
+        EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);
+    }
+
+    std::cout << "Output: " << std::endl << fd->getResult() << std::endl;
 }
 
 TEST_F(FitTVPoseDescriptorTest, addPose2dDetectorResult)
@@ -153,23 +208,24 @@ TEST_F(FitTVPoseDescriptorTest, addPose2dDetectorResult)
         int x1 = i * 10; int y1 = i * 20;
         int x2 = i * 100; int y2 = i * 200;
         EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("bbox"));
-        EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["bbox"]["score"].GetFloat(), (float)i);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["x"].GetInt(), x1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["y"].GetInt(), y1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["width"].GetInt(), x2 - x1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["height"].GetInt(), y2 - y1);
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][0].GetInt(), x1); // x
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][1].GetInt(), y1); // y
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][2].GetInt(), x2 - x1); // width
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][3].GetInt(), y2 - y1); // height
 
-        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("trackId"));
-        EXPECT_EQ(d["poseEstimation"][i-1]["trackId"].GetInt(), i);
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
+        EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);
 
-        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("pose2d"));
-        EXPECT_TRUE(d["poseEstimation"][i-1]["pose2d"].IsArray());
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("joints2D"));
+        EXPECT_TRUE(d["poseEstimation"][i-1]["joints2D"].IsArray());
         for (int j = 0; j < 41; j++) {
-            EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["pose2d"][j]["score"].GetFloat(), (float)j);
-            EXPECT_EQ(d["poseEstimation"][i-1]["pose2d"][j]["x"].GetInt(), i * 10 + j);
-            EXPECT_EQ(d["poseEstimation"][i-1]["pose2d"][j]["y"].GetInt(), i * 20 + j);
+            EXPECT_EQ(d["poseEstimation"][i-1]["joints2D"][j][0].GetInt(), i * 10 + j); // x
+            EXPECT_EQ(d["poseEstimation"][i-1]["joints2D"][j][1].GetInt(), i * 20 + j); // y
+            EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["joints2D"][j][2].GetFloat(), (float)j); // score
         }
     }
+
+    std::cout << "Output: " << std::endl << fd->getResult() << std::endl;
 }
 
 TEST_F(FitTVPoseDescriptorTest, addPose2dDetectorResult_invalid)
@@ -200,6 +256,8 @@ TEST_F(FitTVPoseDescriptorTest, addPose2dDetectorResult_invalid)
 
     pd->setTrackId(2);
     EXPECT_TRUE(fd->addDetectorOperationResult("detect_pose2d", pose2dId, pd));
+
+    std::cout << "Output: " << std::endl << fd->getResult() << std::endl;
 }
 
 TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
@@ -234,30 +292,31 @@ TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
         int x1 = i * 10; int y1 = i * 20;
         int x2 = i * 100; int y2 = i * 200;
         EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("bbox"));
-        EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["bbox"]["score"].GetFloat(), (float)i);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["x"].GetInt(), x1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["y"].GetInt(), y1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["width"].GetInt(), x2 - x1);
-        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"]["height"].GetInt(), y2 - y1);
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][0].GetInt(), x1); // x
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][1].GetInt(), y1); // y
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][2].GetInt(), x2 - x1); // width
+        EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][3].GetInt(), y2 - y1); // height
 
-        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("trackId"));
-        EXPECT_EQ(d["poseEstimation"][i-1]["trackId"].GetInt(), i);
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
+        EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);
 
-        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("pose2d"));
-        EXPECT_TRUE(d["poseEstimation"][i-1]["pose2d"].IsArray());
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("joints2D"));
+        EXPECT_TRUE(d["poseEstimation"][i-1]["joints2D"].IsArray());
         for (int j = 0; j < 41; j++) {
-            EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["pose2d"][j]["score"].GetFloat(), (float)j);
-            EXPECT_EQ(d["poseEstimation"][i-1]["pose2d"][j]["x"].GetInt(), i * 10 + j);
-            EXPECT_EQ(d["poseEstimation"][i-1]["pose2d"][j]["y"].GetInt(), i * 20 + j);
+            EXPECT_EQ(d["poseEstimation"][i-1]["joints2D"][j][0].GetInt(), i * 10 + j); // x
+            EXPECT_EQ(d["poseEstimation"][i-1]["joints2D"][j][1].GetInt(), i * 20 + j); // y
+            EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["joints2D"][j][2].GetFloat(), (float)j); // score
         }
-        EXPECT_TRUE(d["poseEstimation"][i-1]["pose3d"].IsArray());
+        EXPECT_TRUE(d["poseEstimation"][i-1]["joints3D"].IsArray());
         for (int j = 0; j < 41; j++) {
-            EXPECT_TRUE(d["poseEstimation"][i-1]["pose3d"][j]["x"].GetFloat() - (float)j < aif::EPSILON);
-            EXPECT_TRUE(d["poseEstimation"][i-1]["pose3d"][j]["y"].GetFloat() - (i * 10 + j) < aif::EPSILON);
-            EXPECT_TRUE(d["poseEstimation"][i-1]["pose3d"][j]["z"].GetFloat() - (i * 20 + j) < aif::EPSILON);
+            EXPECT_TRUE(d["poseEstimation"][i-1]["joints3D"][j][0].GetFloat() - (float)j < aif::EPSILON); // x
+            EXPECT_TRUE(d["poseEstimation"][i-1]["joints3D"][j][1].GetFloat() - (i * 10 + j) < aif::EPSILON); // y
+            EXPECT_TRUE(d["poseEstimation"][i-1]["joints3D"][j][2].GetFloat() - (i * 20 + j) < aif::EPSILON); // z
         }
-        EXPECT_TRUE(d["poseEstimation"][i-1]["pose3dPos"]["x"].GetFloat() - 0.1f < aif::EPSILON);
-        EXPECT_TRUE(d["poseEstimation"][i-1]["pose3dPos"]["y"].GetFloat() - 0.2f < aif::EPSILON);
-        EXPECT_TRUE(d["poseEstimation"][i-1]["pose3dPos"]["z"].GetFloat() - 0.3f < aif::EPSILON);
+        EXPECT_TRUE(d["poseEstimation"][i-1]["joints3DPosition"][0].GetFloat() - 0.1f < aif::EPSILON); // x
+        EXPECT_TRUE(d["poseEstimation"][i-1]["joints3DPosition"][1].GetFloat() - 0.2f < aif::EPSILON); // y
+        EXPECT_TRUE(d["poseEstimation"][i-1]["joints3DPosition"][2].GetFloat() - 0.3f < aif::EPSILON); // z
     }
+
+    std::cout << "Output: " << std::endl << fd->getResult() << std::endl;
 }
