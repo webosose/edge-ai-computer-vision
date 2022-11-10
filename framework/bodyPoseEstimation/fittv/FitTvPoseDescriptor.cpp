@@ -118,6 +118,7 @@ bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
     jbox.PushBack(static_cast<int>(box.ymin), allocator); // y
     jbox.PushBack(static_cast<int>(box.width), allocator); //width
     jbox.PushBack(static_cast<int>(box.height), allocator); //height
+    jbox.PushBack(score, allocator); //score
 
     pose.AddMember("bbox", jbox, allocator);
     pose.AddMember("id", m_trackId++, allocator);

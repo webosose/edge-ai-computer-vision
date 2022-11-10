@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cctype>
 
 #include <aif/tools/Renderer.h>
 #include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
@@ -106,8 +107,10 @@ int main(int argc, char* argv[])
     std::string outputPath  = R"(./res.jpg)";
 
     if (argc == 2) {
-        std::cout << "Usage: fittv-sample <config-file-path> <input-file-path>" << std::endl;
+        std::cout << "Usage: fittv-sample <config-file-path> <input-file-path> [opt: <output-file-path> <num_iterator>]" << std::endl;
         std::cout << "Example: fittv-sample face.json " << inputPath << std::endl;
+        std::cout << "Example: fittv-sample face.json " << inputPath << " 100 " << std::endl;
+        std::cout << "Example: fittv-sample face.json " << inputPath << " " << outputPath << " 100 " << std::endl;
         std::cout << "Example Config Json: " << std::endl << config << std::endl;
         return 0;
     }
@@ -116,8 +119,25 @@ int main(int argc, char* argv[])
         configPath = argv[1];
         inputPath = argv[2];
     }
+    int num_iterator = 1;
     if (argc >= 4) {
-        outputPath = argv[3];
+        std::string argv3(argv[3]);
+        bool isNumber = true;
+        for (int i = 0; i < argv3.length(); i++) {
+            if (!isdigit(argv3[i])) {
+                isNumber = false;
+                break;
+            }
+        }
+
+        if (isNumber) {
+            num_iterator = atoi(argv[3]);
+        } else {
+            outputPath = argv[3];
+        }
+    }
+    if (argc >= 5) {
+        num_iterator = atoi(argv[4]);
     }
 
     if (!configPath.empty()) {
@@ -142,8 +162,10 @@ int main(int argc, char* argv[])
     }
 
     cv::Mat image = cv::imread(inputPath);
-    if (!pipe.detect(image)) {
-        std::cout << "failed to build pipe" << std::endl;
+    for (int i = 0; i < num_iterator; i++) {     // num_iterator = 1 in default
+        if (!pipe.detect(image)) {
+            std::cout << "failed to build pipe" << std::endl;
+        }
     }
 
     std::cout << "Input: " << inputPath << std::endl;

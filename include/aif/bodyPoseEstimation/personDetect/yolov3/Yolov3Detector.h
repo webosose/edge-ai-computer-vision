@@ -10,6 +10,7 @@
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Param.h>
 
+#define OBD_SCORE_MAX 65535 // 0xFF
 #define OBD_RESULT_NUM 10
 #define MAX_BOX 200 //(SZ_LBBOX + SZ_MBBOX) // 405+1620 = 2025
 #define tcnt_init_PERSON 8

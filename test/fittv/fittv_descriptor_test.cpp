@@ -133,6 +133,7 @@ TEST_F(FitTVPoseDescriptorTest, addPersonDetectorResult)
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][1].GetInt(), y1); // y
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][2].GetInt(), x2 - x1); // width
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][3].GetInt(), y2 - y1); // height
+        EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["bbox"][4].GetFloat(), (float)i); // score
 
         EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
         EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);
@@ -212,6 +213,7 @@ TEST_F(FitTVPoseDescriptorTest, addPose2dDetectorResult)
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][1].GetInt(), y1); // y
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][2].GetInt(), x2 - x1); // width
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][3].GetInt(), y2 - y1); // height
+        EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["bbox"][4].GetFloat(), (float)i); // score
 
         EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
         EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);
@@ -296,6 +298,7 @@ TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][1].GetInt(), y1); // y
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][2].GetInt(), x2 - x1); // width
         EXPECT_EQ(d["poseEstimation"][i-1]["bbox"][3].GetInt(), y2 - y1); // height
+        EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["bbox"][4].GetFloat(), (float)i); // score
 
         EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("id"));
         EXPECT_EQ(d["poseEstimation"][i-1]["id"].GetInt(), i);

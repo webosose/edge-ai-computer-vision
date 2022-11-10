@@ -47,7 +47,7 @@ int64_t Stopwatch::getTimestamp() {
     auto time_point = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::duration duration = time_point.time_since_epoch();
 
-    return duration.count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 }
 
 void Stopwatch::sleep(unsigned ms)

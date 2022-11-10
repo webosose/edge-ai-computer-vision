@@ -149,7 +149,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
                   } );
 
         for (int i=0; (i<finalBboxList.size()) && (i < param->numMaxPerson); i++) {
-            float score = finalBboxList[i].second;
+            float score = (finalBboxList[i].second / OBD_SCORE_MAX);
             const BBox &finalBbox = finalBboxList[i].first;
 
             if (m_IsBodyDetect) {

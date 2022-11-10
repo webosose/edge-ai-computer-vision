@@ -30,6 +30,7 @@ public:
     //	get the number of milliseconds since the timer was started
     tick_t getMs();
 
+    // get current Timestamp (ms) from epoch time
     int64_t getTimestamp();
 
     void sleep(unsigned ms);

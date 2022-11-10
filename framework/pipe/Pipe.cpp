@@ -78,7 +78,7 @@ bool Pipe::detect(const cv::Mat& image)
         }
         prevNode = node;
     }
-    Logi(m_name, ": pipe detect time: ", sw.getMs(), "ms");
+    Logw(m_name, ": pipe detect time: ", sw.getMs(), "ms");
     sw.stop();
     return true;
 }
