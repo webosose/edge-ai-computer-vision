@@ -125,6 +125,44 @@ protected:
         "    \"thresh_iou_sc_sur\" : 200"
         "  }"
         "}"};
+    std::string use_npu_delegate_person_in_people {
+        "{"
+        "  \"delegates\" : ["
+        "    {"
+        "      \"name\": \"npu_delegate\","
+        "      \"option\": {"
+        "       }"
+        "    }"
+        "  ],"
+        "  \"commonParam\" : {"
+        "    \"numMaxPerson\": 1"
+        "  },"
+        "  \"modelParam\" : {"
+        "    \"origImgRoiX\": 100,"
+        "    \"origImgRoiY\": 0,"
+        "    \"origImgRoiWidth\": 200,"
+        "    \"origImgRoiHeight\": 266"
+        "  }"
+        "}"};  /* people.jpg is 400 x 266 image.*/
+    std::string use_npu_delegate_person2_in_people {
+        "{"
+        "  \"delegates\" : ["
+        "    {"
+        "      \"name\": \"npu_delegate\","
+        "      \"option\": {"
+        "       }"
+        "    }"
+        "  ],"
+        "  \"commonParam\" : {"
+        "    \"numMaxPerson\": 2"
+        "  },"
+        "  \"modelParam\" : {"
+        "    \"origImgRoiX\": 100,"
+        "    \"origImgRoiY\": 0,"
+        "    \"origImgRoiWidth\": 200,"
+        "    \"origImgRoiHeight\": 266"
+        "  }"
+        "}"};  /* people.jpg is 400 x 266 image.*/
 
 };
 
@@ -306,3 +344,40 @@ TEST_F(Yolov3DetectorTest, 06_yolov3_detect_not_people)
     EXPECT_EQ(foundYolov3s->size(), 1);
 }
 
+TEST_F(Yolov3DetectorTest, 07_yolov3_detect_person_in_people)
+{
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person_in_people);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 270);
+    EXPECT_EQ(modelInfo.width, 480);
+    EXPECT_EQ(modelInfo.channels, 3);
+
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
+
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/people.jpg");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 1);
+}
+
+TEST_F(Yolov3DetectorTest, 08_yolov3_detect_person2_in_people)
+{
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person2_in_people);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 270);
+    EXPECT_EQ(modelInfo.width, 480);
+    EXPECT_EQ(modelInfo.channels, 3);
+
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
+
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
+    foundYolov3s->drawBbox(basePath + "/images/people.jpg");
+    std::cout << foundYolov3s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov3s->size(), 2);
+}

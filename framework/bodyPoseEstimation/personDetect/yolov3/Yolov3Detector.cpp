@@ -11,7 +11,7 @@ namespace aif {
 constexpr int Yolov3Detector::tcnt_init[];
 
 Yolov3Detector::Yolov3Detector(const std::string& modelPath)
-    : Detector(modelPath)
+    : PersonDetector(modelPath)
     , m_obd_result{0,}
     , m_bodyResult{0,}
     , m_faceResult{0,}
@@ -61,8 +61,13 @@ t_aif_status Yolov3Detector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("yolov4.tflite interpreter not initialized!!");
         }
 
-        cv::Mat img_resized;// = staticResize(img, width, height);
-        getPaddedImage(img, img_resized);
+        cv::Mat img_resized;
+        if ( isRoiValid(img.cols, img.rows) ) {
+            cv::Mat roi_img = img( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight) );
+            getPaddedImage(roi_img, img_resized);
+        } else {
+            getPaddedImage(img, img_resized);
+        }
 
         TRACE("resized size: ", img_resized.size());
         if (img_resized.rows != height || img_resized.cols != width) {
@@ -98,6 +103,11 @@ t_aif_status Yolov3Detector::preProcessing()
         } else {
             throw std::runtime_error("invalid param, not body nor face");
         }
+
+        mOrigImgRoiX = param->origImgRoiX;
+        mOrigImgRoiY = param->origImgRoiY;
+        mOrigImgRoiWidth = param->origImgRoiWidth;
+        mOrigImgRoiHeight = param->origImgRoiHeight;
 
         return kAifOk;
     } catch (const std::exception& e) {
@@ -221,9 +231,17 @@ Yolov3Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &resu
     int img_height = img.rows;
     auto off_x = 0.0f;
     auto off_y = 0.0f;
+    auto roi_img_width = img_width;
+    auto roi_img_height = img_height;
+    if (isRoiValid(img_width, img_height)) {
+        off_x = static_cast<float>( mOrigImgRoiX );
+        off_y = static_cast<float>( mOrigImgRoiY );
+        roi_img_width = static_cast<float>( mOrigImgRoiWidth );
+        roi_img_height = static_cast<float>( mOrigImgRoiHeight );
+    }
 
     if (m_ImgResizingScale == 1.f) {
-        m_ImgResizingScale = std::min( m_modelInfo.width / (img_width * 1.0), m_modelInfo.height / (img_height * 1.0) );
+        m_ImgResizingScale = std::min( m_modelInfo.width / (roi_img_width * 1.0), m_modelInfo.height / (roi_img_height * 1.0) );
     }
 
     TRACE(__func__, "m_ImgResizingScale = " , m_ImgResizingScale);

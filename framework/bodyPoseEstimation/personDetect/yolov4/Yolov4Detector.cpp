@@ -6,7 +6,7 @@
 namespace aif {
 
 Yolov4Detector::Yolov4Detector(const std::string& modelPath)
-    : Detector(modelPath)
+    : PersonDetector(modelPath)
 {
 }
 
@@ -49,7 +49,13 @@ t_aif_status Yolov4Detector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("yolov4.tflite interpreter not initialized!!");
         }
 
-        cv::Mat img_resized = staticResize(img, width, height);
+        cv::Mat img_resized;
+        if ( isRoiValid(img.cols, img.rows) ) {
+            cv::Mat roi_img = img( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight) );
+            img_resized = staticResize(roi_img, width, height);
+        } else {
+            img_resized = staticResize(img, width, height);
+        }
 
         TRACE("resized size: ", img_resized.size());
         if (img_resized.rows != height || img_resized.cols != width) {
@@ -79,6 +85,21 @@ t_aif_status Yolov4Detector::fillInputTensor(const cv::Mat& img)/* override*/
 
 t_aif_status Yolov4Detector::preProcessing()
 {
+    try {
+        std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
+
+        mOrigImgRoiX = param->origImgRoiX;
+        mOrigImgRoiY = param->origImgRoiY;
+        mOrigImgRoiWidth = param->origImgRoiWidth;
+        mOrigImgRoiHeight = param->origImgRoiHeight;
+
+    } catch(const std::exception& e) {
+        Loge(__func__,"Error: ", e.what());
+        return kAifError;
+    } catch(...) {
+        Loge(__func__,"Error: Unknown exception occured!!");
+        return kAifError;
+    }
     return kAifOk;
 }
 
@@ -121,6 +142,12 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
         auto off_y = 0.0f;
         auto roi_img_width = img_width;
         auto roi_img_height = img_height;
+        if (isRoiValid(img_width, img_height)) {
+            off_x = static_cast<float>( mOrigImgRoiX );
+            off_y = static_cast<float>( mOrigImgRoiY );
+            roi_img_width = static_cast<float>( mOrigImgRoiWidth );
+            roi_img_height = static_cast<float>( mOrigImgRoiHeight );
+        }
         auto rx = static_cast<float>(m_modelInfo.width) / roi_img_width;
         auto ry = static_cast<float>(m_modelInfo.height) / roi_img_height;
         auto scale = std::min( rx, ry );

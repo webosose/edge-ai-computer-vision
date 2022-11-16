@@ -19,6 +19,10 @@ namespace aif {
 
 Yolov3Param::Yolov3Param()
     : detectObject("body")
+    , origImgRoiX(0)
+    , origImgRoiY(0)
+    , origImgRoiWidth(0)
+    , origImgRoiHeight(0)
     , lbbox_h(9)
     , lbbox_w(15)
     , mbbox_h(18)
@@ -39,6 +43,10 @@ Yolov3Param::~Yolov3Param()
 
 Yolov3Param::Yolov3Param(const Yolov3Param& other)
     : detectObject(other.detectObject)
+    , origImgRoiX(other.origImgRoiX)
+    , origImgRoiY(other.origImgRoiY)
+    , origImgRoiWidth(other.origImgRoiWidth)
+    , origImgRoiHeight(other.origImgRoiHeight)
     , lbbox_h(other.lbbox_h)
     , lbbox_w(other.lbbox_w)
     , mbbox_h(other.mbbox_h)
@@ -56,6 +64,10 @@ Yolov3Param::Yolov3Param(const Yolov3Param& other)
 
 Yolov3Param::Yolov3Param(Yolov3Param&& other) noexcept
     : detectObject(std::move(other.detectObject))
+    , origImgRoiX(std::move(other.origImgRoiX))
+    , origImgRoiY(std::move(other.origImgRoiY))
+    , origImgRoiWidth(std::move(other.origImgRoiWidth))
+    , origImgRoiHeight(std::move(other.origImgRoiHeight))
     , lbbox_h(std::move(other.lbbox_h))
     , lbbox_w(std::move(other.lbbox_w))
     , mbbox_h(std::move(other.mbbox_h))
@@ -79,6 +91,10 @@ Yolov3Param& Yolov3Param::operator=(const Yolov3Param& other)
     }
 
     detectObject = other.detectObject;
+    origImgRoiX = other.origImgRoiX;
+    origImgRoiY = other.origImgRoiY;
+    origImgRoiWidth = other.origImgRoiWidth;
+    origImgRoiHeight = other.origImgRoiHeight;
     lbbox_h = other.lbbox_h;
     lbbox_w = other.lbbox_w;
     mbbox_h = other.mbbox_h;
@@ -102,6 +118,10 @@ Yolov3Param& Yolov3Param::operator=(Yolov3Param&& other) noexcept
     }
 
     detectObject = std::move(other.detectObject);
+    origImgRoiX = std::move(other.origImgRoiX);
+    origImgRoiY = std::move(other.origImgRoiY);
+    origImgRoiWidth = std::move(other.origImgRoiWidth);
+    origImgRoiHeight = std::move(other.origImgRoiHeight);
     lbbox_h = std::move(other.lbbox_h);
     lbbox_w = std::move(other.lbbox_w);
     mbbox_h = std::move(other.mbbox_h);
@@ -121,6 +141,10 @@ bool Yolov3Param::operator==(const Yolov3Param& other) const
 {
     return (
         (detectObject == other.detectObject) &&
+        (origImgRoiX == other.origImgRoiX) &&
+        (origImgRoiY == other.origImgRoiY) &&
+        (origImgRoiWidth == other.origImgRoiWidth) &&
+        (origImgRoiHeight == other.origImgRoiHeight) &&
         (lbbox_h == other.lbbox_h) &&
         (lbbox_w == other.lbbox_w) &&
         (mbbox_h == other.mbbox_h) &&
@@ -145,6 +169,10 @@ std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
 {
     os << "\n{\n";
     os << "\tdetectObject: " << fp.detectObject << ",\n";
+    os << "\torigImgRoiX: " << fp.origImgRoiX << ",\n";
+    os << "\torigImgRoiY: " << fp.origImgRoiY << ",\n";
+    os << "\torigImgRoiWidth: " << fp.origImgRoiWidth << ",\n";
+    os << "\torigImgRoiHeight: " << fp.origImgRoiHeight << ",\n";
     os << "\tlbbox_h: " << fp.lbbox_h << ",\n";
     os << "\tlbbox_w: " << fp.lbbox_w << ",\n";
     os << "\tmbbox_h: " << fp.mbbox_h << ",\n";
@@ -193,6 +221,18 @@ t_aif_status Yolov3Param::fromJson(const std::string& param)
         rj::Value& modelParam = payload["modelParam"];
         if (modelParam.HasMember("detectObject")) {
             detectObject = modelParam["detectObject"].GetString();
+        }
+        if (modelParam.HasMember("origImgRoiX")) {
+            origImgRoiX = modelParam["origImgRoiX"].GetInt();
+        }
+        if (modelParam.HasMember("origImgRoiY")) {
+            origImgRoiY = modelParam["origImgRoiY"].GetInt();
+        }
+        if (modelParam.HasMember("origImgRoiWidth")) {
+            origImgRoiWidth = modelParam["origImgRoiWidth"].GetInt();
+        }
+        if (modelParam.HasMember("origImgRoiHeight")) {
+            origImgRoiHeight = modelParam["origImgRoiHeight"].GetInt();
         }
         if (modelParam.HasMember("lbbox_h")) {
             lbbox_h = modelParam["lbbox_h"].GetInt();

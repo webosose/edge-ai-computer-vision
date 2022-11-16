@@ -6,15 +6,15 @@
 #ifndef AIF_YOLOV4_DETECTOR_H
 #define AIF_YOLOV4_DETECTOR_H
 
-#include <aif/base/Detector.h>
 #include <aif/bodyPoseEstimation/common.h>
+#include <aif/bodyPoseEstimation/personDetect/PersonDetectDetector.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov4/Yolov4Descriptor.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov4/Yolov4Param.h>
 
 
 namespace aif {
 
-class Yolov4Detector : public Detector
+class Yolov4Detector : public PersonDetector
 {
 public:
     Yolov4Detector(const std::string& modelPath);

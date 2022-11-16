@@ -6,7 +6,7 @@
 #ifndef AIF_YOLOV3_DETECTOR_H
 #define AIF_YOLOV3_DETECTOR_H
 
-#include <aif/base/Detector.h>
+#include <aif/bodyPoseEstimation/personDetect/PersonDetectDetector.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Param.h>
 
@@ -53,7 +53,7 @@ typedef struct {
 } t_pqe_obd_result;
 
 
-class Yolov3Detector : public Detector
+class Yolov3Detector : public PersonDetector
 {
 public:
     enum class BoxType {

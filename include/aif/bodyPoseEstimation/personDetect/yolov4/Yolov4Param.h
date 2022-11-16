@@ -36,6 +36,10 @@ public:
     t_aif_status fromJson(const std::string& param) override;
 
 public:
+    int origImgRoiX;
+    int origImgRoiY;
+    int origImgRoiWidth;
+    int origImgRoiHeight;
     int bboxBottomThresholdY;
     bool useFp16;
     double nms_threshold;

@@ -98,7 +98,44 @@ protected:
         "    \"numMaxPerson\": 1"
         "  }"
         "}"};
-
+    std::string use_npu_delegate_person_in_people {
+        "{"
+        "  \"delegates\" : ["
+        "    {"
+        "      \"name\": \"npu_delegate\","
+        "      \"option\": {"
+        "       }"
+        "    }"
+        "  ],"
+        "  \"commonParam\" : {"
+        "    \"numMaxPerson\": 1"
+        "  },"
+        "  \"modelParam\" : {"
+        "    \"origImgRoiX\": 100,"
+        "    \"origImgRoiY\": 0,"
+        "    \"origImgRoiWidth\": 200,"
+        "    \"origImgRoiHeight\": 266"
+        "  }"
+        "}"};  /* people.jpg is 400 x 266 image.*/
+    std::string use_npu_delegate_person2_in_people {
+        "{"
+        "  \"delegates\" : ["
+        "    {"
+        "      \"name\": \"npu_delegate\","
+        "      \"option\": {"
+        "       }"
+        "    }"
+        "  ],"
+        "  \"commonParam\" : {"
+        "    \"numMaxPerson\": 2"
+        "  },"
+        "  \"modelParam\" : {"
+        "    \"origImgRoiX\": 100,"
+        "    \"origImgRoiY\": 0,"
+        "    \"origImgRoiWidth\": 200,"
+        "    \"origImgRoiHeight\": 266"
+        "  }"
+        "}"};  /* people.jpg is 400 x 266 image.*/
 };
 
 TEST_F(Yolov4DetectorTest, 01_yolov4_detect_person)
@@ -150,7 +187,7 @@ TEST_F(Yolov4DetectorTest, 02_yolov4_detect_people)
     EXPECT_EQ(foundYolov4s->size(), 1);
 }
 
-TEST_F(Yolov4DetectorTest, 02_yolov4_detect_not_people)
+TEST_F(Yolov4DetectorTest, 03_yolov4_detect_not_people)
 {
     auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate_and_not_people);
     EXPECT_TRUE(fd.get() != nullptr);
@@ -170,7 +207,7 @@ TEST_F(Yolov4DetectorTest, 02_yolov4_detect_not_people)
 
 }
 
-TEST_F(Yolov4DetectorTest, 03_yolov4_detect_side_person)
+TEST_F(Yolov4DetectorTest, 04_yolov4_detect_side_person)
 {
     auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
@@ -199,4 +236,42 @@ TEST_F(Yolov4DetectorTest, 03_yolov4_detect_side_person)
     }
     //std::cout << foundYolov4s->toStr() << std::endl;
     //EXPECT_EQ(foundYolov4s->size(), 1);
+}
+
+TEST_F(Yolov4DetectorTest, 05_yolov4_detect_person_in_people)
+{
+    auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate_person_in_people);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector.tflite");
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 416);
+    EXPECT_EQ(modelInfo.width, 416);
+    EXPECT_EQ(modelInfo.channels, 3);
+
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov4Descriptor>();
+    auto foundYolov4s = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
+
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/people.jpg");
+    std::cout << foundYolov4s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov4s->size(), 1);
+}
+
+TEST_F(Yolov4DetectorTest, 06_yolov4_detect_person2_in_people)
+{
+    auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate_person2_in_people);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector.tflite");
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 416);
+    EXPECT_EQ(modelInfo.width, 416);
+    EXPECT_EQ(modelInfo.channels, 3);
+
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov4Descriptor>();
+    auto foundYolov4s = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
+
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/people.jpg");
+    std::cout << foundYolov4s->toStr() << std::endl;
+    EXPECT_EQ(foundYolov4s->size(), 2);
 }

@@ -37,6 +37,10 @@ public:
 
 public:
     std::string detectObject; // body or face
+    int origImgRoiX;
+    int origImgRoiY;
+    int origImgRoiWidth;
+    int origImgRoiHeight;
     int lbbox_h;
     int lbbox_w;
     int mbbox_h;

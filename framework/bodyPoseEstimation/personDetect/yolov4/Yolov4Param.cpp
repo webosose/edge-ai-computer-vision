@@ -18,7 +18,11 @@ static const char TAG[] = "<FPARAM>";
 namespace aif {
 
 Yolov4Param::Yolov4Param()
-    : bboxBottomThresholdY(-1)
+    : origImgRoiX(0)
+    , origImgRoiY(0)
+    , origImgRoiWidth(0)
+    , origImgRoiHeight(0)
+    , bboxBottomThresholdY(-1)
     , useFp16(false)
     , nms_threshold(0.5)
     , bbox_conf_threshold(0.1)
@@ -59,7 +63,11 @@ Yolov4Param::~Yolov4Param()
 }
 
 Yolov4Param::Yolov4Param(const Yolov4Param& other)
-    : bboxBottomThresholdY(other.bboxBottomThresholdY)
+    : origImgRoiX(other.origImgRoiX)
+    , origImgRoiY(other.origImgRoiY)
+    , origImgRoiWidth(other.origImgRoiWidth)
+    , origImgRoiHeight(other.origImgRoiHeight)
+    , bboxBottomThresholdY(other.bboxBottomThresholdY)
     , useFp16(other.useFp16)
     , nms_threshold(other.nms_threshold)
     , bbox_conf_threshold(other.bbox_conf_threshold)
@@ -74,7 +82,11 @@ Yolov4Param::Yolov4Param(const Yolov4Param& other)
 }
 
 Yolov4Param::Yolov4Param(Yolov4Param&& other) noexcept
-    : bboxBottomThresholdY(std::move(other.bboxBottomThresholdY))
+    : origImgRoiX(std::move(other.origImgRoiX))
+    , origImgRoiY(std::move(other.origImgRoiY))
+    , origImgRoiWidth(std::move(other.origImgRoiWidth))
+    , origImgRoiHeight(std::move(other.origImgRoiHeight))
+    , bboxBottomThresholdY(std::move(other.bboxBottomThresholdY))
     , useFp16(std::move(other.useFp16))
     , nms_threshold(std::move(other.nms_threshold))
     , bbox_conf_threshold(std::move(other.bbox_conf_threshold))
@@ -95,6 +107,10 @@ Yolov4Param& Yolov4Param::operator=(const Yolov4Param& other)
         return *this;
     }
 
+    origImgRoiX = other.origImgRoiX;
+    origImgRoiY = other.origImgRoiY;
+    origImgRoiWidth = other.origImgRoiWidth;
+    origImgRoiHeight = other.origImgRoiHeight;
     bboxBottomThresholdY = other.bboxBottomThresholdY;
     useFp16 = other.useFp16;
     nms_threshold = other.nms_threshold;
@@ -116,6 +132,10 @@ Yolov4Param& Yolov4Param::operator=(Yolov4Param&& other) noexcept
         return *this;
     }
 
+    origImgRoiX = std::move(other.origImgRoiX);
+    origImgRoiY = std::move(other.origImgRoiY);
+    origImgRoiWidth = std::move(other.origImgRoiWidth);
+    origImgRoiHeight = std::move(other.origImgRoiHeight);
     bboxBottomThresholdY = std::move(other.bboxBottomThresholdY);
     useFp16 = std::move(other.useFp16);
     nms_threshold = std::move(other.nms_threshold);
@@ -133,6 +153,10 @@ Yolov4Param& Yolov4Param::operator=(Yolov4Param&& other) noexcept
 bool Yolov4Param::operator==(const Yolov4Param& other) const
 {
     return (
+        (origImgRoiX == other.origImgRoiX) &&
+        (origImgRoiY == other.origImgRoiY) &&
+        (origImgRoiWidth == other.origImgRoiWidth) &&
+        (origImgRoiHeight == other.origImgRoiHeight) &&
         (bboxBottomThresholdY == other.bboxBottomThresholdY) &&
         (useFp16 == other.useFp16) &&
         (std::abs(nms_threshold - other.nms_threshold) < aif::EPSILON) &&
@@ -155,6 +179,10 @@ bool Yolov4Param::operator!=(const Yolov4Param& other) const
 std::ostream& operator<<(std::ostream& os, const Yolov4Param& fp)
 {
     os << "\n{\n";
+    os << "\torigImgRoiX: " << fp.origImgRoiX << ",\n";
+    os << "\torigImgRoiY: " << fp.origImgRoiY << ",\n";
+    os << "\torigImgRoiWidth: " << fp.origImgRoiWidth << ",\n";
+    os << "\torigImgRoiHeight: " << fp.origImgRoiHeight << ",\n";
     os << "\tbboxBottomThresholdY: " << fp.bboxBottomThresholdY << ",\n";
     os << "\tuseFp16: " << fp.useFp16 << ",\n";
     os << "\tnms_threshold: " << fp.nms_threshold << ",\n";
@@ -213,6 +241,18 @@ t_aif_status Yolov4Param::fromJson(const std::string& param)
     payload.Parse(param.c_str());
     if (payload.HasMember("modelParam")) {
         rj::Value& modelParam = payload["modelParam"];
+        if (modelParam.HasMember("origImgRoiX")) {
+            origImgRoiX = modelParam["origImgRoiX"].GetInt();
+        }
+        if (modelParam.HasMember("origImgRoiY")) {
+            origImgRoiY = modelParam["origImgRoiY"].GetInt();
+        }
+        if (modelParam.HasMember("origImgRoiWidth")) {
+            origImgRoiWidth = modelParam["origImgRoiWidth"].GetInt();
+        }
+        if (modelParam.HasMember("origImgRoiHeight")) {
+            origImgRoiHeight = modelParam["origImgRoiHeight"].GetInt();
+        }
         if (modelParam.HasMember("bboxBottomThresholdY")) {
             bboxBottomThresholdY = modelParam["bboxBottomThresholdY"].GetInt();
         }
