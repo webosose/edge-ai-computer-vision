@@ -32,6 +32,11 @@ protected:
     bool processHeatMap(
             const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor, float* heatMaps);
 
+    void gaussianBlur(float *heatMap, const int kernel) const;
+    void taylor(float *heatMap, float& coord_x, float& coord_y) const;
+    void gaussianDark(float *heatMap,
+                      float& coord_x, float& coord_y,
+                      const int BLUR_KERNEL = 11) const;
 protected:
     cv::Rect m_cropRect;
     cv::Size m_paddedSize;

@@ -95,16 +95,17 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     int zeroPoint= q_params->zero_point->data[0];
     Logi("scale: ", scale, " zero_point: ", zeroPoint);
 
-    int m_heatMapHeight = output->dims->data[0];
-    int m_heatMapWidth = output->dims->data[1];
-    int m_numKeyPoints = output->dims->data[2];
+    int m_numKeyPoints = output->dims->data[1];
+    int m_heatMapHeight = output->dims->data[2];
+    int m_heatMapWidth = output->dims->data[3];
 
     int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
     float* buffer = new float[outputSize];
-    memset(buffer, 0, sizeof(buffer));
+//    memset(buffer, 0, sizeof(buffer));
 
-    uint8_t* data= reinterpret_cast<uint8_t*>(output->data.data);
+    float* data= reinterpret_cast<float*>(output->data.data);
     int i = 0;
+/*
     for (int h = 0; h < m_heatMapHeight; h++) {
         for (int w = 0; w < m_heatMapWidth; w++) {
             for (int k = 0; k < m_numKeyPoints; k++) {
@@ -113,6 +114,8 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
             }
         }
     }
+*/
+    std::memcpy(buffer, data, (outputSize * sizeof(float)));
 
     if (!processHeatMap(img, descriptor, buffer)) {
         Loge("failed to get position x, y from heatmap");
