@@ -159,6 +159,11 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
                   } );
 
         for (int i=0; (i<finalBboxList.size()) && (i < param->numMaxPerson); i++) {
+            if (!checkUpdate(i, finalBboxList[i].first)) {
+                finalBboxList[i].second = m_prevBboxList[i].second; // score
+                finalBboxList[i].first = m_prevBboxList[i].first;   // bbox
+            }
+
             float score = (finalBboxList[i].second / OBD_SCORE_MAX);
             const BBox &finalBbox = finalBboxList[i].first;
 
@@ -170,6 +175,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
                                           finalBbox.width, finalBbox.height);
             }
         }
+        m_prevBboxList = finalBboxList;
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();
     } catch(const std::exception& e) {
@@ -738,6 +744,34 @@ Yolov3Detector::FaceMatching()
             }
         }
     }
+}
+
+bool
+Yolov3Detector::checkUpdate(int index, const BBox &currBbox)
+{
+    std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
+    if (m_prevBboxList.size() == 0) {
+        Logd("UPDATE!!!!!!!!!!!!!!!!!");
+        return true;
+    }
+
+    Logd("m_prevBboxList.size() ", m_prevBboxList.size());
+
+    const BBox &prevBbox = m_prevBboxList[index].first;
+
+    cv::Rect2f prevRect(prevBbox.xmin, prevBbox.ymin, prevBbox.width, prevBbox.height);
+    cv::Rect2f curRect(currBbox.xmin, currBbox.ymin, currBbox.width, currBbox.height);
+
+/*std::cout << "IoU Threshold is : " << param->thresh_iou_update << std::endl;
+std::cout << "prevRect : " << prevRect.x << ", " << prevRect.y << ", " << prevRect.width << ", " << prevRect.height << "\n";
+std::cout << "curRect : " << curRect.x << ", " << curRect.y << ", " << curRect.width << ", " << curRect.height << "\n";*/
+
+    if (index < m_prevBboxList.size() && isIOUOver(prevRect, curRect, param->thresh_iou_update)) {
+        return false;
+    }
+
+    Logd("UPDATE!!!!!!!!!!!!!!!!!");
+    return true;
 }
 
 } // end of namespace aif

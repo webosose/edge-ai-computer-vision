@@ -176,7 +176,7 @@ T sigmoid(T value) {
 std::string jsonObjectToString(const rj::Value& object);
 
 
-bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
+bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
 
 template <typename T>
 void memoryDump(T* outTensor, std::string path, size_t outTotalSize)

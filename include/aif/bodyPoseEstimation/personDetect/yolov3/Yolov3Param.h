@@ -52,6 +52,7 @@ public:
     int thresh_iou_sc_nms;
     int thresh_iou_sc_sur;
     int thresh_iou_sc_avg;
+    float thresh_iou_update;
 };
 
 } // end of namespace aif

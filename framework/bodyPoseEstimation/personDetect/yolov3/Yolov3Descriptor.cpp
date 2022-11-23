@@ -98,6 +98,7 @@ void Yolov3Descriptor::drawBbox(std::string imgPath)
     cv::Mat image = cv::imread(imgPath, cv::IMREAD_COLOR);
 
     if (m_root.HasMember("persons")) {
+        // std::cout << "m_root[persons].Size(): " << m_root["persons"].Size() << std::endl; /* TODO: larger... */
         for (int i = 0; i < m_root["persons"].Size(); i++) {
             if (m_root["persons"][i].HasMember("bbox")) {
                 auto xmin = m_root["persons"][i]["bbox"][0].GetInt();

@@ -94,7 +94,7 @@ PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, floa
 
         rj::Value person(rj::kObjectType);
         cv::Rect2f faceRect = getRect(keyPoints, NOSE, RIGHT_EAR);
-        if (i < prev.size() && isIOU(faceRect, prev[i][0], iouThreshold)) {
+        if (i < prev.size() && isIOUOver(faceRect, prev[i][0], iouThreshold)) {
             faceRect = prev[i][0];
         }
         rj::Value face(rj::kObjectType);
@@ -108,7 +108,7 @@ PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, floa
         person.AddMember("face", face, allocator);
 
         cv::Rect2f bodyRect = getRect(keyPoints, NOSE, RIGHT_ANKLE);
-        if (i < prev.size() && isIOU(bodyRect, prev[i][1], iouThreshold)) {
+        if (i < prev.size() && isIOUOver(bodyRect, prev[i][1], iouThreshold)) {
             bodyRect = prev[i][1];
         }
         rj::Value body(rj::kObjectType);
@@ -122,7 +122,7 @@ PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, floa
         person.AddMember("body", body, allocator);
 
         cv::Rect2f upperBodyRect = getRect(keyPoints, NOSE, RIGHT_HIP);
-        if (i < prev.size() && isIOU(upperBodyRect, prev[i][2], iouThreshold)) {
+        if (i < prev.size() && isIOUOver(upperBodyRect, prev[i][2], iouThreshold)) {
             upperBodyRect = prev[i][2];
         }
         rj::Value upperBody(rj::kObjectType);

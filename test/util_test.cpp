@@ -222,7 +222,7 @@ TEST_F(UtilTest, util11_splitString)
     EXPECT_EQ(strings[3], "f");
 }
 
-TEST_F(UtilTest, util12_isIOU)
+TEST_F(UtilTest, util12_isIOUOver)
 {
     /* x, y, w, h */
     cv::Rect2f rect1(1.0, 3.0, 4.0, 6.0);
@@ -230,10 +230,10 @@ TEST_F(UtilTest, util12_isIOU)
     cv::Rect2f rect3(1.1, 2.9, 3.9, 5.9);
     cv::Rect2f rect4(5.0, 3.0, 2.0, 3.0);
 
-    EXPECT_FALSE(aif::isIOU(rect1, rect2, 0.7f));
-    EXPECT_FALSE(aif::isIOU(rect2, rect1, 0.7f));
-    EXPECT_TRUE(aif::isIOU(rect1, rect3, 0.7f));
-    EXPECT_TRUE(aif::isIOU(rect3, rect1, 0.7f));
-    EXPECT_FALSE(aif::isIOU(rect1, rect4, 0.7f));
+    EXPECT_FALSE(aif::isIOUOver(rect1, rect2, 0.7f));
+    EXPECT_FALSE(aif::isIOUOver(rect2, rect1, 0.7f));
+    EXPECT_TRUE(aif::isIOUOver(rect1, rect3, 0.7f));
+    EXPECT_TRUE(aif::isIOUOver(rect3, rect1, 0.7f));
+    EXPECT_FALSE(aif::isIOUOver(rect1, rect4, 0.7f));
 
 }

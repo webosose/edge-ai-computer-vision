@@ -338,7 +338,7 @@ std::string jsonObjectToString(const rj::Value& object)
 }
 
 
-bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
+bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
 {
     float A = cur.width * cur.height;
     float B = prev.width * prev.height;
@@ -372,6 +372,7 @@ bool isIOU(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
         (std::min(y1 + h1, y2 + h2) - y2);
     float A_or_B = A + B - A_and_B;
 
+    TRACE("IOU : ", (A_and_B / A_or_B));
     return ((A_and_B / A_or_B) > threshold);
 }
 
