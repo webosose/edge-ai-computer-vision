@@ -105,6 +105,7 @@ set(LIBS
     ${RAPIDJSON_LIBRARIES}
     edgeai-vision
     pthread
+    -lstdc++fs
 )
 
 IF(WITH_EDGETPU)

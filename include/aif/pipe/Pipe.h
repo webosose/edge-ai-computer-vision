@@ -27,6 +27,7 @@ class Pipe {
 
     protected:
         bool addPipeNode(std::shared_ptr<PipeNode>& node);
+        void drawPipeResults();
 
     private:
         std::string m_name;

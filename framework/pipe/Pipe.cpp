@@ -8,6 +8,8 @@
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 #include <aif/tools/Stopwatch.h>
+#include <aif/tools/Renderer.h>
+#include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
 
 using aif::Stopwatch;
 
@@ -79,6 +81,10 @@ bool Pipe::detect(const cv::Mat& image)
         prevNode = node;
     }
     Logw(m_name, ": pipe detect time: ", sw.getMs(), "ms");
+
+    /* for debug!! */
+    //drawPipeResults();
+
     sw.stop();
     return true;
 }
@@ -139,6 +145,27 @@ bool Pipe::addPipeNode(std::shared_ptr<PipeNode>& node)
     }
     m_nodes.emplace_back(node);
     return true;
+}
+
+void Pipe::drawPipeResults()
+{
+    Stopwatch sw;
+    std::string outputPath = "/usr/share/aif/capturePipe_";
+    outputPath += std::to_string(sw.getTimestamp());
+    outputPath += ".jpg";
+
+    Logi("result outputPath: ", outputPath);
+
+    auto fd = std::dynamic_pointer_cast<FitTvPoseDescriptor>(m_descriptor);
+    cv::Mat result = fd->getImage();
+    for (auto& keyPoints : fd->getKeyPoints()) {
+        result = Renderer::drawPose2d(result, keyPoints);
+    }
+
+    result = Renderer::drawRects(result, fd->getCropRects(), cv::Scalar(255, 0, 0), 1);
+    result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
+
+    cv::imwrite(outputPath, result);
 }
 
 } // end of namespace aif
