@@ -34,7 +34,7 @@ Yolov3Param::Yolov3Param()
     , thresh_iou_sc_nms(115)
     , thresh_iou_sc_sur(200)
     , thresh_iou_sc_avg(128)
-    , thresh_iou_update(0.6)
+    , thresh_iou_update(0.7)
 {
 }
 
