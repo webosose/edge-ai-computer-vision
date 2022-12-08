@@ -1,4 +1,5 @@
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDetector.h>
+#include <aif/bodyPoseEstimation/transforms.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -8,8 +9,22 @@
 
 namespace aif {
 
+template<typename T>
+std::vector<T> flattenKeyPoints(std::vector<std::vector<T>> const &vec)
+{
+    std::vector<T> flattened;
+    for (auto const &v: vec) {
+        flattened.insert(flattened.end(), v.begin() + 1, v.end());
+    }
+    return flattened;
+}
+
+
 Pose2dDetector::Pose2dDetector(const std::string& modelPath)
     : Detector(modelPath)
+    , m_cropScale(0.0f)
+    , m_boxCenter(0.0f, 0.0f)
+    , m_useUDP(false)
     , m_leftBorder(0)
     , m_topBorder(0)
     , m_numKeyPoints(Pose2dDescriptor::KeyPointType::KEY_POINT_TYPES)
@@ -47,28 +62,78 @@ bool Pose2dDetector::processHeatMap(
 
         float x = (argMaxIndex % m_heatMapWidth);
         float y = (argMaxIndex / m_heatMapWidth);
-
+#if defined(GAUSSIANDARK)
         gaussianDark(heatMap, x, y);
-
+#endif
         // scale heatmap to model size (x 4)
         x *= (m_modelInfo.width / m_heatMapWidth);
         y *= (m_modelInfo.height / m_heatMapHeight);
 
-        // scale model size to input img
-        x = m_paddedSize.width  * ((x - m_leftBorder) / m_modelInfo.width);
-        y = m_paddedSize.height * ((y - m_topBorder) / m_modelInfo.height);
+        if (m_useUDP) {
+            keyPoints.push_back({ maxVal, x, y, 1.0});
+        } else {
+            // scale model size to input img
+            x = m_paddedSize.width  * ((x - m_leftBorder) / m_modelInfo.width);
+            y = m_paddedSize.height * ((y - m_topBorder) / m_modelInfo.height);
 
-        // change x, y of input img to x, y of origin image
-        x += m_cropRect.x;
-        y += m_cropRect.y;
+            // change x, y of input img to x, y of origin image
+            x += m_cropRect.x;
+            y += m_cropRect.y;
 
-        keyPoints.push_back({ maxVal, x, y });
+            keyPoints.push_back({ maxVal, x, y });
+        }
+    }
+
+    if (m_useUDP) {
+        if (!applyInverseTransform(keyPoints)) {
+            return false;
+        }
     }
 
     std::shared_ptr<Pose2dDescriptor> pose2dDescriptor =
         std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
 
     pose2dDescriptor->addKeyPoints(keyPoints);
+    return true;
+}
+
+
+
+bool Pose2dDetector::applyInverseTransform(std::vector<std::vector<float>>& keyPoints)
+{
+    std::vector<float> newJoints = flattenKeyPoints(keyPoints);
+
+    if (mTransMat.empty()) {
+        Loge("failed applyInverseTransform. mTransMat is empty.");
+        return false;
+    }
+
+    cv::Mat transform = mTransMat;
+
+    cv::Mat inv_transform;
+    cv::invertAffineTransform( transform, inv_transform );
+
+    cv::Mat joints_mat(keyPoints.size(), 3, CV_32F, newJoints.data(), 0 );
+    cv::Mat joints_mat_float;
+    joints_mat.convertTo( joints_mat_float, inv_transform.type() );
+
+    cv::Mat joints_mat_transposed;
+    cv::transpose( joints_mat_float, joints_mat_transposed );
+
+    cv::Mat result;
+    result = inv_transform * joints_mat_transposed;
+    result = result.t();
+
+    std::vector<std::vector<float>> imageJoints;
+    for (int i = 0; i<result.rows; i++) {
+        cv::Mat mat = result.row(i);
+        double *data = (double*)mat.data;
+        std::vector<float> imageJoint = { keyPoints[i][0], data[0], data[1] };
+        imageJoints.push_back(imageJoint);
+    }
+
+    keyPoints = imageJoints;
+
     return true;
 }
 
@@ -140,6 +205,25 @@ void Pose2dDetector::gaussianDark(float *heatMap,
     }
 
     taylor( heatMap, coord_x, coord_y);
+}
+
+void Pose2dDetector::getAffinedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)
+{
+    cv::Mat trans;
+    const float scalingRate = 1.15f; // scaling for bbox-width
+
+    trans = getAffineTransform( m_boxCenter,
+                                cv::Point2f( m_cropScale * scalingRate, m_cropScale ),
+                                0.0f, cv::Point2f( 0, 0 ), modelSize.width, modelSize.height,
+                                false, true );
+
+    trans.reshape( 1, trans.total() * trans.channels() );
+
+    cv::Mat transformedImg = cv::Mat::zeros( modelSize.height, modelSize.width, src.type() );
+    cv::warpAffine( src, transformedImg, trans, transformedImg.size() );
+
+    dst = transformedImg;
+    mTransMat = trans;
 }
 
 void Pose2dDetector::getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)

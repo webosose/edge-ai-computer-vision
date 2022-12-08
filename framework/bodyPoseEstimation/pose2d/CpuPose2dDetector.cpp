@@ -50,7 +50,12 @@ t_aif_status CpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
 
         //cv::imwrite("./crop_input.jpg", img);
         cv::Mat inputImg;
-        getPaddedImage(img, cv::Size(width, height), inputImg);
+        if (m_useUDP) {
+            getAffinedImage(img, cv::Size(width, height), inputImg);
+            //cv::imwrite("affined_input.jpg", inputImg);
+        } else {
+            getPaddedImage(img, cv::Size(width, height), inputImg);
+        }
         //cv::imwrite("./pad_input.jpg", inputImg);
 
         //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);

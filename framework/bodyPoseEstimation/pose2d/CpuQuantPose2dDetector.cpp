@@ -49,8 +49,12 @@ t_aif_status CpuQuantPose2dDetector::fillInputTensor(const cv::Mat& img)/* overr
         int channels = m_modelInfo.channels;
 
         cv::Mat inputImg;
-        getPaddedImage(img, cv::Size(width, height), inputImg);
-
+        if (m_useUDP) {
+            getAffinedImage(img, cv::Size(width, height), inputImg);
+            //cv::imwrite("affined_input_cpuquant.jpg", inputImg);
+        } else {
+            getPaddedImage(img, cv::Size(width, height), inputImg);
+        }
         //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
         inputImg.convertTo(inputImg, CV_8UC3);
 

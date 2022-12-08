@@ -12,6 +12,7 @@ namespace aif {
 
 FitTvPersonCropOperation::FitTvPersonCropOperation(const std::string& id)
 : BridgeOperation(id)
+, mCropExtension(0.75)
 {
 }
 
@@ -30,6 +31,16 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         std::dynamic_pointer_cast<FitTvPoseDescriptor>(input->getDescriptor());
 
     const cv::Mat& image = descriptor->getImage();
+
+#if defined(AFFINE_TRANS)
+    Logd("AFFINE_TRANS!!!");
+    const std::vector<BBox>& boxes = fdescriptor->getBboxes();
+    for (auto& box :  boxes) {
+        auto scale = computeCropsData( box, mCropExtension );
+        fdescriptor->addCropData(scale);
+        fdescriptor->addCropImage(image); /* add original image */
+    }
+#else
     auto rects = getCropRects(input);
     for (auto& rect : rects) {
         fdescriptor->addCropImage(image(rect));
@@ -41,8 +52,24 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
                  m_id,
                  m_config->getType(),
                  "person crop result");
+#endif
     return true;
 }
+
+float FitTvPersonCropOperation::computeCropsData( const BBox& bbox, const float expand ) const
+{
+    auto scale_x = std::max( bbox.width, 10.0f ) * 0.005f;
+    auto scale_y = std::max( bbox.height, 10.0f ) * 0.005f;
+    auto scale = std::max( scale_x, scale_y );
+    if ( static_cast<float>( bbox.width ) / bbox.height < 0.66f )
+    {
+        scale *= expand;
+    }
+
+    Logd(__func__, " scale: ", scale);
+    return scale;
+}
+
 
 // onnx imlementation
 std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects(const std::shared_ptr<NodeInput>& input) const

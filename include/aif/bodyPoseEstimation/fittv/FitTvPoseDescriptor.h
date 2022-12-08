@@ -36,11 +36,13 @@ class FitTvPoseDescriptor : public PipeDescriptor
 
         void addCropRects(const std::vector<cv::Rect>& rects) { m_cropRects = rects; }
         void addCropImage(const cv::Mat& img) { m_cropImgs.push_back(img); }
+        void addCropData(float cropScale) { m_cropScales.push_back(cropScale); }
         void addPose3dInput(const cv::Mat& input) { m_pose3dInputs.push_back(input); }
 
         const std::vector<BBox>& getBboxes() const { return m_boxes; }
         const std::vector<cv::Rect>& getCropRects() const { return m_cropRects; }
         const std::vector<cv::Mat>& getCropImages() const { return m_cropImgs; }
+        const std::vector<float>& getCropData() const { return m_cropScales; }
         const std::vector<std::vector<std::vector<float>>>& getKeyPoints() const { return m_keyPoints; }
         const std::vector<cv::Mat>& getPose3dInputs() const { return m_pose3dInputs; }
 
@@ -70,7 +72,8 @@ class FitTvPoseDescriptor : public PipeDescriptor
         std::vector<BBox> m_boxes;
         std::vector<cv::Rect> m_cropRects;
         std::vector<cv::Mat> m_cropImgs;
-        std::vector<std::vector<std::vector<float>>> m_keyPoints;;
+        std::vector<float> m_cropScales;
+        std::vector<std::vector<std::vector<float>>> m_keyPoints;
         std::vector<cv::Mat> m_pose3dInputs;
 };
 

@@ -14,7 +14,7 @@
 namespace aif {
 
 NpuPose2dDetector::NpuPose2dDetector()
-    : Pose2dDetector("FitTV_Pose2D.tflite") {}
+    : Pose2dDetector("FitTV_Pose2D_Division.tflite") {}
 
 NpuPose2dDetector::~NpuPose2dDetector() {}
 
@@ -48,7 +48,12 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         int channels = m_modelInfo.channels;
 
         cv::Mat inputImg;
-        getPaddedImage(img, cv::Size(width, height), inputImg);
+        if (m_useUDP) {
+            getAffinedImage(img, cv::Size(width, height), inputImg);
+            //cv::imwrite("affined_input_npu.jpg", inputImg);
+        } else {
+            getPaddedImage(img, cv::Size(width, height), inputImg);
+        }
 
         //cv::imwrite("./padded_npu.jpg", inputImg);
         //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
