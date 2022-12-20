@@ -99,6 +99,10 @@ TfLiteStatus PrepTempTensor(TfLiteContext* context, int temp_tensor_index,
 TfLiteStatus PrepOutputTensor(TfLiteContext* context,
                               TfLiteTensor* output_tensor,
                               std::initializer_list<int> dims) {
+  // CID 9333394
+  if(output_tensor == nullptr)
+    return kTfLiteError;
+
   output_tensor->type = kTfLiteFloat32;
   TfLiteIntArray* size = TfLiteIntArrayCreate(dims.size());
   std::copy(std::begin(dims), std::end(dims), size->data);

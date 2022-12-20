@@ -238,7 +238,8 @@ void YuNetFaceDetectorV2::convertToDescriptor(cv::Mat& faces, std::shared_ptr<De
     int scaleX = m_scaleSize.width;
     int scaleY = m_scaleSize.height;
     std::shared_ptr<FaceDescriptor> faceDescriptor = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    for (int i = 0; i < faces.rows; i++) {
+    if (faceDescriptor != nullptr) {
+        for (int i = 0; i < faces.rows; i++) {
            faceDescriptor->addFace(
                     faces.at<float>(i, SCORE),
                     faces.at<float>(i, FACE_X)/scaleX,
@@ -261,6 +262,7 @@ void YuNetFaceDetectorV2::convertToDescriptor(cv::Mat& faces, std::shared_ptr<De
 //                        << "box width: " << faces.at<float>(i, 2)  << ", box height: " << faces.at<float>(i, 3) << ", "
 //                        << "score: " << faces.at<float>(i, 14) << "\n";
         }
+    }
 }
 
 t_aif_status YuNetFaceDetectorV2::fillInputTensor(const cv::Mat &img)
@@ -295,7 +297,9 @@ t_aif_status YuNetFaceDetectorV2::fillInputTensor(const cv::Mat &img)
         blob = blob.reshape(1, 1);
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
-        std::memcpy(inputTensor, blob.data, blob.total()*blob.channels()*sizeof(float));
+        if (inputTensor != nullptr) {
+            std::memcpy(inputTensor, blob.data, blob.total()*blob.channels()*sizeof(float));
+        }
 
         return kAifOk;
     } catch (const std::exception &e) {

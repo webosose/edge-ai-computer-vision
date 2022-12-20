@@ -94,7 +94,11 @@ t_aif_status SelfieDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
     TRACE("size : ", height, " x ", width);
 
     std::shared_ptr<SelfieDescriptor> selfieDescriptor = std::dynamic_pointer_cast<SelfieDescriptor>(descriptor);
-    selfieDescriptor->addMaskData(width, height, data);
+
+    // CID9333404, 9333392
+    if (selfieDescriptor != nullptr) {
+        selfieDescriptor->addMaskData(width, height, data);
+    }
 
     return kAifOk;
 }

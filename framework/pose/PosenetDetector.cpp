@@ -124,9 +124,17 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
             k = k + 2;
             scores.push_back(keyPointsScore[i * PosenetDescriptor::NUM_KEYPOINT_TYPES + j]);
         }
-        posenetDescriptor->addKeyPoints(pose_score[i], points, scores);
+
+        // CID9333396, CID9333362
+        if (posenetDescriptor != nullptr) {
+            posenetDescriptor->addKeyPoints(pose_score[i], points, scores);
+        }
     }
-    m_prevPoses = posenetDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
+
+    // CID9333396, CID9333362
+    if (posenetDescriptor != nullptr) {
+        m_prevPoses = posenetDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
+    }
 
     return kAifOk;
 }

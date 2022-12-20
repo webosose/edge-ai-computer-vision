@@ -80,7 +80,8 @@ bool EdgeAIVision::createDetector(DetectorType type,
         rj::ParseResult ok = json.Parse(option.c_str());
         if (ok) {
             if (json.IsObject() && json.HasMember("model")) {
-                model = json["model"].GetString();
+                // CID 9333370
+                model = (json["model"].GetString() != nullptr ? json["model"].GetString() : "");
             }
             if (json.IsObject() && json.HasMember("param")) {
                 param = jsonObjectToString(json["param"]);
@@ -124,6 +125,18 @@ bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
+    // CID9333381, CID9333367, CID9333405
+    if (detector == nullptr) {
+        Loge("Detector get failed: ", model);
+        return false;
+    }
+
+    // CID9333381, CID9333367, CID9333405
+    if (descriptor == nullptr) {
+        Loge("Descriptor get failed: ", model);
+        return false;
+    }
+
     auto res = detector->detect(input, descriptor);
     descriptor->addReturnCode(res);
     output = descriptor->toStr();
@@ -149,6 +162,18 @@ bool EdgeAIVision::detectFromFile(DetectorType type,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
+    // CID9333376, CID9333361
+    if (detector == nullptr) {
+        Loge("Detector get failed: ", model);
+        return false;
+    }
+
+    // CID9333376, CID9333361
+    if (descriptor == nullptr) {
+        Loge("Descriptor get failed: ", model);
+        return false;
+    }
+
     auto res = detector->detectFromImage(inputPath, descriptor);
     descriptor->addReturnCode(res);
     output = descriptor->toStr();
@@ -173,6 +198,17 @@ bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
+    // CID9333376, CID9333399
+    if (detector == nullptr) {
+        Loge("Detector get failed: ", model);
+        return false;
+    }
+
+    // CID9333376, CID9333399
+    if (descriptor == nullptr) {
+        Loge("Descriptor get failed: ", model);
+        return false;
+    }
     auto res = detector->detectFromBase64(input, descriptor);
     descriptor->addReturnCode(res);
     output = descriptor->toStr();
