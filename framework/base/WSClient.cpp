@@ -82,8 +82,7 @@ void WSClient::onResolve(
         if (m_errorCb) {
             t_aif_event wse;
             wse.type = kWebSocketOpen;
-            // CID 9333406
-            wse.data = (e.what() != nullptr ? e.what() : "");
+            wse.data = e.what();
             m_errorCb(wse);
         }
     }
@@ -133,8 +132,7 @@ void WSClient::onConnect(
         if (m_errorCb) {
             t_aif_event wse;
             wse.type = kWebSocketOpen;
-            // CID 9333409
-            wse.data = (e.what() != nullptr ? e.what() : "");
+            wse.data = e.what();
             m_errorCb(wse);
         }
     }
@@ -166,7 +164,7 @@ void WSClient::onOpen(beast::error_code ec)
         if (m_errorCb) {
             t_aif_event wse;
             wse.type = kWebSocketOpen;
-            wse.data = (e.what() != nullptr ? e.what() : "");
+            wse.data = e.what();
             m_errorCb(wse);
         }
     }
@@ -224,8 +222,7 @@ void WSClient::onSend(
         if (m_errorCb) {
             t_aif_event wse;
             wse.type = kWebSocketMessage;
-            // CID 933368
-            wse.data = (e.what() != nullptr ? e.what() : "");
+            wse.data = e.what();
             m_errorCb(wse);
         }
     }
@@ -272,8 +269,7 @@ void WSClient::onMessage(
         if (m_errorCb) {
             t_aif_event wse;
             wse.type = kWebSocketMessage;
-            // CID9333387
-            wse.data = (e.what() != nullptr ? e.what() : "");
+            wse.data = e.what();
             m_errorCb(wse);
         }
     }
@@ -319,7 +315,7 @@ void WSClient::onClose(beast::error_code ec)
         if (m_errorCb) {
             t_aif_event wse;
             wse.type = kWebSocketClose;
-            wse.data = (e.what() != nullptr ? e.what() : "");
+            wse.data = e.what();
             m_errorCb(wse);
         }
     }

@@ -72,22 +72,18 @@ std::shared_ptr<DetectorParam> ShortRangeFaceDetector::createParam() {
     std::shared_ptr<DetectorParam> param = std::make_shared<FaceParam>();
     std::shared_ptr<FaceParam> fparam =
         std::dynamic_pointer_cast<FaceParam>(param);
-
-    // CID9333363, CID9333402, CID9333393
-    if (fparam != nullptr) {
-        fparam->strides = {8, 16, 16, 16};
-        fparam->optAspectRatios = {1.0f};
-        fparam->interpolatedScaleAspectRatio = 1.0f;
-        fparam->anchorOffsetX = 0.5f;
-        fparam->anchorOffsetY = 0.5f;
-        fparam->minScale = 0.1484375f;
-        fparam->maxScale = 0.75f;
-        fparam->reduceBoxesInLowestLayer = false;
-        fparam->scoreThreshold = 0.7f;
-        fparam->iouThreshold = 0.2f;
-        fparam->maxOutputSize = 100;
-        fparam->updateThreshold = 0.3f;
-    }
+    fparam->strides = {8, 16, 16, 16};
+    fparam->optAspectRatios = {1.0f};
+    fparam->interpolatedScaleAspectRatio = 1.0f;
+    fparam->anchorOffsetX = 0.5f;
+    fparam->anchorOffsetY = 0.5f;
+    fparam->minScale = 0.1484375f;
+    fparam->maxScale = 0.75f;
+    fparam->reduceBoxesInLowestLayer = false;
+    fparam->scoreThreshold = 0.7f;
+    fparam->iouThreshold = 0.2f;
+    fparam->maxOutputSize = 100;
+    fparam->updateThreshold = 0.3f;
 
     return param;
 }
@@ -106,22 +102,18 @@ std::shared_ptr<DetectorParam> FullRangeFaceDetector::createParam() {
     std::shared_ptr<DetectorParam> param = std::make_shared<FaceParam>();
     std::shared_ptr<FaceParam> fparam =
         std::dynamic_pointer_cast<FaceParam>(param);
-
-    // CID9333386
-    if (fparam != nullptr) {
-        fparam->strides = {4};
-        fparam->optAspectRatios = {1.0f};
-        fparam->interpolatedScaleAspectRatio = 0.0f;
-        fparam->anchorOffsetX = 0.5f;
-        fparam->anchorOffsetY = 0.5f;
-        fparam->minScale = 0.1484375f;
-        fparam->maxScale = 0.75f;
-        fparam->reduceBoxesInLowestLayer = false;
-        fparam->scoreThreshold = 0.7f;
-        fparam->iouThreshold = 0.2f;
-        fparam->maxOutputSize = 100;
-        fparam->updateThreshold = 0.3f;
-    }
+    fparam->strides = {4};
+    fparam->optAspectRatios = {1.0f};
+    fparam->interpolatedScaleAspectRatio = 0.0f;
+    fparam->anchorOffsetX = 0.5f;
+    fparam->anchorOffsetY = 0.5f;
+    fparam->minScale = 0.1484375f;
+    fparam->maxScale = 0.75f;
+    fparam->reduceBoxesInLowestLayer = false;
+    fparam->scoreThreshold = 0.7f;
+    fparam->iouThreshold = 0.2f;
+    fparam->maxOutputSize = 100;
+    fparam->updateThreshold = 0.3f;
 
     return param;
 }

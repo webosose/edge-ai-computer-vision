@@ -106,11 +106,7 @@ t_aif_status MovenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
         scores.push_back(keyPoints[k+2]);
         k = k + 3;
     }
-
-    // CID9333407, CID9333379
-    if (movenetDescriptor != nullptr) {
-        movenetDescriptor->addKeyPoints(points, scores);
-    }
+    movenetDescriptor->addKeyPoints(points, scores);
     return kAifOk;
 }
 

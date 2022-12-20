@@ -26,8 +26,7 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
             std::string optStr;
             for (int i = 0; i < opt.value.Size(); i++) {
                 if (i != 0) optStr += ", ";
-                // CID 933408
-                if (opt.value[i].GetString() != nullptr) optStr += opt.value[i].GetString();
+                optStr += opt.value[i].GetString();
             }
             optionMap[opt.name.GetString()] = optStr;
             numOptions++;

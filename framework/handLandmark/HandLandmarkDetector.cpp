@@ -91,12 +91,8 @@ t_aif_status HandLandmarkDetector::postProcessing(const cv::Mat& img, std::share
     TfLiteTensor *presence = m_interpreter->tensor(outputs[1]);
     TfLiteTensor *handedness = m_interpreter->tensor(outputs[2]);
     TfLiteTensor *landmarks3d = m_interpreter->tensor(outputs[3]);
-
-    // CID9333377, CID9333397
-    if (handLandmarkDescriptor != nullptr) {
-        handLandmarkDescriptor->addLandmarks(
-             *presence->data.f, *handedness->data.f, landmarks->data.f, landmarks3d->data.f);
-    }
+    handLandmarkDescriptor->addLandmarks(
+            *presence->data.f, *handedness->data.f, landmarks->data.f, landmarks3d->data.f);
 
     return kAifOk;
 }

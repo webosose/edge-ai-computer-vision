@@ -79,10 +79,7 @@ t_aif_status BodypixDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     TRACE("size : ", height, " x ", width);
 
     std::shared_ptr<BodypixDescriptor> bodypixDescriptor = std::dynamic_pointer_cast<BodypixDescriptor>(descriptor);
-    // CID 9333369, CID 9333383
-    if (bodypixDescriptor != nullptr) {
-        bodypixDescriptor->addMaskData(width, height, data);
-    }
+    bodypixDescriptor->addMaskData(width, height, data);
 
     return kAifOk;
 }
