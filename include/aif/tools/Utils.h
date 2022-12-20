@@ -118,9 +118,12 @@ t_aif_status fillInputTensor(
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
                     const auto &rgb = img_resized.at<CvDataType>(i, j);
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2];
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1];
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0];
+                    // CID 9333374, CID 9333400
+                    if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2];
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1];
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0];
+                    }
                 }
             }
         } else if (rescaleOption == kAifNormalization) {
@@ -128,9 +131,12 @@ t_aif_status fillInputTensor(
                 for (int j = 0; j < width; j++) {
                     const auto &rgb = img_resized.at<CvDataType>(i, j);
                     // normalization: 0~1
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2] / 255;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1] / 255;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0] / 255;
+                    // CID 9333374, CID 9333400
+                    if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2] / 255;
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1] / 255;
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0] / 255;
+                    }
                 }
             }
         } else if (rescaleOption == kAifStandardization) {
@@ -141,9 +147,12 @@ t_aif_status fillInputTensor(
                 for (int j = 0; j < width; j++) {
                     const auto &rgb = img_resized.at<CvDataType>(i, j);
                     // standardization: -1~1
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = (rgb[2] - input_mean) / input_std;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = (rgb[1] - input_mean) / input_std;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = (rgb[0] - input_mean) / input_std;
+                    // CID 9333374, CID 9333400
+                    if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = (rgb[2] - input_mean) / input_std;
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = (rgb[1] - input_mean) / input_std;
+                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = (rgb[0] - input_mean) / input_std;
+                    }
                 }
             }
         }

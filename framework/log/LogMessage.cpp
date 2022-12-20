@@ -63,7 +63,8 @@ LogMessage::~LogMessage()
         auto its_time = std::localtime(&its_time_t);
         auto its_ms = (m_when.time_since_epoch().count() / 100) % 1000000;
 
-        {
+        // CID9333389, CID9333366
+        if (its_time != nullptr) {
             std::cout
                 << std::dec << std::setw(4) << its_time->tm_year + 1900 << "-"
                 << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mon << "-"

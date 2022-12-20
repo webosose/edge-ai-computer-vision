@@ -50,7 +50,7 @@ t_aif_status PalmDetector::fillInputTensor(const cv::Mat& img)/* override*/
                                     false,
                                     aif::kAifNormalization
                                 );
- 
+
         if (res != kAifOk) {
             throw std::runtime_error("fillInputTensor failed!!");
         }
@@ -156,6 +156,11 @@ t_aif_status PalmDetector::generateAnchors(
 {
     try {
         std::shared_ptr<PalmParam> param = std::dynamic_pointer_cast<PalmParam>(m_param);
+        // CID9333378, CID9333388
+        if (param == nullptr) {
+            throw std::runtime_error("param is null point!");
+        }
+
         const std::vector<int> strides = param->strides;
         const int num_layers = static_cast<int>(strides.size());
         if (num_layers == 0) {
@@ -221,14 +226,11 @@ t_aif_status PalmDetector::generateAnchors(
 
             int feature_map_height = 0;
             int feature_map_width = 0;
-            if (opt_feature_map_height_size > 0) {
-                feature_map_height = opt_feature_map_height[layer_id];
-                feature_map_width = opt_feature_map_width[layer_id];
-            } else {
-                const int stride = strides[layer_id];
-                feature_map_height = std::ceil(1.0f * input_size_height / stride);
-                feature_map_width = std::ceil(1.0f * input_size_width / stride);
-            }
+
+            // CID9333398
+            const int stride = strides[layer_id];
+            feature_map_height = std::ceil(1.0f * input_size_height / stride);
+            feature_map_width = std::ceil(1.0f * input_size_width / stride);
 
             for (int y = 0; y < feature_map_height; y++) {
                 for (int x = 0; x < feature_map_width; x++) {
@@ -311,7 +313,7 @@ t_aif_status PalmDetector::palmDetect(std::shared_ptr<Descriptor>& descriptor)
 //                    << coordData[numData * i + 2]
 //                    << coordData[numData * i + 3]
 //                    << std::endl;
-                
+
                 good_score.push_back(score);
                 float x_center = coordData[numData * i + 0];
                 float y_center = coordData[numData * i + 1];
@@ -339,7 +341,7 @@ t_aif_status PalmDetector::palmDetect(std::shared_ptr<Descriptor>& descriptor)
                 for (int j = 4; j < numData; j += 2) {
                     float dataX = (coordData[numData * i + j] + m_anchors[i].x_center * width) / width;
                     float dataY = (coordData[numData * i + j + 1] + m_anchors[i].y_center * height) / height;
-                    
+
                     good_palmpoint.push_back(dataX);
                     good_palmpoint.push_back(dataY);
                 }

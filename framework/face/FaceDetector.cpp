@@ -93,6 +93,10 @@ t_aif_status FaceDetector::generateAnchors(
 {
     try {
         std::shared_ptr<FaceParam> param = std::dynamic_pointer_cast<FaceParam>(m_param);
+        // CID 9333372, CID 9333380
+        if (param == nullptr) {
+            throw std::runtime_error("param is null pointer!");
+        }
         const std::vector<int> strides = param->strides;
         const int num_layers = static_cast<int>(strides.size());
         if (num_layers == 0) {
@@ -158,14 +162,10 @@ t_aif_status FaceDetector::generateAnchors(
 
             int feature_map_height = 0;
             int feature_map_width = 0;
-            if (opt_feature_map_height_size > 0) {
-                feature_map_height = opt_feature_map_height[layer_id];
-                feature_map_width = opt_feature_map_width[layer_id];
-            } else {
-                const int stride = strides[layer_id];
-                feature_map_height = std::ceil(1.0f * input_size_height / stride);
-                feature_map_width = std::ceil(1.0f * input_size_width / stride);
-            }
+            // CID 9333364
+            const int stride = strides[layer_id];
+            feature_map_height = std::ceil(1.0f * input_size_height / stride);
+            feature_map_width = std::ceil(1.0f * input_size_width / stride);
 
             for (int y = 0; y < feature_map_height; y++) {
                 for (int x = 0; x < feature_map_width; x++) {

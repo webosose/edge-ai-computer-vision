@@ -235,7 +235,10 @@ void YuNetFaceDetector::convertToDescriptor(cv::Mat& faces, std::shared_ptr<Desc
     int scaleX = m_scaleSize.width;
     int scaleY = m_scaleSize.height;
     std::shared_ptr<FaceDescriptor> faceDescriptor = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    for (int i = 0; i < faces.rows; i++) {
+
+    // CID9333395, CID9333373
+    if (faceDescriptor != nullptr) {
+        for (int i = 0; i < faces.rows; i++) {
            faceDescriptor->addFace(
                     faces.at<float>(i, SCORE),
                     faces.at<float>(i, FACE_X)/scaleX,
@@ -252,12 +255,12 @@ void YuNetFaceDetector::convertToDescriptor(cv::Mat& faces, std::shared_ptr<Desc
                     (faces.at<float>(i, LEFT_MOUSE_Y)/scaleY + faces.at<float>(i, RIGHT_MOUSE_Y)/scaleY)/2,
                     0, 0, 0, 0);
 
-
 //            std::cout << "Face " << i
 //                        << ", top-left coordinates: (" << faces.at<float>(i, 0) << ", " << faces.at<float>(i, 1) << "), "
 //                        << "box width: " << faces.at<float>(i, 2)  << ", box height: " << faces.at<float>(i, 3) << ", "
 //                        << "score: " << faces.at<float>(i, 14) << "\n";
         }
+    }
 }
 
 t_aif_status YuNetFaceDetector::fillInputTensor(const cv::Mat &img)
@@ -287,7 +290,10 @@ t_aif_status YuNetFaceDetector::fillInputTensor(const cv::Mat &img)
         blob = blob.reshape(1, 1);
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
-        std::memcpy(inputTensor, blob.data, blob.total()*sizeof(float));
+        // CID9333391
+        if (inputTensor != nullptr) {
+            std::memcpy(inputTensor, blob.data, blob.total()*sizeof(float));
+        }
 
         m_paddedSize = padded_input_image.size();
 

@@ -92,7 +92,11 @@ t_aif_status SemanticDetector::postProcessing(const cv::Mat& img, std::shared_pt
     TRACE("size : ", height, " x ", width);
 
     std::shared_ptr<SemanticDescriptor> semanticDescriptor = std::dynamic_pointer_cast<SemanticDescriptor>(descriptor);
-    semanticDescriptor->addMaskData(width, height, data);
+
+    // CID9333382, CID9333365
+    if (semanticDescriptor != nullptr) {
+        semanticDescriptor->addMaskData(width, height, data);
+    }
 
     return kAifOk;
 }

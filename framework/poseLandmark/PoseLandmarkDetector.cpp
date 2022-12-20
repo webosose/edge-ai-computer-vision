@@ -93,7 +93,11 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
     int height = segments->dims->data[1];
     int width = segments->dims->data[2];
     TRACE("size : ", height, " x ", width);
-    poseLandmarkDescriptor->addMaskData(width, height, segments->data.f);
+
+    // CID9333390, CID9333401
+    if (poseLandmarkDescriptor != nullptr) {
+        poseLandmarkDescriptor->addMaskData(width, height, segments->data.f);
+    }
 
     std::vector<std::vector<float>> outLandmarks(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES);
     for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
@@ -112,8 +116,11 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
         }
     }
 
-    poseLandmarkDescriptor->addLandmarks(outLandmarks);
-    m_prevPoses = poseLandmarkDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
+    // CID333390
+    if (poseLandmarkDescriptor != nullptr) {
+        poseLandmarkDescriptor->addLandmarks(outLandmarks);
+        m_prevPoses = poseLandmarkDescriptor->makeBodyParts(m_prevPoses, m_iouThreshold);
+    }
 
     return kAifOk;
 }
