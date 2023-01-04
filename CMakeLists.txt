@@ -32,4 +32,5 @@ IF(WITH_HOST_TEST)        ### for meta-shift unit test ###
     add_subdirectory(test)
 ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test)
+    add_subdirectory(test/test-dl)
 ENDIF()
