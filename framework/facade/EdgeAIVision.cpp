@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,6 +11,7 @@
 #define DEFAULT_FACE_MODEL "face_yunet_360_640"
 #define DEFAULT_POSE_MODEL "posenet_mobilenet_cpu"
 #define DEFAULT_SEGMENTATION_MODEL "selfie_mediapipe_cpu"
+#define DEFAULT_TEXT_MODEL "text_paddleocr_320_v2"
 
 namespace aif {
 namespace rj = rapidjson;
@@ -57,6 +58,8 @@ std::string EdgeAIVision::getDefaultModel(DetectorType type) const {
         model = DEFAULT_POSE_MODEL;
     } else if (type == DetectorType::SEGMENTATION) {
         model = DEFAULT_SEGMENTATION_MODEL;
+    } else if (type == DetectorType::TEXT) {
+        model = DEFAULT_TEXT_MODEL;
     }
     return model;
 }

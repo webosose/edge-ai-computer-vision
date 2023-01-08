@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,6 +23,7 @@ enum DetectorType {
     POSE,         ///< Pose Detector (Default Model: posenet)
     SEGMENTATION, ///< Segmentation Detector (Default Model: mediapipe
                   ///< selfie)
+    TEXT,         ///< Text Detector (Default Model: paddleocr)
 };
 
 /**
