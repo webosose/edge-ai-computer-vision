@@ -30,7 +30,6 @@ t_aif_status EdgeTpuSemanticDetector::compileModel(
     std::stringstream errlog;
     try {
         TfLiteStatus res = kTfLiteError;
-        tflite::ops::builtin::BuiltinOpResolver resolver;
 
         // Sets up the edgetpu_context. available for any 1 TPU device.
         m_edgetpuContext =
