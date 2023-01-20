@@ -13,7 +13,7 @@
 
 namespace aif {
 
-class FaceDescriptor : public Descriptor
+class FaceDescriptor : virtual public Descriptor
 {
 public:
     FaceDescriptor();

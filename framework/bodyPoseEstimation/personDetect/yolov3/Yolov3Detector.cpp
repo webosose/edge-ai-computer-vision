@@ -170,9 +170,11 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             if (m_IsBodyDetect) {
                 yolov3Descriptor->addPerson(score, finalBbox);
             } else {
+                /* normalize 0~1 */
                 yolov3Descriptor->addFace(score,
-                                          finalBbox.xmin, finalBbox.ymin,
-                                          finalBbox.width, finalBbox.height);
+                                          finalBbox.xmin/img.cols, finalBbox.ymin/img.rows,
+                                          finalBbox.width/img.cols, finalBbox.height/img.rows,
+                                          0,0,0,0,0,0,0,0,0,0,0,0);
             }
         }
         m_prevBboxList = finalBboxList;
@@ -391,6 +393,7 @@ Yolov3Detector::CV_BOX(BoxType boxType, uint8_t *obd_addr, std::vector<BBox> &bb
                 if( CO > param->thresh_score[1]) /* low threshold */
                 {
                     bbox.emplace_back(BX0, BY0, BX1, BY1, CO, max_id);
+                    //Logi(__func__, " bbox: ", BX0, " " ,BY0," ", BX1," ", BY1, " ",CO, " ", max_id);
 					//printf("%3d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", box_idx, BX0, BY0, BX1, BY1, max_id, CO);
                 }
                 cnt+=15;

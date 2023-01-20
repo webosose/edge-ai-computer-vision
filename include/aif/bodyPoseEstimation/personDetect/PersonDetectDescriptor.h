@@ -12,7 +12,7 @@
 
 namespace aif {
 
-class PersonDetectDescriptor: public Descriptor
+class PersonDetectDescriptor: virtual public Descriptor
 {
 public:
     PersonDetectDescriptor() : m_personCount(0), m_IsBodyDetect(true) {}
@@ -21,8 +21,9 @@ public:
     // TODO: implment add result
     virtual void addPerson(float score, const BBox &bbox) = 0;
     virtual void drawBbox(std::string imgPath) = 0;
-    size_t size() const { return m_personCount; }
     virtual void clear() = 0;
+
+    size_t size() const { return m_personCount; }
 
     int getNumBbox() const { return m_boxes.size(); }
     float getScore(int index) const { return m_scores[index]; }

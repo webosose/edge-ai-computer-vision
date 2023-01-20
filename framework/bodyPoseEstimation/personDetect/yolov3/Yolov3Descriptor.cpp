@@ -20,7 +20,7 @@ namespace aif {
 
 Yolov3Descriptor::Yolov3Descriptor()
     : PersonDetectDescriptor()
-    , m_faceCount(0)
+    , FaceDescriptor()
 {
 }
 
@@ -54,37 +54,7 @@ void Yolov3Descriptor::addPerson(float score, const BBox &bbox)
 
     m_root["persons"].PushBack(person, allocator);
     m_personCount++;
-    m_IsBodyDetect = true;
 }
-
-void Yolov3Descriptor::addFace(float score,
-                               float region_x,
-                               float region_y,
-                               float region_w,
-                               float region_h)
-{
-    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    if (!m_root.HasMember("faces")) {
-        rj::Value faces(rj::kArrayType);
-        m_root.AddMember("faces", faces, allocator);
-    }
-
-    rj::Value face(rj::kObjectType);
-    face.AddMember("score", score, allocator);
-
-    // region: [x, y, w, h]
-    rj::Value region(rj::kArrayType);
-    region.PushBack(region_x, allocator)
-          .PushBack(region_y, allocator)
-          .PushBack(region_w, allocator)
-          .PushBack(region_h, allocator);
-    face.AddMember("region", region, allocator);
-
-    m_root["faces"].PushBack(face, allocator);
-    m_faceCount++;
-    m_IsBodyDetect = false;
-}
-
 
 void Yolov3Descriptor::drawBbox(std::string imgPath)
 {
@@ -135,8 +105,9 @@ void Yolov3Descriptor::drawBbox(std::string imgPath)
 
 void Yolov3Descriptor::clear()
 {
+    FaceDescriptor::clear();
+
     m_personCount = 0;
-    m_faceCount = 0;
 
     m_scores.clear();
     m_boxes.clear();
@@ -145,10 +116,6 @@ void Yolov3Descriptor::clear()
     m_root.RemoveMember("persons");
     rj::Value persons(rj::kArrayType);
     m_root.AddMember("persons", persons, allocator);
-
-    m_root.RemoveMember("faces");
-    rj::Value faces(rj::kArrayType);
-    m_root.AddMember("faces", faces, allocator);
 }
 
 

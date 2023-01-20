@@ -9,32 +9,24 @@
 #include <aif/base/Types.h>
 #include <aif/bodyPoseEstimation/common.h>
 #include <aif/bodyPoseEstimation/personDetect/PersonDetectDescriptor.h>
+#include <aif/face/FaceDescriptor.h>
 
 namespace aif {
 
-class Yolov3Descriptor: public PersonDetectDescriptor
+class Yolov3Descriptor: public PersonDetectDescriptor, public FaceDescriptor
 {
 public:
     Yolov3Descriptor();
     virtual ~Yolov3Descriptor();
 
     // TODO: implment add result
-    //void addPerson(float score, const BBox &bbox);
     virtual void addPerson(float score, const BBox &bbox);
     virtual void drawBbox(std::string imgPath);
     virtual void clear();
 
-    void addFace(    /* only if face detect */
-        float score,
-        float region_x,
-        float region_y,
-        float region_w,
-        float region_h);
-    size_t sizeOfFaces() const { return m_faceCount; }
-
+    size_t sizeOfFaces() const { return FaceDescriptor::size(); }
+    size_t sizeOfPersons() const { return PersonDetectDescriptor::size(); }
 private:
-    bool m_isBodyDetect;
-    bool m_faceCount; /* only if face detect */
 };
 
 } // end of namespace aif
