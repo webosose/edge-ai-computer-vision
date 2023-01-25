@@ -74,6 +74,7 @@ set(LIBS
     ${RAPIDJSON_LIBRARIES}
     ${PMLOGLIB_LDFLAGS}
     pthread
+    dl
 )
 
 add_executable(
