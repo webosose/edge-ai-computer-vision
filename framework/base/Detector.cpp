@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,8 +30,10 @@ Detector::~Detector() {}
 t_aif_status Detector::init(const std::string &param) {
     std::stringstream errlog;
     try {
-        Stopwatch sw;
-        sw.start();
+        m_performance = std::make_shared<PerformanceRecorder>(m_modelName, param);
+        PerformanceReporter::get().addRecorder(m_performance);
+
+        m_performance->start(Performance::CREATE_DETECTOR);
         m_param = createParam();
         if (!param.empty() && m_param->fromJson(param) != kAifOk) {
             errlog.clear();
@@ -45,9 +47,10 @@ t_aif_status Detector::init(const std::string &param) {
             errlog << "tflite model compile failed: " << m_modelName;
             throw std::runtime_error(errlog.str());
         }
-        TRACE("compile(): ", sw.getMs(), "ms");
-        sw.stop();
-        return preProcessing();
+        t_aif_status status = preProcessing();
+        m_performance->stop(Performance::CREATE_DETECTOR);
+
+        return status;
     } catch (const std::exception &e) {
         Loge(__func__, "Error: ", e.what());
         return kAifError;
@@ -269,24 +272,27 @@ Detector::detectFromBase64(const std::string &base64image,
 t_aif_status Detector::detect(const cv::Mat &img,
                               std::shared_ptr<Descriptor> &descriptor) {
     try {
-        Stopwatch sw;
-        // prepare input tensors
-        sw.start();
+        // pre-process
+        m_performance->start(Performance::PREPROCESS);
         if (fillInputTensor(img) != kAifOk) {
             throw std::runtime_error("fill input tensor failed!!");
         }
-        TRACE("fillInputTensor(): ", sw.getMs(), "ms");
-        sw.stop();
+        m_performance->stop(Performance::PREPROCESS);
 
-        // start to inference
-        sw.start();
+        // inference
+        m_performance->start(Performance::PROCESS);
         TfLiteStatus res = m_interpreter->Invoke();
         if (res != kTfLiteOk) {
             throw std::runtime_error("tflite interpreter invoke failed!!");
         }
-        TRACE("m_interpreter->Invoke(): ", sw.getMs(), "ms");
-        sw.stop();
-        return postProcessing(img, descriptor);
+        m_performance->stop(Performance::PROCESS);
+
+        // post-process
+        m_performance->start(Performance::POSTPROCESS);
+        t_aif_status status = postProcessing(img, descriptor);
+        m_performance->stop(Performance::POSTPROCESS);
+
+        return status;
     } catch (const std::exception &e) {
         Loge(__func__, "Error: ", e.what());
         return kAifError;

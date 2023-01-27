@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <aif/base/AIVision.h>
 #include <aif/log/Logger.h>
+#include <aif/tools/PerformanceReporter.h>
 
 #ifdef USE_UPDATABLE_MODELS
 #include <AIAdaptor.h>
@@ -12,6 +13,7 @@
 
 #define KEY_LOG_LEVEL "LogLevel"
 #define KEY_BASE_PATH "BasePath"
+#define KEY_REPORT_TYPE "ReportType"
 
 namespace aif {
 
@@ -27,6 +29,14 @@ void AIVision::init(const std::string& basePath)
     s_config = std::make_unique<ConfigReader>(
             std::string(EDGEAI_VISION_HOME) + "/" + std::string(EDGEAI_VISION_CONFIG));
     Logger::init(Logger::strToLogLevel(s_config->getOption(KEY_LOG_LEVEL)));
+
+    std::vector<std::string> reportTypes = s_config->getOptionArray(KEY_REPORT_TYPE);
+    if (reportTypes.size() > 0) {
+        PerformanceReporter::get().clear();
+        for (auto& type : reportTypes) {
+            PerformanceReporter::get().addReportType(PerformanceReporter::strToReportType(type));
+        }
+    }
 
     if (!basePath.empty()) {
         s_basePath = basePath;

@@ -70,4 +70,26 @@ std::string ConfigReader::getOptionObject(const std::string& optionName) const
     return jsonObjectToString(m_document[optionName.c_str()]);
 }
 
+std::vector<std::string> ConfigReader::getOptionArray(const std::string& optionName) const
+{
+    std::vector<std::string> result;
+    if (!m_document.IsObject()) {
+        Loge("document is not object");
+        return result;
+    }
+    if (!m_document.HasMember(optionName.c_str())) {
+        return result;
+    }
+    const auto& value = m_document[optionName.c_str()];
+    if (!value.IsArray()) {
+        Loge(optionName, " is not array");
+        return result;
+    }
+    for (int i = 0; i < value.Size(); i++) {
+        result.push_back(value[i].GetString());
+    }
+    return result;
+}
+
+
 } // end of namespace aif

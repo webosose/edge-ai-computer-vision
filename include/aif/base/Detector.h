@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,6 +10,7 @@
 #include <aif/base/Descriptor.h>
 #include <aif/base/DetectorParam.h>
 #include <aif/base/Types.h>
+#include <aif/tools/PerformanceReporter.h>
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -68,6 +69,7 @@ class Detector {
     std::shared_ptr<DetectorParam> m_param;
     std::vector<std::shared_ptr<Delegate>> m_delegates;
     bool m_autoDelegateMode;
+    std::shared_ptr<PerformanceRecorder> m_performance;
 };
 
 } // end of namespace aif

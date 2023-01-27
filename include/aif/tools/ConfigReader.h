@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,6 +8,7 @@
 
 #include <rapidjson/document.h>
 #include <string>
+#include <vector>
 
 namespace aif {
 
@@ -19,6 +20,7 @@ public:
 
     std::string getOption(const std::string& optionName) const;
     std::string getOptionObject(const std::string& optionName) const;
+    std::vector<std::string> getOptionArray(const std::string& optionName) const;
 
 private:
     void loadFromString(const std::string& config);

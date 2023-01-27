@@ -120,6 +120,7 @@ set(SRC_FILES
     ${SRC_DIR}/selfie_param_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
+    ${SRC_DIR}/performance_reporter_test.cpp
 )
 
 IF(WITH_EXTRA_MODELS)

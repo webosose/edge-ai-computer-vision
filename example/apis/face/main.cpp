@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2022-2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <aif/facade/EdgeAIVision.h>
+#include <aif/tools/PerformanceReporter.h>
 
 using namespace aif;
 
@@ -19,15 +20,17 @@ int main()
     ai.startup();
     ai.createDetector(type);
 
-    ai.detect(type, input, output);
-    std::cout << output << std:: endl;
+    for (int i = 0; i < 10; i++) {
+        ai.detect(type, input, output);
+        std::cout << output << std:: endl;
 
-    ai.detect(type, input2, output);
-    std::cout << output << std:: endl;
-
+        ai.detect(type, input2, output);
+        std::cout << output << std:: endl;
+    }
 
     ai.deleteDetector(type);
     ai.shutdown();
 
+    PerformanceReporter::get().showReport();
     return 0;
 }
