@@ -2,9 +2,10 @@
  * Copyright (c) 2022 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #include <aif/log/Logger.h>
 #include <aif/bodyPoseEstimation/pose2d/CpuQuantPose2dDetector.h>
+#include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
+#include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 
@@ -97,9 +98,9 @@ t_aif_status CpuQuantPose2dDetector::postProcessing(const cv::Mat& img, std::sha
     int zeroPoint= q_params->zero_point->data[0];
     Logi("scale: ", scale, " zero_point: ", zeroPoint);
 
-    int m_heatMapHeight = output->dims->data[1];
-    int m_heatMapWidth = output->dims->data[2];
-    int m_numKeyPoints = output->dims->data[3];
+    m_heatMapHeight = output->dims->data[1];
+    m_heatMapWidth = output->dims->data[2];
+    m_numKeyPoints = output->dims->data[3];
 
     int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
     float* buffer = new float[outputSize];
@@ -116,7 +117,9 @@ t_aif_status CpuQuantPose2dDetector::postProcessing(const cv::Mat& img, std::sha
         }
     }
 
-    if (!processHeatMap(img, descriptor, buffer)) {
+    std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
+    m_postProcess = std::make_shared<RegularPostProcess>(detector);
+    if(!m_postProcess->execute(descriptor, buffer)){
         Loge("failed to get position x, y from heatmap");
         return kAifError;
     }

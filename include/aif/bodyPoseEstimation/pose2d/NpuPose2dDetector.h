@@ -13,23 +13,21 @@
 
 namespace aif {
 
-class NpuPose2dDetector : public Pose2dDetector
+class NpuPose2dDetector : public Pose2dDetector, public std::enable_shared_from_this<NpuPose2dDetector>
 {
     private:
         NpuPose2dDetector();
-
     public:
         template <typename T1, typename T2>
             friend class DetectorFactoryRegistration;
         virtual ~NpuPose2dDetector();
-
+        std::shared_ptr<NpuPose2dDetector> get_shared_ptr() {return shared_from_this();}
     protected:
         void setModelInfo(TfLiteTensor* inputTensor) override;
         t_aif_status fillInputTensor(const cv::Mat& img) override;
         t_aif_status preProcessing() override;
         t_aif_status postProcessing(const cv::Mat& img,
                 std::shared_ptr<Descriptor>& descriptor) override;
-
 };
 
 DetectorFactoryRegistration<NpuPose2dDetector, Pose2dDescriptor>

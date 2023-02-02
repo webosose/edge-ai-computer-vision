@@ -5,6 +5,8 @@
 
 #include <aif/log/Logger.h>
 #include <aif/bodyPoseEstimation/pose2d/CpuPose2dDetector.h>
+#include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
+#include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 
@@ -108,7 +110,13 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
         }
     }
 
-    if (!processHeatMap(img, descriptor, buffer)) {
+    std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
+#if defined(USE_XTENSOR)
+    m_postProcess= std::make_shared<XtensorPostProcess>(detector);
+#else
+    m_postProcess= std::make_shared<RegularPostProcess>(detector);
+#endif
+    if(!m_postProcess->execute(descriptor, buffer)){
         Loge("failed to get position x, y from heatmap");
         return kAifError;
     }

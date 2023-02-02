@@ -16,6 +16,7 @@ OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
 OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
 OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 OPTION(WITH_NPU "Enable Npu Delegate Support" ON)
+OPTION(WITH_XTENSOR "Enable XTensor Support" OFF)
 
 IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
     set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
@@ -58,7 +59,7 @@ add_definitions(
     -DLOG_APPLICATION="AIF"
     -DEDGEAI_VISION_HOME="${AIF_INSTALL_DIR}"
     -DGAUSSIANDARK
-#    -DAFFINE_TRANS
+    # -DAFFINE_TRANS
 )
 
 IF(WITH_EDGETPU)
@@ -107,6 +108,12 @@ IF(WITH_UPDATABLE_MODELS)
     INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
     LINK_DIRECTORIES(${GLIB2_LIBRARY_DIRS})
 ENDIF(WITH_UPDATABLE_MODELS)
+
+IF(WITH_XTENSOR)
+    FIND_PACKAGE(xtensor REQUIRED)
+    FIND_PACKAGE(xtl REQUIRED)
+    ADD_DEFINITIONS(-DUSE_XTENSOR)
+ENDIF(WITH_XTENSOR)
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wl,--no-as-needed -O2")
@@ -191,6 +198,16 @@ IF(WITH_UPDATABLE_MODELS)
         ailoader
     )
 ENDIF(WITH_UPDATABLE_MODELS)
+
+IF(WITH_XTENSOR)
+    set(LIBS
+        ${LIBS}
+        xtensor
+        xtensor::optimize
+        xtensor::use_xsimd
+    )
+ENDIF(WITH_XTENSOR)
+
 
 add_library(${LIB_NAME}
     SHARED

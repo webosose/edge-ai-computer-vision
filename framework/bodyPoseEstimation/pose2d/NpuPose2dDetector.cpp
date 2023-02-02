@@ -5,6 +5,8 @@
 
 #include <aif/log/Logger.h>
 #include <aif/bodyPoseEstimation/pose2d/NpuPose2dDetector.h>
+#include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
+#include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 
@@ -100,34 +102,22 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     int zeroPoint= q_params->zero_point->data[0];
     Logi("scale: ", scale, " zero_point: ", zeroPoint);
 
-    int m_numKeyPoints = output->dims->data[1];
-    int m_heatMapHeight = output->dims->data[2];
-    int m_heatMapWidth = output->dims->data[3];
-
-    int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
-    float* buffer = new float[outputSize];
-//    memset(buffer, 0, sizeof(buffer));
+    m_numKeyPoints = output->dims->data[1];
+    m_heatMapHeight = output->dims->data[2];
+    m_heatMapWidth = output->dims->data[3];
 
     float* data= reinterpret_cast<float*>(output->data.data);
-    int i = 0;
-/*
-    for (int h = 0; h < m_heatMapHeight; h++) {
-        for (int w = 0; w < m_heatMapWidth; w++) {
-            for (int k = 0; k < m_numKeyPoints; k++) {
-                buffer[k * (m_heatMapWidth * m_heatMapHeight) + h * m_heatMapWidth + w] =
-                    scale * (static_cast<int>(data[i++]) - zeroPoint);
-            }
-        }
-    }
-*/
-    std::memcpy(buffer, data, (outputSize * sizeof(float)));
 
-    if (!processHeatMap(img, descriptor, buffer)) {
+    std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
+#if defined(USE_XTENSOR)
+    m_postProcess= std::make_shared<XtensorPostProcess>(detector);
+#else
+    m_postProcess= std::make_shared<RegularPostProcess>(detector);
+#endif
+    if(!m_postProcess->execute(descriptor, data)){
         Loge("failed to get position x, y from heatmap");
         return kAifError;
     }
-
-    delete [] buffer;
 
     TRACE("postProcessing(): ", sw.getMs(), "ms");
     sw.stop();
