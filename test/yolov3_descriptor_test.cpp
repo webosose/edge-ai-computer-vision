@@ -164,11 +164,13 @@ TEST_F(Yolov3DescriptorTest, 05_add_face)
     Yolov3Descriptor jfd;
 
     float score = 1.2;
+    /*normalize 0~1 */
     float region_x = 1.0;
-    float region_y = 1.7;
-    float region_w = 1.5;
-    float region_h = 3.0;
-    jfd.addFace(score, region_x, region_y, region_w, region_h);
+    float region_y = 0.7;
+    float region_w = 0.5;
+    float region_h = 0.0;
+    jfd.addFace(score, region_x, region_y, region_w, region_h,
+                0,0,0,0,0,0,0,0,0,0,0,0);
 
     auto json = jfd.toStr();
     Logd(json);
@@ -181,9 +183,9 @@ TEST_F(Yolov3DescriptorTest, 05_add_face)
     EXPECT_TRUE(d["faces"].Size() == 1);
     EXPECT_TRUE(d["faces"][0]["score"].GetDouble() == 1.2);
     EXPECT_TRUE(d["faces"][0]["region"][0].GetDouble() == 1.0);
-    EXPECT_TRUE(d["faces"][0]["region"][1].GetDouble() == 1.7);
-    EXPECT_TRUE(d["faces"][0]["region"][2].GetDouble() == 1.5);
-    EXPECT_TRUE(d["faces"][0]["region"][3].GetDouble() == 3.0);
+    EXPECT_TRUE(d["faces"][0]["region"][1].GetDouble() == 0.7);
+    EXPECT_TRUE(d["faces"][0]["region"][2].GetDouble() == 0.5);
+    EXPECT_TRUE(d["faces"][0]["region"][3].GetDouble() == 0.0);
 }
 
 
