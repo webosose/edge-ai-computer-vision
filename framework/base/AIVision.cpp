@@ -35,6 +35,7 @@ void AIVision::init(const std::string& basePath)
         PerformanceReporter::get().clear();
         for (auto& type : reportTypes) {
             PerformanceReporter::get().addReportType(PerformanceReporter::strToReportType(type));
+            Logi("ReportType: ", type);
         }
     }
 
