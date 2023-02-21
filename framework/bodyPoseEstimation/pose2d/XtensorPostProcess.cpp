@@ -1,4 +1,5 @@
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
+#include <aif/bodyPoseEstimation/transforms.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -25,7 +26,7 @@ XtensorPostProcess::~XtensorPostProcess()
 
 bool XtensorPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float* data)
 {
-    // std::cout << "Separated Xtensor Post Process!!" <<std::endl;
+    Logd("Xtensor Post Process!!!");
 #if defined(USE_XTENSOR)
     int totalVolume = m_numInputs * m_numKeyPoints * m_heatMapHeight * m_heatMapWidth;
     std::vector<int> shape = {m_numInputs, m_numKeyPoints, m_heatMapHeight*m_heatMapWidth};
@@ -35,6 +36,7 @@ bool XtensorPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
 #endif
     return true;
 }
+
 #if defined(USE_XTENSOR)
 bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor, xt::xarray<float>& batchHeatmaps)
 {
@@ -48,17 +50,18 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
     xt::xarray<float> coords = xt::stack(xt::xtuple(x, y), 2);
 
 #if defined(GAUSSIANDARK)
-        gaussianDark(batchHeatmaps, coords);
+    Logd("GaussianDark!!!");
+    gaussianDark(batchHeatmaps, coords);
 #endif
     for (auto i = 0; i < m_numInputs; i++) { // batch = 1
-        for (auto j = 0; j < m_numKeyPoints; j++) {
-            // scale heatmap to model size (x 4)
-            coords(i, j, 0) *= (m_modelInfo.width / m_heatMapWidth);
-            coords(i, j, 1) *= (m_modelInfo.height / m_heatMapHeight);
-
+        for (auto j = 0; j < m_numKeyPoints; j++) { // 41
             if (m_useUDP) {
                 keyPoints.push_back({maxVal(i, j), coords(i, j, 0), coords(i, j, 1), 1.0});
             } else {
+                // scale heatmap to model size (x 4)
+                coords(i, j, 0) *= (m_modelInfo.width / m_heatMapWidth);
+                coords(i, j, 1) *= (m_modelInfo.height / m_heatMapHeight);
+
                 // scale model size to input img
                 coords(i, j, 0) = m_paddedSize.width * ((coords(i, j, 0) - m_leftBorder) / m_modelInfo.width);
                 coords(i, j, 1) = m_paddedSize.height * ((coords(i, j, 1) - m_topBorder) / m_modelInfo.height);
@@ -88,7 +91,6 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
 
 bool XtensorPostProcess::applyInverseTransform(std::vector<std::vector<float>>& keyPoints)
 {
-    // std::cout << "Using Xtensor UDP!! " << std::endl;
     std::vector<float> newJoints = flattenKeyPoints(keyPoints);
 
     if (mTransMat.empty()) {
@@ -96,7 +98,12 @@ bool XtensorPostProcess::applyInverseTransform(std::vector<std::vector<float>>& 
         return false;
     }
 
-    cv::Mat transform = mTransMat;
+    cv::Mat transform;
+
+    transform = getAffineTransform(
+        cv::Point2f(m_cropBbox.c_x, m_cropBbox.c_y),
+        cv::Point2f(m_cropScale.x, m_cropScale.y),
+        0.0f, cv::Point2f(0, 0), m_heatMapWidth, m_heatMapHeight, false, true);
 
     cv::Mat inv_transform;
     cv::invertAffineTransform(transform, inv_transform);

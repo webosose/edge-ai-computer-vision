@@ -11,8 +11,8 @@ namespace aif {
 
 Pose2dDetector::Pose2dDetector(const std::string& modelPath)
     : Detector(modelPath)
-    , m_cropScale(0.0f)
-    , m_boxCenter(0.0f, 0.0f)
+    , m_cropScale()
+    , m_origBbox()
     , m_useUDP(false)
     , m_leftBorder(0)
     , m_topBorder(0)
@@ -35,20 +35,18 @@ std::shared_ptr<DetectorParam> Pose2dDetector::createParam()
 void Pose2dDetector::getAffinedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)
 {
     cv::Mat trans;
-    const float scalingRate = 1.15f; // scaling for bbox-width
+    trans = getAffineTransform(cv::Point2f(m_origBbox.c_x, m_origBbox.c_y),
+                                cv::Point2f(m_cropScale.x, m_cropScale.y),
+                                0.0f, cv::Point2f(0, 0), modelSize.width, modelSize.height,
+                                false, true);
 
-    trans = getAffineTransform( m_boxCenter,
-                                cv::Point2f( m_cropScale * scalingRate, m_cropScale ),
-                                0.0f, cv::Point2f( 0, 0 ), modelSize.width, modelSize.height,
-                                false, true );
+    trans.reshape(1, trans.total() * trans.channels());
 
-    trans.reshape( 1, trans.total() * trans.channels() );
-
-    cv::Mat transformedImg = cv::Mat::zeros( modelSize.height, modelSize.width, src.type() );
-    cv::warpAffine( src, transformedImg, trans, transformedImg.size() );
+    cv::Mat transformedImg = cv::Mat::zeros(modelSize.height, modelSize.width, src.type());
+    cv::warpAffine(src, transformedImg, trans, transformedImg.size());
 
     dst = transformedImg;
-    mTransMat = trans;
+    mTransMat = trans; // mTransArray
 }
 
 void Pose2dDetector::getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)

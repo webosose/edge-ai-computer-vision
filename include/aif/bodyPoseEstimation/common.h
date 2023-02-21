@@ -22,6 +22,14 @@ struct Object
     std::vector<Point2D> kp_center;
 };
 
+struct Scale
+{
+    float x;
+    float y;
+    Scale() : x(0.0F), y(0.0F) {}
+    Scale(const float x_, const float y_) : x(x_), y(y_) {}
+};
+
 class BBox
 {
 public:

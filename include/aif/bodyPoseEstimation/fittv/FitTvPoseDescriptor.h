@@ -11,6 +11,8 @@
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
 #include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
 
+#include <aif/bodyPoseEstimation/common.h>
+
 namespace aif {
 
 class FitTvPoseDescriptor : public PipeDescriptor
@@ -35,14 +37,16 @@ class FitTvPoseDescriptor : public PipeDescriptor
                 const std::shared_ptr<Descriptor>& descriptor) override;
 
         void addCropRects(const std::vector<cv::Rect>& rects) { m_cropRects = rects; }
+        void addCropBox (const BBox& cropBox) { m_cropBox.push_back(cropBox); }
         void addCropImage(const cv::Mat& img) { m_cropImgs.push_back(img); }
-        void addCropData(float cropScale) { m_cropScales.push_back(cropScale); }
+        void addCropData(const Scale& cropScale) { m_cropScales.push_back(cropScale); }
         void addPose3dInput(const cv::Mat& input) { m_pose3dInputs.push_back(input); }
 
         const std::vector<BBox>& getBboxes() const { return m_boxes; }
+        const std::vector<BBox>& getCropBbox() const { return m_cropBox; }
         const std::vector<cv::Rect>& getCropRects() const { return m_cropRects; }
         const std::vector<cv::Mat>& getCropImages() const { return m_cropImgs; }
-        const std::vector<float>& getCropData() const { return m_cropScales; }
+        const std::vector<Scale>& getCropData() const { return m_cropScales; }
         const std::vector<std::vector<std::vector<float>>>& getKeyPoints() const { return m_keyPoints; }
         const std::vector<cv::Mat>& getPose3dInputs() const { return m_pose3dInputs; }
 
@@ -70,9 +74,10 @@ class FitTvPoseDescriptor : public PipeDescriptor
     private:
         int m_trackId;
         std::vector<BBox> m_boxes;
+        std::vector<BBox> m_cropBox;
         std::vector<cv::Rect> m_cropRects;
         std::vector<cv::Mat> m_cropImgs;
-        std::vector<float> m_cropScales;
+        std::vector<Scale> m_cropScales;
         std::vector<std::vector<std::vector<float>>> m_keyPoints;
         std::vector<cv::Mat> m_pose3dInputs;
 };

@@ -24,10 +24,12 @@ public:
     Pose2dDetector(const std::string& modelPath);
     virtual ~Pose2dDetector();
 
-    void setCropData(float cropScale, cv::Point2f center) {
-                             m_cropScale = cropScale;
-                             m_boxCenter = center;
-                             m_useUDP = true; }
+    void setCropData(const BBox& origBbox, const Scale& cropScale, const BBox& cropBbox) {
+                    m_origBbox = origBbox;
+                    m_cropScale = cropScale;
+                    m_cropBbox = cropBbox;
+                    m_useUDP = true; }
+
     enum {
         DEFAULT_HEATMAP_WIDTH = 48,
         DEFAULT_HEATMAP_HEIGHT = 64
@@ -39,8 +41,9 @@ protected:
     std::shared_ptr<PostProcess> m_postProcess;
 protected:
     cv::Rect m_cropRect;
-    float m_cropScale;
-    cv::Point2f m_boxCenter;
+    Scale m_cropScale;
+    BBox m_origBbox;
+    BBox m_cropBbox;
     bool m_useUDP;
     cv::Size m_paddedSize;
     int m_leftBorder;

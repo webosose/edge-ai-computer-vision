@@ -12,7 +12,7 @@ namespace aif {
 
 FitTvPersonCropOperation::FitTvPersonCropOperation(const std::string& id)
 : BridgeOperation(id)
-, mCropExtension(0.75)
+, mCropExtension(1.25)
 {
 }
 
@@ -35,9 +35,12 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
 #if defined(AFFINE_TRANS)
     Logd("AFFINE_TRANS!!!");
     const std::vector<BBox>& boxes = fdescriptor->getBboxes();
-    for (auto& box :  boxes) {
-        auto scale = computeCropsData( box, mCropExtension );
-        fdescriptor->addCropData(scale);
+    for (auto& box : boxes) {
+        auto fixedBbox = fixBbox(input, box);
+        Scale scale;
+        computeCropsData(fixedBbox, mCropExtension, scale.x, scale.y);
+        fdescriptor->addCropData(scale); // pass scales
+        fdescriptor->addCropBox(fixedBbox); // pass fixedBox
         fdescriptor->addCropImage(image); /* add original image */
     }
 #else
@@ -46,28 +49,35 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         fdescriptor->addCropImage(image(rect));
     }
 
-    fdescriptor->addCropRects(rects);
+    /*fdescriptor->addCropRects(rects);
 
     fdescriptor->addBridgeOperationResult(
                  m_id,
                  m_config->getType(),
-                 "person crop result");
+                 "person crop result");*/
 #endif
     return true;
 }
 
-float FitTvPersonCropOperation::computeCropsData( const BBox& bbox, const float expand ) const
+void FitTvPersonCropOperation::computeCropsData(const BBox& bbox, const float expand, float& scaleX, float& scaleY)
 {
-    auto scale_x = std::max( bbox.width, 10.0f ) * 0.005f;
-    auto scale_y = std::max( bbox.height, 10.0f ) * 0.005f;
-    auto scale = std::max( scale_x, scale_y );
-    if ( static_cast<float>( bbox.width ) / bbox.height < 0.66f )
-    {
-        scale *= expand;
+    int modelInputWidth = 192;
+    int modelInputHeight = 256;
+
+    auto height = bbox.height + 1.0f;
+    auto width = bbox.width + 1.0f;
+
+    auto aspect_ratio = static_cast<float> (modelInputWidth) / modelInputHeight;
+
+    if (bbox.width > aspect_ratio * bbox.height) {
+        height = bbox.width / aspect_ratio;
+    }
+    else if (bbox.width < aspect_ratio * bbox.height) {
+        width = bbox.height * aspect_ratio;
     }
 
-    Logd(__func__, " scale: ", scale);
-    return scale;
+    scaleX = (width / 200) * expand;
+    scaleY = (height / 200) * expand;
 }
 
 

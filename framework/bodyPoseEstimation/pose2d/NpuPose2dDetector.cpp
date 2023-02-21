@@ -7,6 +7,7 @@
 #include <aif/bodyPoseEstimation/pose2d/NpuPose2dDetector.h>
 #include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
+
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 

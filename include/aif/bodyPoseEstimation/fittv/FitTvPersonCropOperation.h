@@ -24,7 +24,7 @@ class FitTvPersonCropOperation : public BridgeOperation {
         bool runImpl(const std::shared_ptr<NodeInput>& input) override;
 
     private:
-        float computeCropsData( const BBox& bbox, const float expand ) const ;
+        void computeCropsData(const BBox& bbox, const float expand, float& scaleX, float& scaleY);
         std::vector<cv::Rect> getCropRects(const std::shared_ptr<NodeInput>& input) const;
         BBox fixBbox(const std::shared_ptr<NodeInput>& input, const BBox& bbox) const;
 

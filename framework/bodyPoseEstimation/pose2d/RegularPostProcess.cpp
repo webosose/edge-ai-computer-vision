@@ -1,5 +1,5 @@
 #include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
-#include <aif/bodyPoseEstimation/pose2d/Pose2dDetector.h>
+#include <aif/bodyPoseEstimation/transforms.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -20,7 +20,7 @@ RegularPostProcess::~RegularPostProcess()
 
 bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float* data)
 {
-    // std::cout << "Separated Regular Post Process!!" <<std::endl;
+    Logd("Regular Post Process!!!");
     int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
     float* buffer = new float[outputSize];
     std::memcpy(buffer, data, (outputSize * sizeof(float)));
@@ -52,15 +52,16 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         float y = (argMaxIndex / m_heatMapWidth);
     //--------------------------------------------
 #if defined(GAUSSIANDARK)
+        Logd("GaussianDark!!!");
         gaussianDark(heatMap, x, y);
 #endif
-        // scale heatmap to model size (x 4)
-        x *= (m_modelInfo.width / m_heatMapWidth);
-        y *= (m_modelInfo.height / m_heatMapHeight);
-
         if (m_useUDP) {
             keyPoints.push_back({ maxVal, x, y, 1.0});
         } else {
+            // scale heatmap to model size (x 4)
+            x *= (m_modelInfo.width / m_heatMapWidth);
+            y *= (m_modelInfo.height / m_heatMapHeight);
+
             // scale model size to input img
             x = m_paddedSize.width  * ((x - m_leftBorder) / m_modelInfo.width);
             y = m_paddedSize.height * ((y - m_topBorder) / m_modelInfo.height);
@@ -88,7 +89,6 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
 
 bool RegularPostProcess::applyInverseTransform(std::vector<std::vector<float>>& keyPoints)
 {
-    // std::cout << "Using UDP!! " << std::endl;
     std::vector<float> newJoints = flattenKeyPoints(keyPoints);
 
     if (mTransMat.empty()) {
@@ -96,7 +96,12 @@ bool RegularPostProcess::applyInverseTransform(std::vector<std::vector<float>>& 
         return false;
     }
 
-    cv::Mat transform = mTransMat;
+    cv::Mat transform;
+
+    transform = getAffineTransform(
+        cv::Point2f(m_cropBbox.c_x, m_cropBbox.c_y),
+        cv::Point2f(m_cropScale.x, m_cropScale.y),
+        0.0f, cv::Point2f(0, 0), m_heatMapWidth, m_heatMapHeight, false, true);
 
     cv::Mat inv_transform;
     cv::invertAffineTransform( transform, inv_transform );

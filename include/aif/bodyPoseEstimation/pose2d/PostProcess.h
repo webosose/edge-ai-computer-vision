@@ -18,6 +18,8 @@ public:
         : m_modelInfo(detector->m_modelInfo)
         , m_cropRect(detector->m_cropRect)
         , m_paddedSize(detector->m_paddedSize)
+        , m_cropScale(detector->m_cropScale)
+        , m_cropBbox(detector->m_cropBbox)
         , m_useUDP(detector->m_useUDP)
         , m_leftBorder(detector->m_leftBorder)
         , m_topBorder(detector->m_topBorder)
@@ -47,6 +49,8 @@ protected:
     }
 protected:
     t_aif_modelinfo m_modelInfo;
+    Scale m_cropScale;
+    BBox m_cropBbox;
     cv::Rect m_cropRect;
     cv::Size m_paddedSize;
     bool m_useUDP;

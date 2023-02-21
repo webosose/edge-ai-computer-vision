@@ -33,7 +33,6 @@ bool FitTvPose2dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
         return false;
     }
 
-
     auto fitTvDescriptor = std::dynamic_pointer_cast<FitTvPoseDescriptor>(pipeDescriptor);
     int trackId = 1;
     for (const auto& image : fitTvDescriptor->getCropImages()) {
@@ -42,11 +41,13 @@ bool FitTvPose2dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
 
         auto pose2dDescriptor = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
 
-        auto cropData = fitTvDescriptor->getCropData();
+        auto cropData = fitTvDescriptor->getCropData(); // get scale data
+        auto cropBbox = fitTvDescriptor->getCropBbox(); // get fixedBbox
+
         if (cropData.size() >= trackId) {
             auto boxes = fitTvDescriptor->getBboxes();
             auto pose2dDetector = std::dynamic_pointer_cast<Pose2dDetector>(m_detector);
-            pose2dDetector->setCropData(cropData[trackId-1], cv::Point2f(boxes[trackId-1].c_x, boxes[trackId-1].c_y));
+            pose2dDetector->setCropData(boxes[trackId-1], cropData[trackId-1], cropBbox[trackId-1]);
         }
 
         pose2dDescriptor->setTrackId(trackId++);
