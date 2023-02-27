@@ -118,7 +118,8 @@ private:
     int m_topBorder;
     bool m_IsBodyDetect; // Body or Face ?
     std::vector<std::pair<BBox, float>> m_prevBboxList; // for previous frame detection results
-
+    std::vector<std::pair<std::string, BBox>> m_GTBBoxes; // for debug, ground truth bbox
+    int m_frameId;
 
     static constexpr int tcnt_init[eOBD_MAX] = {tcnt_init_PERSON, tcnt_init_FACE, tcnt_init_OBJ, tcnt_init_OBJ,
                                       tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_PET,

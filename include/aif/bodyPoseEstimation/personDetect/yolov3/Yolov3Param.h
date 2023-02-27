@@ -37,6 +37,8 @@ public:
 
 public:
     std::string detectObject; // body or face
+    //std::vector<float> gt_bbox; // x, y, w, h
+    std::vector<std::pair<std::string, std::vector<float>>> gt_bboxes; // [[str, x, y, w, h], []...]
     int origImgRoiX;
     int origImgRoiY;
     int origImgRoiWidth;

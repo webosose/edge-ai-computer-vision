@@ -19,6 +19,7 @@ Yolov3Detector::Yolov3Detector(const std::string& modelPath)
     , m_leftBorder(0)
     , m_topBorder(0)
     , m_IsBodyDetect(true)
+    , m_frameId(0)
 {
 }
 
@@ -109,6 +110,15 @@ t_aif_status Yolov3Detector::preProcessing()
         mOrigImgRoiWidth = param->origImgRoiWidth;
         mOrigImgRoiHeight = param->origImgRoiHeight;
 
+        for (int i = 0; i < param->gt_bboxes.size(); i++) {
+            auto gt_bbox = param->gt_bboxes[i];
+            BBox box;
+            box.addTlhw(gt_bbox.second[0], gt_bbox.second[1], gt_bbox.second[2], gt_bbox.second[3]);
+            m_GTBBoxes.push_back(std::make_pair(gt_bbox.first, box));
+        }
+
+        Logi(__func__, " m_GTBBoxes.size: ", m_GTBBoxes.size());
+
         return kAifOk;
     } catch (const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -168,7 +178,15 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             const BBox &finalBbox = finalBboxList[i].first;
 
             if (m_IsBodyDetect) {
-                yolov3Descriptor->addPerson(score, finalBbox);
+                if (m_GTBBoxes.size() > m_frameId) {
+                    auto gtBBox = m_GTBBoxes[m_frameId]; // pair
+                    if (gtBBox.second.width > 0 && gtBBox.second.height > 0) {
+                        yolov3Descriptor->addPerson(score, gtBBox.second);
+                        Logi(__func__, " use GT Box !! ", gtBBox.first, ", ", gtBBox.second);
+                    }
+                } else {
+                    yolov3Descriptor->addPerson(score, finalBbox);
+                }
             } else {
                 /* normalize 0~1 */
                 yolov3Descriptor->addFace(score,
@@ -177,6 +195,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
                                           0,0,0,0,0,0,0,0,0,0,0,0);
             }
         }
+        m_frameId++;
         m_prevBboxList = finalBboxList;
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();

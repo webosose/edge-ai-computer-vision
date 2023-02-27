@@ -19,6 +19,7 @@ namespace aif {
 
 Yolov3Param::Yolov3Param()
     : detectObject("body")
+    , gt_bboxes()
     , origImgRoiX(0)
     , origImgRoiY(0)
     , origImgRoiWidth(0)
@@ -44,6 +45,7 @@ Yolov3Param::~Yolov3Param()
 
 Yolov3Param::Yolov3Param(const Yolov3Param& other)
     : detectObject(other.detectObject)
+    , gt_bboxes(other.gt_bboxes)
     , origImgRoiX(other.origImgRoiX)
     , origImgRoiY(other.origImgRoiY)
     , origImgRoiWidth(other.origImgRoiWidth)
@@ -66,6 +68,7 @@ Yolov3Param::Yolov3Param(const Yolov3Param& other)
 
 Yolov3Param::Yolov3Param(Yolov3Param&& other) noexcept
     : detectObject(std::move(other.detectObject))
+    , gt_bboxes(std::move(other.gt_bboxes))
     , origImgRoiX(std::move(other.origImgRoiX))
     , origImgRoiY(std::move(other.origImgRoiY))
     , origImgRoiWidth(std::move(other.origImgRoiWidth))
@@ -94,6 +97,7 @@ Yolov3Param& Yolov3Param::operator=(const Yolov3Param& other)
     }
 
     detectObject = other.detectObject;
+    gt_bboxes = other.gt_bboxes;
     origImgRoiX = other.origImgRoiX;
     origImgRoiY = other.origImgRoiY;
     origImgRoiWidth = other.origImgRoiWidth;
@@ -122,6 +126,7 @@ Yolov3Param& Yolov3Param::operator=(Yolov3Param&& other) noexcept
     }
 
     detectObject = std::move(other.detectObject);
+    gt_bboxes = std::move(other.gt_bboxes);
     origImgRoiX = std::move(other.origImgRoiX);
     origImgRoiY = std::move(other.origImgRoiY);
     origImgRoiWidth = std::move(other.origImgRoiWidth);
@@ -146,6 +151,7 @@ bool Yolov3Param::operator==(const Yolov3Param& other) const
 {
     return (
         (detectObject == other.detectObject) &&
+        (gt_bboxes == other.gt_bboxes) &&
         (origImgRoiX == other.origImgRoiX) &&
         (origImgRoiY == other.origImgRoiY) &&
         (origImgRoiWidth == other.origImgRoiWidth) &&
@@ -175,6 +181,20 @@ std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
 {
     os << "\n{\n";
     os << "\tdetectObject: " << fp.detectObject << ",\n";
+    os << "\tgt_bboxes: [";
+    for (int i = 0; i < fp.gt_bboxes.size(); i++) {
+        auto gt_bbox = fp.gt_bboxes[i]; // pair
+        os << gt_bbox.first << ",\n";
+        for (int j = 0; j < 4; j++) {
+            if (j == 0) {
+                os << gt_bbox.second[j];
+            } else {
+                os << ", " << gt_bbox.second[j];
+            }
+        }
+    }
+    os << "],\n";
+
     os << "\torigImgRoiX: " << fp.origImgRoiX << ",\n";
     os << "\torigImgRoiY: " << fp.origImgRoiY << ",\n";
     os << "\torigImgRoiWidth: " << fp.origImgRoiWidth << ",\n";
@@ -194,6 +214,7 @@ std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
         }
     }
     os << "],\n";
+
     os << "\tthresh_score: [";
     for (int i = 0; i < fp.thresh_score.size(); i++) {
         if (i == 0) {
@@ -203,6 +224,7 @@ std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
         }
     }
     os << "],\n";
+
     os << "\tthresh_iou_sc_nms: " << fp.thresh_iou_sc_nms << ",\n";
     os << "\tthresh_iou_sc_sur: " << fp.thresh_iou_sc_sur << ",\n";
     os << "\tthresh_iou_sc_avg: " << fp.thresh_iou_sc_avg << ",\n";
@@ -228,6 +250,17 @@ t_aif_status Yolov3Param::fromJson(const std::string& param)
         rj::Value& modelParam = payload["modelParam"];
         if (modelParam.HasMember("detectObject")) {
             detectObject = modelParam["detectObject"].GetString();
+        }
+        if (modelParam.HasMember("gt_bboxes")) {
+            gt_bboxes.clear();
+            for (auto& bbox : modelParam["gt_bboxes"].GetArray()) {
+                std::string fname = bbox[0].GetString();
+                std::vector<float> box;
+                for (auto id = 1; id <= 4; id++) {
+                    box.push_back(bbox[id].GetFloat());
+                }
+                gt_bboxes.push_back(std::make_pair(fname, box));
+            }
         }
         if (modelParam.HasMember("origImgRoiX")) {
             origImgRoiX = modelParam["origImgRoiX"].GetInt();
