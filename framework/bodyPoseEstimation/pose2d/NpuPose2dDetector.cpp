@@ -17,7 +17,11 @@
 namespace aif {
 
 NpuPose2dDetector::NpuPose2dDetector()
-    : Pose2dDetector("FitTV_Pose2D_Division.tflite") {}
+    : mScaleIn(0.0f)
+    , mZeropointIn(0)
+    , Pose2dDetector("FitTV_Pose2D_Division.tflite")
+{
+}
 
 NpuPose2dDetector::~NpuPose2dDetector() {}
 
@@ -50,19 +54,32 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         int width = m_modelInfo.width;
         int channels = m_modelInfo.channels;
 
-        cv::Mat inputImg;
+        cv::Mat inputImg, inputNormImg;
         if (m_useUDP) {
             getAffinedImage(img, cv::Size(width, height), inputImg);
             //cv::imwrite("affined_input_npu.jpg", inputImg);
+            //memoryDump(inputImg.data, "./orig_input.bin", width * height * channels * sizeof(uint8_t));
         } else {
             getPaddedImage(img, cv::Size(width, height), inputImg);
         }
 
         //cv::imwrite("./padded_npu.jpg", inputImg);
         //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
-        inputImg.convertTo(inputImg, CV_8UC3);
+
+
+        inputNormImg = inputImg;
+        inputImg.convertTo(inputImg, CV_32FC3);
+        inputNormImg.convertTo(inputNormImg, CV_8UC3);
+
+        normalizeImageWithQuant(inputImg, inputNormImg);
+        //cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
+
+        //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
+        //memoryDump(inputNormImg.data, "./normQuant_input.bin", width * height * channels * sizeof(uint8_t));
+
+        //cv::imwrite("./normQuant_input.jpg", inputNormImg);
         uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
-        std::memcpy(inputTensor, inputImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
+        std::memcpy(inputTensor, inputNormImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
 
         //memoryDump(inputTensor, "./input.bin", width * height * channels * sizeof(uint8_t));
         return kAifOk;
@@ -78,6 +95,10 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
 
 t_aif_status NpuPose2dDetector::preProcessing()
 {
+    const std::vector<int> &inputs = m_interpreter->inputs();
+    TfLiteTensor *input = m_interpreter->tensor(inputs[0]);
+    getInputTensorInfo(input);
+
     return kAifOk;
 }
 
@@ -109,6 +130,9 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 
     float* data= reinterpret_cast<float*>(output->data.data);
 
+    //memoryDump(data, "./1_2output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));
+    //memoryRestore(data, "/usr/share/aif/example/m5_6_before_post_processing.bin");
+
     std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
 #if defined(USE_XTENSOR)
     m_postProcess= std::make_shared<XtensorPostProcess>(detector);
@@ -125,5 +149,62 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 
     return kAifOk;
 }
+
+void
+NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
+{
+    if (input == nullptr || input->dims == nullptr) {
+        throw std::runtime_error("input / input->dims is nullptr");
+    }
+
+    TfLiteAffineQuantization* q_params = reinterpret_cast<TfLiteAffineQuantization*>(input->quantization.params);
+    if (!q_params) {
+        throw std::runtime_error("input tensor doesn't have q_params...");
+    }
+
+    if (q_params->scale->size != 1) {
+        throw std::runtime_error("input tensor should not per-axis quant...");
+    }
+
+    mScaleIn = q_params->scale->data[0];
+    mZeropointIn = q_params->zero_point->data[0];
+
+    TRACE( __func__, "[POSE2D!!!!!!!!!!]  mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
+}
+
+
+void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) const
+{
+    auto QUANT = [this](float data) {
+        return static_cast<uint8_t>(( data / mScaleIn ) + mZeropointIn);
+    };
+
+    const float meanRGB[3] = { 0.406, 0.456, 0.485 }; // R,G,B
+    const float stdRGB[3] = { 4.44, 4.46, 4.36 };     // R,G,B
+
+    auto dataPtr = reinterpret_cast<float*>(img.data);
+    auto norm_dataPtr = reinterpret_cast<uint8_t*>(normImg.data);
+    auto total = img.total();
+
+    // Assume img is BGR, normImg is BGR
+    for (auto i = 0; i < total; i++ ) {
+        float* localPtr = dataPtr + i * 3;
+        uint8_t* norm_localPtr = norm_dataPtr + i * 3;
+#if 1 // for debugging
+        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanRGB[2] ) * stdRGB[2]; // B
+        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanRGB[1] ) * stdRGB[1]; // G
+        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanRGB[0] ) * stdRGB[0]; // R
+        norm_localPtr[0] = QUANT(localPtr[0]);
+        norm_localPtr[1] = QUANT(localPtr[1]);
+        norm_localPtr[2] = QUANT(localPtr[2]);
+#else
+        norm_localPtr[0] = QUANT(( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0]);
+        norm_localPtr[1] = QUANT(( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1]);
+        norm_localPtr[2] = QUANT(( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2]);
+#endif
+    }
+
+}
+
 
 } // namespace aif

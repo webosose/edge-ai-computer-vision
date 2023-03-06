@@ -28,6 +28,12 @@ class NpuPose2dDetector : public Pose2dDetector, public std::enable_shared_from_
         t_aif_status preProcessing() override;
         t_aif_status postProcessing(const cv::Mat& img,
                 std::shared_ptr<Descriptor>& descriptor) override;
+        void getInputTensorInfo(TfLiteTensor *input);
+        void normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) const;
+
+    private:
+        float mScaleIn;
+        int mZeropointIn;
 };
 
 DetectorFactoryRegistration<NpuPose2dDetector, Pose2dDescriptor>
