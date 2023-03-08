@@ -72,7 +72,7 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         inputNormImg.convertTo(inputNormImg, CV_8UC3);
 
         normalizeImageWithQuant(inputImg, inputNormImg);
-        //cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
+        cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
 
         //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
         //memoryDump(inputNormImg.data, "./normQuant_input.bin", width * height * channels * sizeof(uint8_t));
