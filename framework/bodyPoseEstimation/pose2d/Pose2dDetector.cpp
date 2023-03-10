@@ -12,7 +12,7 @@ namespace aif {
 Pose2dDetector::Pose2dDetector(const std::string& modelPath)
     : Detector(modelPath)
     , m_cropScale()
-    , m_origBbox()
+    , m_cropBbox()
     , m_useUDP(false)
     , m_leftBorder(0)
     , m_topBorder(0)
@@ -35,7 +35,7 @@ std::shared_ptr<DetectorParam> Pose2dDetector::createParam()
 void Pose2dDetector::getAffinedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)
 {
     cv::Mat trans;
-    trans = getAffineTransform(cv::Point2f(m_origBbox.c_x, m_origBbox.c_y),
+    trans = getAffineTransform(cv::Point2f(m_cropBbox.c_x, m_cropBbox.c_y),
                                 cv::Point2f(m_cropScale.x, m_cropScale.y),
                                 0.0f, cv::Point2f(0, 0), modelSize.width, modelSize.height,
                                 false, true);

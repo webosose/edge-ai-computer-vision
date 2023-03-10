@@ -60,7 +60,7 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
             //cv::imwrite("affined_input_npu.jpg", inputImg);
             //memoryDump(inputImg.data, "./orig_input.bin", width * height * channels * sizeof(uint8_t));
         } else {
-            getPaddedImage(img, cv::Size(width, height), inputImg);
+            inputImg = img;
         }
 
         //cv::imwrite("./padded_npu.jpg", inputImg);
@@ -72,7 +72,7 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         inputNormImg.convertTo(inputNormImg, CV_8UC3);
 
         normalizeImageWithQuant(inputImg, inputNormImg);
-        cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
+        // cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
 
         //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
         //memoryDump(inputNormImg.data, "./normQuant_input.bin", width * height * channels * sizeof(uint8_t));
@@ -129,6 +129,7 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     m_heatMapWidth = output->dims->data[3];
 
     float* data= reinterpret_cast<float*>(output->data.data);
+    //memoryDump(data, "./output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * 4);
 
     //memoryDump(data, "./1_2output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));
     //memoryRestore(data, "/usr/share/aif/example/m5_6_before_post_processing.bin");

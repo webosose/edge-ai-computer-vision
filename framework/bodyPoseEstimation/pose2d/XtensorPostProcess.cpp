@@ -1,12 +1,8 @@
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
-#include <aif/bodyPoseEstimation/transforms.h>
-#include <aif/tools/Stopwatch.h>
-#include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
 #include <limits>
 #include <cmath>
-#include <opencv2/opencv.hpp>
 #if defined(USE_XTENSOR)
 #include <xtensor/xsort.hpp>
 #include <xtensor/xview.hpp>
@@ -41,7 +37,8 @@ bool XtensorPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
 bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor, xt::xarray<float>& batchHeatmaps)
 {
     std::vector<std::vector<float>> keyPoints;
-    xt::xarray<int> argMaxIndex = xt::argmax(batchHeatmaps, 2);
+
+    xt::xarray<int> argMaxIndex = xt::argmax(batchHeatmaps, 2); // getFinalPredsNotransform + getMaxPreds
     xt::xarray<float> maxVal = xt::amax(batchHeatmaps, 2);
 
     xt::xarray<int> x = (argMaxIndex % m_heatMapWidth);//preds_width
@@ -51,26 +48,20 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
 
 #if defined(GAUSSIANDARK)
     Logd("GaussianDark!!!");
-    gaussianDark(batchHeatmaps, coords);
+    gaussianDark(batchHeatmaps, coords); // getFinalPredsNotransform
 #endif
     for (auto i = 0; i < m_numInputs; i++) { // batch = 1
         for (auto j = 0; j < m_numKeyPoints; j++) { // 41
             if (m_useUDP) {
                 keyPoints.push_back({maxVal(i, j), coords(i, j, 0), coords(i, j, 1), 1.0});
             } else {
-                // scale heatmap to model size (x 4)
-                coords(i, j, 0) *= (m_modelInfo.width / m_heatMapWidth);
-                coords(i, j, 1) *= (m_modelInfo.height / m_heatMapHeight);
+                int img_idx = i * m_numKeyPoints * 2;
+                float mul[3][3];
+                getTransformMatrix(m_cropBbox, mul);
+                float x = (coords[img_idx + j * 2] * mul[0][0]) + mul[2][0];
+                float y = (coords[img_idx + j * 2 + 1] * mul[1][1]) + mul[2][1];
 
-                // scale model size to input img
-                coords(i, j, 0) = m_paddedSize.width * ((coords(i, j, 0) - m_leftBorder) / m_modelInfo.width);
-                coords(i, j, 1) = m_paddedSize.height * ((coords(i, j, 1) - m_topBorder) / m_modelInfo.height);
-
-                // change x, y of input img to x, y of origin image
-                coords(i, j, 0) += m_cropRect.x;
-                coords(i, j, 1) += m_cropRect.y;
-
-                keyPoints.push_back({maxVal(i, j), coords(i, j, 0), coords(i, j, 1)});
+                keyPoints.push_back({maxVal(i, j), x, y});
             }
         }
     }
@@ -85,50 +76,6 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
 
     pose2dDescriptor->addKeyPoints(keyPoints);
-    return true;
-}
-
-
-bool XtensorPostProcess::applyInverseTransform(std::vector<std::vector<float>>& keyPoints)
-{
-    std::vector<float> newJoints = flattenKeyPoints(keyPoints);
-
-    if (mTransMat.empty()) {
-        Loge("failed applyInverseTransform. mTransMat is empty.");
-        return false;
-    }
-
-    cv::Mat transform;
-
-    transform = getAffineTransform(
-        cv::Point2f(m_cropBbox.c_x, m_cropBbox.c_y),
-        cv::Point2f(m_cropScale.x, m_cropScale.y),
-        0.0f, cv::Point2f(0, 0), m_heatMapWidth, m_heatMapHeight, false, true);
-
-    cv::Mat inv_transform;
-    cv::invertAffineTransform(transform, inv_transform);
-
-    cv::Mat joints_mat(keyPoints.size(), 3, CV_32F, newJoints.data(), 0);
-    cv::Mat joints_mat_float;
-    joints_mat.convertTo(joints_mat_float, inv_transform.type());
-
-    cv::Mat joints_mat_transposed;
-    cv::transpose(joints_mat_float, joints_mat_transposed);
-
-    cv::Mat result;
-    result = inv_transform * joints_mat_transposed;
-    result = result.t();
-
-    std::vector<std::vector<float>> imageJoints;
-    for (int i = 0; i<result.rows; i++) {
-        cv::Mat mat = result.row(i);
-        double *data = (double*)mat.data;
-        std::vector<float> imageJoint = {keyPoints[i][0], data[0], data[1]};
-        imageJoints.push_back(imageJoint);
-    }
-
-    keyPoints = imageJoints;
-
     return true;
 }
 

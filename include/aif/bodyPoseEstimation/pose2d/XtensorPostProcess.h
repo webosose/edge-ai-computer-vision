@@ -30,7 +30,6 @@ public:
 private:
 #if defined(USE_XTENSOR)
     bool processHeatMap(std::shared_ptr<Descriptor>& descriptor, xt::xarray<float>& batchHeatmaps);
-    bool applyInverseTransform(std::vector<std::vector<float>>& keyPoints);
     void gaussianBlur(xt::xarray<float>& batchHeatmaps, const int BLUR_KERNEL = 11) const;
     void taylor(const xt::xarray<float>& heatMap, xt::xarray<float>& coord ) const;
     void gaussianDark(xt::xarray<float>& batchHeatmaps, xt::xarray<float>& coords) const;

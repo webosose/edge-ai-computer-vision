@@ -40,14 +40,18 @@ bool FitTvPose2dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
             DetectorFactory::get().getDescriptor(m_model);
 
         auto pose2dDescriptor = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
+        auto pose2dDetector = std::dynamic_pointer_cast<Pose2dDetector>(m_detector);
 
         auto cropData = fitTvDescriptor->getCropData(); // get scale data
         auto cropBbox = fitTvDescriptor->getCropBbox(); // get fixedBbox
 
-        if (cropData.size() >= trackId) {
-            auto boxes = fitTvDescriptor->getBboxes();
-            auto pose2dDetector = std::dynamic_pointer_cast<Pose2dDetector>(m_detector);
-            pose2dDetector->setCropData(boxes[trackId-1], cropData[trackId-1], cropBbox[trackId-1]);
+        if (cropData.size() >= trackId) { /* having cropscale, useUDP */
+            Logd(__func__, " setCropData: ", cropBbox[trackId-1], " use UDP");
+            pose2dDetector->setCropData(cropData[trackId-1], cropBbox[trackId-1], true);
+        } else if (cropBbox.size() >= trackId) { /* having only fixedBbox, not useUDP */
+            Logd(__func__, " setCropData: ", cropBbox[trackId-1], " NOT use UDP");
+            Scale noScale;
+            pose2dDetector->setCropData(noScale, cropBbox[trackId-1], false);
         }
 
         pose2dDescriptor->setTrackId(trackId++);

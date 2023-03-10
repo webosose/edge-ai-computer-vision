@@ -14,22 +14,8 @@ class XtensorPostProcess;
 class PostProcess
 {
 public:
-    PostProcess(std::shared_ptr<Pose2dDetector>& detector)
-        : m_modelInfo(detector->m_modelInfo)
-        , m_cropRect(detector->m_cropRect)
-        , m_paddedSize(detector->m_paddedSize)
-        , m_cropScale(detector->m_cropScale)
-        , m_cropBbox(detector->m_cropBbox)
-        , m_useUDP(detector->m_useUDP)
-        , m_leftBorder(detector->m_leftBorder)
-        , m_topBorder(detector->m_topBorder)
-        , m_numKeyPoints(detector->m_numKeyPoints)
-        , m_heatMapWidth(DEFAULT_HEATMAP_WIDTH)
-        , m_heatMapHeight(DEFAULT_HEATMAP_HEIGHT)
-        , m_numInputs(1)
-        , mTransMat(detector->mTransMat)
-    {};
-    virtual ~PostProcess() {};
+    PostProcess(std::shared_ptr<Pose2dDetector>& detector);
+    virtual ~PostProcess();
 
     enum {
         DEFAULT_HEATMAP_WIDTH = 48,
@@ -38,15 +24,9 @@ public:
 
     virtual bool execute(std::shared_ptr<Descriptor>& descriptor, float* data) = 0;
 protected:
-    template<typename T>
-    std::vector<T> flattenKeyPoints(std::vector<std::vector<T>> const &vec)
-    {
-        std::vector<T> flattened;
-        for (auto const &v: vec) {
-            flattened.insert(flattened.end(), v.begin() + 1, v.end());
-        }
-        return flattened;
-    }
+    void getTransformMatrix(const BBox& bbox, float (&mul)[3][3]) const;
+    bool applyInverseTransform(std::vector<std::vector<float>>& keyPoints);
+
 protected:
     t_aif_modelinfo m_modelInfo;
     Scale m_cropScale;

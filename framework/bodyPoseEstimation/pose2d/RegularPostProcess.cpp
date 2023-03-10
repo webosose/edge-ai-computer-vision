@@ -1,7 +1,4 @@
 #include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
-#include <aif/bodyPoseEstimation/transforms.h>
-#include <aif/tools/Stopwatch.h>
-#include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
 #include <limits>
@@ -35,6 +32,7 @@ bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
 bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor, float* heatMaps)
 {
     std::vector<std::vector<float>> keyPoints;
+
     for (int k = 0; k < m_numKeyPoints; k++) { //m_numKeyPoints = 41
         float* heatMap = heatMaps+ k * (m_heatMapWidth * m_heatMapHeight);
         float maxVal = std::numeric_limits<float>::min();
@@ -56,21 +54,15 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         gaussianDark(heatMap, x, y);
 #endif
         if (m_useUDP) {
-            keyPoints.push_back({ maxVal, x, y, 1.0});
+            keyPoints.push_back({maxVal, x, y, 1.0});
         } else {
-            // scale heatmap to model size (x 4)
-            x *= (m_modelInfo.width / m_heatMapWidth);
-            y *= (m_modelInfo.height / m_heatMapHeight);
+            int img_idx = 1 * m_numKeyPoints * 2;
+            float mul[3][3];
+            getTransformMatrix(m_cropBbox, mul);
+            x = (x * mul[0][0]) + mul[2][0];
+            y = (y * mul[1][1]) + mul[2][1];
 
-            // scale model size to input img
-            x = m_paddedSize.width  * ((x - m_leftBorder) / m_modelInfo.width);
-            y = m_paddedSize.height * ((y - m_topBorder) / m_modelInfo.height);
-
-            // change x, y of input img to x, y of origin image
-            x += m_cropRect.x;
-            y += m_cropRect.y;
-
-            keyPoints.push_back({ maxVal, x, y });
+            keyPoints.push_back({maxVal, x, y});
         }
     }
 
@@ -84,49 +76,6 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
 
     pose2dDescriptor->addKeyPoints(keyPoints);
-    return true;
-}
-
-bool RegularPostProcess::applyInverseTransform(std::vector<std::vector<float>>& keyPoints)
-{
-    std::vector<float> newJoints = flattenKeyPoints(keyPoints);
-
-    if (mTransMat.empty()) {
-        Loge("failed applyInverseTransform. mTransMat is empty.");
-        return false;
-    }
-
-    cv::Mat transform;
-
-    transform = getAffineTransform(
-        cv::Point2f(m_cropBbox.c_x, m_cropBbox.c_y),
-        cv::Point2f(m_cropScale.x, m_cropScale.y),
-        0.0f, cv::Point2f(0, 0), m_heatMapWidth, m_heatMapHeight, false, true);
-
-    cv::Mat inv_transform;
-    cv::invertAffineTransform( transform, inv_transform );
-
-    cv::Mat joints_mat(keyPoints.size(), 3, CV_32F, newJoints.data(), 0 );
-    cv::Mat joints_mat_float;
-    joints_mat.convertTo( joints_mat_float, inv_transform.type() );
-
-    cv::Mat joints_mat_transposed;
-    cv::transpose( joints_mat_float, joints_mat_transposed );
-
-    cv::Mat result;
-    result = inv_transform * joints_mat_transposed;
-    result = result.t();
-
-    std::vector<std::vector<float>> imageJoints;
-    for (int i = 0; i<result.rows; i++) {
-        cv::Mat mat = result.row(i);
-        double *data = (double*)mat.data;
-        std::vector<float> imageJoint = { keyPoints[i][0], data[0], data[1] };
-        imageJoints.push_back(imageJoint);
-    }
-
-    keyPoints = imageJoints;
-
     return true;
 }
 

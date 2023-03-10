@@ -38,18 +38,26 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     for (auto& box : boxes) {
         auto fixedBbox = fixBbox(input, box);
         Scale scale;
-        computeCropsData(fixedBbox, mCropExtension, scale.x, scale.y);
+        computeCropsData(fixedBbox, scale.x, scale.y);
         fdescriptor->addCropData(scale); // pass scales
         fdescriptor->addCropBox(fixedBbox); // pass fixedBox
         fdescriptor->addCropImage(image); /* add original image */
     }
 #else
-    auto rects = getCropRects(input);
-    for (auto& rect : rects) {
-        fdescriptor->addCropImage(image(rect));
+    auto originalImg = input->getDescriptor()->getImage();
+    auto originSize = input->getDescriptor()->getImage().size();
+
+    const std::vector<BBox>& boxes = fdescriptor->getBboxes();
+    for (auto& box : boxes) {
+        auto fixedBbox = fixBbox(input, box);
+        fdescriptor->addCropBox(fixedBbox); // pass fixedBox
+
+        auto crop = getCropRect(originalImg, originSize, fixedBbox);
+        fdescriptor->addCropImage(crop); /* add original image */
     }
 
-    /*fdescriptor->addCropRects(rects);
+    /*std::vector<cv::Mat> rects;
+    fdescriptor->addCropRects(rects);
 
     fdescriptor->addBridgeOperationResult(
                  m_id,
@@ -59,30 +67,52 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     return true;
 }
 
-void FitTvPersonCropOperation::computeCropsData(const BBox& bbox, const float expand, float& scaleX, float& scaleY)
+void FitTvPersonCropOperation::computeCropsData(const BBox& bbox, float& scaleX, float& scaleY)
+{
+    scaleX = bbox.width / 200.0f;
+    scaleY = bbox.height / 200.0f;
+}
+
+// onnx imlementation new
+cv::Mat FitTvPersonCropOperation::getCropRect(cv::Mat& originalImg, cv::Size& originSize, BBox& fixedBbox) const
 {
     int modelInputWidth = 192;
     int modelInputHeight = 256;
 
-    auto height = bbox.height + 1.0f;
-    auto width = bbox.width + 1.0f;
+    BBox scaledBbox = BBox(originSize.width, originSize.height);
+    scaledBbox.addTlhw( fixedBbox.xmin, fixedBbox.ymin, fixedBbox.width, fixedBbox.height );
 
-    auto aspect_ratio = static_cast<float> (modelInputWidth) / modelInputHeight;
+    int targetXmin = static_cast<int>(scaledBbox.xmin);
+    int targetYmin = static_cast<int>(scaledBbox.ymin);
+    int targetXmax = static_cast<int>(scaledBbox.xmax);
+    int targetYmax = static_cast<int>(scaledBbox.ymax);
+    int targetWidth = targetXmax - targetXmin;
+    int targetHeight = targetYmax - targetYmin;
 
-    if (bbox.width > aspect_ratio * bbox.height) {
-        height = bbox.width / aspect_ratio;
+    cv::Mat fullCropImg = cv::Mat::zeros(targetHeight, targetWidth, originalImg.type());
+
+    if (targetXmax > originSize.width) {
+        targetWidth = targetWidth - (targetXmax - originSize.width);
     }
-    else if (bbox.width < aspect_ratio * bbox.height) {
-        width = bbox.height * aspect_ratio;
+    if (targetYmax > originSize.height) {
+        targetHeight = targetHeight - (targetYmax - originSize.height);
     }
 
-    scaleX = (width / 200) * expand;
-    scaleY = (height / 200) * expand;
+    cv::Rect safeCropArea(0, 0, targetWidth, targetHeight);
+    cv::Rect targetCropArea(targetXmin, targetYmin, targetWidth, targetHeight);
+
+    cv::Mat targetCropImg = fullCropImg(safeCropArea);
+    originalImg(targetCropArea).copyTo(targetCropImg);
+
+    cv::Mat crop;
+    cv::resize(fullCropImg, crop, cv::Size(modelInputWidth, modelInputHeight));
+
+    return crop;
 }
 
 
 // onnx imlementation
-std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects(const std::shared_ptr<NodeInput>& input) const
+std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects_deprecated(const std::shared_ptr<NodeInput>& input) const
 {
     std::vector<cv::Rect> rects;
 
@@ -118,47 +148,36 @@ std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects(const std::shared_p
 
 BBox FitTvPersonCropOperation::fixBbox(const std::shared_ptr<NodeInput>& input, const BBox& bbox) const
 {
-    auto originSize = input->getDescriptor()->getImage().size();
     int modelInputWidth = 192;
     int modelInputHeight = 256;
 
-    float scalex = std::max( static_cast<float>(bbox.width), 10.0f );
-    float scaley = std::max( static_cast<float>(bbox.height), 10.0f );
-    float arrayExpand = 1.0f;
-    if ( bbox.width / bbox.height < 0.66 )
+    auto originSize = input->getDescriptor()->getImage().size(); // image size
+
+    float xmin = std::max(bbox.xmin, 0.0f);
+    float ymin = std::max(bbox.ymin, 0.0f);
+    float xmax = std::min(originSize.width - 1.0f, xmin + std::max(0.0f, bbox.width - 1.0f));
+    float ymax = std::min(originSize.height - 1.0f, ymin + std::max(0.0f, bbox.height - 1.0f));
+    float width = xmax - xmin + 1.0f;
+    float height = ymax - ymin + 1.0f;
+
+    auto aspectRatio = static_cast<float> (modelInputWidth) / static_cast<float> (modelInputHeight);
+
+    if ((width / height) > aspectRatio)
     {
-        arrayExpand = 0.77;
+        height = (width / aspectRatio) * 1.25f;
+        width = width * 1.25f;
     }
-    float scale = std::max( scalex, scaley ) * arrayExpand;
-    float ratioW = ( scale / bbox.width ) - 1.0f;
-    float ratioH = ( scale / bbox.height ) - 1.0f;
+    else if ((width / height) < aspectRatio)
+    {
+        width = (height * aspectRatio) * 1.25f;
+        height = height * 1.25f;
+    }
 
-    BBox squareBox(originSize.width, originSize.height);
-    squareBox.addXyxy( bbox.xmin - ( ( ratioW * bbox.width ) / 2.0f ),
-            bbox.ymin - ( ( ratioH * bbox.height ) / 2.0f ),
-            bbox.xmax + ( ( ratioW * bbox.width ) / 2.0f ),
-            bbox.ymax + ( ( ratioH * bbox.height ) / 2.0f ), false );
-
-    // expand bbox by scale increase
-    float ar = static_cast<float>( modelInputWidth ) / modelInputHeight;
-    float boxAr = squareBox.width / squareBox.height;
+    float targetXmin = std::max(0.0f, ((xmin + xmax) / 2.0f) - ((width / 2.0f)));
+    float targetYmin = std::max(0.0f, ((ymin + ymax) / 2.0f) - ((height / 2.0f)));
 
     BBox targetBox(originSize.width, originSize.height);
-    float dh = 0;
-    float dw = 0;
-    if ( boxAr > ar )
-    {
-        dh = ( ( 1 / ar ) * squareBox.width ) - squareBox.height;
-    }
-    else if ( boxAr < ar )
-    {
-        dw = ( ar * squareBox.height ) - squareBox.width;
-    }
-    targetBox.addXyxy( static_cast<int>( squareBox.xmin - ( dw / 2 ) ),
-            static_cast<int>( squareBox.ymin - ( dh / 2 ) ),
-            static_cast<int>( squareBox.xmax + ( dw / 2 ) ),
-            static_cast<int>( squareBox.ymax + ( dh / 2 ) ), false );
-
+    targetBox.addTlhw(targetXmin, targetYmin, width, height);
     return targetBox;
 }
 

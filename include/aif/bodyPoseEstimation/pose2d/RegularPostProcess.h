@@ -26,7 +26,6 @@ public:
     virtual ~RegularPostProcess();
 private:
     bool processHeatMap(std::shared_ptr<Descriptor>& descriptor, float* heatMaps);
-    bool applyInverseTransform(std::vector<std::vector<float>>& keyPoints);
     void gaussianBlur(float *heatMap, const int kernel) const;
     void taylor(float *heatMap, float& coord_x, float& coord_y) const;
     void gaussianDark(float *heatMap, float& coord_x, float& coord_y, const int BLUR_KERNEL = 11) const;
