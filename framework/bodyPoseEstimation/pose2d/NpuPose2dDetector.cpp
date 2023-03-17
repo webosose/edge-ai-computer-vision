@@ -177,7 +177,7 @@ NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
 void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) const
 {
     auto QUANT = [this](float data) {
-        return static_cast<uint8_t>(( data / mScaleIn ) + mZeropointIn);
+        return static_cast<uint8_t> (std::max(std::min(((data / mScaleIn) + mZeropointIn), 255.f), 0.0f)); // fixed
     };
 
     const float meanRGB[3] = { 0.406, 0.456, 0.485 }; // R,G,B
