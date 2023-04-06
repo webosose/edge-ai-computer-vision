@@ -173,7 +173,7 @@ Detector::compileDelegates(tflite::ops::builtin::BuiltinOpResolver &resolver) {
 #ifdef USE_AUTO_DELEGATE
         AutoDelegateSelector ads;
         AccelerationPolicyManager apm(m_param->getAutoDelegateConfig());
-        m_autoDelegateMode = ads.SelectDelegate(*m_interpreter.get(), &apm);
+        m_autoDelegateMode = ads.selectDelegate(*m_interpreter.get(), apm);
         if (m_autoDelegateMode) {
             Logi("auto delegate mode on");
         } else {
