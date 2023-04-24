@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Param.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Param.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -33,10 +33,10 @@ protected:
 TEST_F(Yolov3ParamTest, 01_constructor)
 {
     // default constructor
-    Yolov3Param yp;
+    Yolov3V1Param yp;
     yp.trace();
 
-    Yolov3Param yp2;
+    Yolov3V1Param yp2;
     yp2.fromJson("{ \
         \"modelParam\": { \
             \"class_size\": 10, \
@@ -51,15 +51,15 @@ TEST_F(Yolov3ParamTest, 01_constructor)
 TEST_F(Yolov3ParamTest, 02_copy_constructors)
 {
     // constructor 1
-    Yolov3Param yp1;
+    Yolov3V1Param yp1;
     yp1.trace();
 
     // copy constructor
-    Yolov3Param yp2(yp1);
+    Yolov3V1Param yp2(yp1);
     EXPECT_EQ(yp1, yp2);
 
     // copy assignment operation
-    Yolov3Param yp3;
+    Yolov3V1Param yp3;
     yp3 = yp1;
     ASSERT_EQ(yp3, yp1);
 }
@@ -67,20 +67,20 @@ TEST_F(Yolov3ParamTest, 02_copy_constructors)
 TEST_F(Yolov3ParamTest, 03_move_constructors)
 {
     // constructor 1
-    Yolov3Param yp1;
+    Yolov3V1Param yp1;
     yp1.trace();
 
     // copy constructor
-    Yolov3Param yp2(yp1);
-    Yolov3Param yp3(yp1);
+    Yolov3V1Param yp2(yp1);
+    Yolov3V1Param yp3(yp1);
 
     // move constructor
-    Yolov3Param yp4(std::move(yp2));
+    Yolov3V1Param yp4(std::move(yp2));
 
     EXPECT_EQ(yp4, yp1);
 
     // move assignment operation
-    Yolov3Param yp5;
+    Yolov3V1Param yp5;
     yp5 = std::move(yp3);
 
     EXPECT_EQ(yp5, yp1);
@@ -88,7 +88,7 @@ TEST_F(Yolov3ParamTest, 03_move_constructors)
 
 TEST_F(Yolov3ParamTest, 04_test_fromJson)
 {
-    Yolov3Param yp;
+    Yolov3V1Param yp;
 
     yp.fromJson("{ \"modelParam\": { \
         \"class_size\": 10, \
@@ -113,7 +113,7 @@ TEST_F(Yolov3ParamTest, 04_test_fromJson)
 
 TEST_F(Yolov3ParamTest, 05_test_fromJson_partial)
 {
-    Yolov3Param yp;
+    Yolov3V1Param yp;
 
     yp.fromJson("{ \"modelParam\": { \"bboxBottomThresholdY\": -1} }");
     EXPECT_EQ(yp.orgImgWidth, 640);
@@ -125,7 +125,7 @@ TEST_F(Yolov3ParamTest, 05_test_fromJson_partial)
 
 TEST_F(Yolov3ParamTest, 06_test_fromJson_parents)
 {
-    Yolov3Param yp;
+    Yolov3V1Param yp;
     yp.fromJson("{ \
         \"modelParam\": { \
             \"bboxBottomThresholdY\": -1, \
