@@ -78,7 +78,8 @@ $(function() {
 Public Types</h2></td></tr>
 <tr class="memitem:a6ef979675a68bb632d0cbae5cd0009fd"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fd">DetectorType</a> { <a class="el" href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fda345094d9e282b0f2b2b49fab9b8ad89f">DetectorType::FACE</a> = 0, 
 <a class="el" href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fdac04482f786dfe8f6d66d78ab6f79c40d">DetectorType::POSE</a>, 
-<a class="el" href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fdacd24dd55a9162af6254fdb22a87b9620">DetectorType::SEGMENTATION</a>
+<a class="el" href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fdacd24dd55a9162af6254fdb22a87b9620">DetectorType::SEGMENTATION</a>, 
+<a class="el" href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fda61a96ffcb251bb9bf0abf8fec19d0ea8">DetectorType::TEXT</a>
  }<tr class="memdesc:a6ef979675a68bb632d0cbae5cd0009fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detector Type enum class.  <a href="classaif_1_1EdgeAIVision.html#a6ef979675a68bb632d0cbae5cd0009fd">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a6ef979675a68bb632d0cbae5cd0009fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -169,6 +170,8 @@ static <a class="el" href="classaif_1_1EdgeAIVision.html">EdgeAIVision</a> &amp;
 <tr><td class="fieldname"><a id="a6ef979675a68bb632d0cbae5cd0009fdac04482f786dfe8f6d66d78ab6f79c40d"></a>POSE&#160;</td><td class="fielddoc"><p>Pose Detector (Default Model: posenet) </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a6ef979675a68bb632d0cbae5cd0009fdacd24dd55a9162af6254fdb22a87b9620"></a>SEGMENTATION&#160;</td><td class="fielddoc"><p>Segmentation Detector (Default Model: mediapipe selfie) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a6ef979675a68bb632d0cbae5cd0009fda61a96ffcb251bb9bf0abf8fec19d0ea8"></a>TEXT&#160;</td><td class="fielddoc"><p>Text Detector (Default Model: paddleocr) </p>
 </td></tr>
 </table>
 
@@ -398,10 +401,6 @@ static <a class="el" href="classaif_1_1EdgeAIVision.html">EdgeAIVision</a> &amp;
 
 </div>
 </div>
-<<<<<<< HEAD
-<a id="a522e1665a9d1f18bc5e85b3984ccbe4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a522e1665a9d1f18bc5e85b3984ccbe4a">&#9670;&nbsp;</a></span>shutdown()</h2>
-=======
 <a id="a896ad41dbcc9beca1c871192ce403fe3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a896ad41dbcc9beca1c871192ce403fe3">&#9670;&nbsp;</a></span>pipeCreate()</h2>
 
@@ -628,36 +627,11 @@ static <a class="el" href="classaif_1_1EdgeAIVision.html">EdgeAIVision</a> &amp;
 </div>
 <a id="ac8e67de67846253e135e107b63cf2918"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac8e67de67846253e135e107b63cf2918">&#9670;&nbsp;</a></span>startup()</h2>
->>>>>>> Implement fittv sample using facade pipe apis
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-<<<<<<< HEAD
-          <td class="memname">bool aif::EdgeAIVision::shutdown </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>shutdown Edge AI Vision </p>
-<dl class="section return"><dt>Returns</dt><dd>return true if success to shutdown </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="face_2main_8cpp-example.html#a7">face/main.cpp</a>.</dd>
-</dl>
-</div>
-</div>
-<a id="ac8e67de67846253e135e107b63cf2918"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8e67de67846253e135e107b63cf2918">&#9670;&nbsp;</a></span>startup()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-=======
->>>>>>> Implement fittv sample using facade pipe apis
           <td class="memname">bool aif::EdgeAIVision::startup </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
@@ -675,16 +649,12 @@ static <a class="el" href="classaif_1_1EdgeAIVision.html">EdgeAIVision</a> &amp;
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>return true if success to startup </dd></dl>
-<<<<<<< HEAD
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="face_2main_8cpp-example.html#a3">face/main.cpp</a>.</dd>
-=======
 <dl><dt><b>Examples: </b></dt><dd><a class="el" href="face_2main_8cpp-example.html#a3">face/main.cpp</a>, <a class="el" href="fittv-sample_2main_8cpp-example.html#a2">fittv-sample/main.cpp</a>, and <a class="el" href="pipe-sample_2main_8cpp-example.html#a2">pipe-sample/main.cpp</a>.</dd>
->>>>>>> Implement fittv sample using facade pipe apis
 </dl>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/work/wasm/poc_pipeline/include/aif/facade/<a class="el" href="EdgeAIVision_8h_source.html">EdgeAIVision.h</a></li>
+<li>/work/wasm/test-fittv/include/aif/facade/<a class="el" href="EdgeAIVision_8h_source.html">EdgeAIVision.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
