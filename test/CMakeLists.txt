@@ -118,18 +118,6 @@ set(SRC_FILES
     ${SRC_DIR}/selfie_descriptor_test.cpp
     ${SRC_DIR}/selfie_detector_test.cpp
     ${SRC_DIR}/selfie_param_test.cpp
-    ${SRC_DIR}/bodyposeestimation_param_test.cpp
-    ${SRC_DIR}/yolov4_param_test.cpp
-    ${SRC_DIR}/yolov4_descriptor_test.cpp
-    ${SRC_DIR}/yolov4_detector_test.cpp
-    ${SRC_DIR}/yolov3_param_test.cpp
-    ${SRC_DIR}/yolov3_descriptor_test.cpp
-    ${SRC_DIR}/yolov3_detector_test.cpp
-    ${SRC_DIR}/pose3d_param_test.cpp
-    ${SRC_DIR}/pose3d_descriptor_test.cpp
-    ${SRC_DIR}/pose3d_detector_test.cpp
-    ${SRC_DIR}/pose2d_descriptor_test.cpp
-    ${SRC_DIR}/pose2d_detector_test.cpp
     ${SRC_DIR}/ai_vision_test.cpp
     ${SRC_DIR}/config_reader_test.cpp
     ${SRC_DIR}/performance_reporter_test.cpp
@@ -254,7 +242,10 @@ IF(WITH_HOST_TEST)
 ENDIF(WITH_HOST_TEST)
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/pipe")
+
+IF(WITH_FITTV)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/fittv")
+ENDIF(WITH_FITTV)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/images DESTINATION ${AIF_INSTALL_DIR})
 install(TARGETS ${EXE_NAME} DESTINATION ${AIF_INSTALL_TEST_DIR})
