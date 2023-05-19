@@ -15,7 +15,7 @@ OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
 OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
 OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
 OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
-OPTION(WITH_NPU "Enable Npu Delegate Support" ON)
+OPTION(WITH_NPU "Enable Npu Delegate Support" OFF)
 OPTION(WITH_XTENSOR "Enable XTensor Support" OFF)
 
 IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
