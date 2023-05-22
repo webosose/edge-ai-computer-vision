@@ -15,7 +15,8 @@ namespace rj = rapidjson;
 namespace aif {
 
 Pose3dDescriptor::Pose3dDescriptor()
-    : Descriptor()
+: Descriptor()
+, m_trackId(-1)
 {
 }
 

@@ -167,7 +167,7 @@ bool Yolov3V2Param::operator==(const Yolov3V2Param& other) const
         (thresh_iou_sc_nms == other.thresh_iou_sc_nms) &&
         (thresh_iou_sc_sur == other.thresh_iou_sc_sur) &&
         (thresh_iou_sc_avg == other.thresh_iou_sc_avg) &&
-        (thresh_iou_update == other.thresh_iou_update)
+        (std::abs(thresh_iou_update - other.thresh_iou_update) < aif::EPSILON)
     );
 }
 

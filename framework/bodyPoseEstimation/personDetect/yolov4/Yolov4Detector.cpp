@@ -87,6 +87,9 @@ t_aif_status Yolov4Detector::preProcessing()
 {
     try {
         std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
+        if (param == nullptr) {
+            throw std::runtime_error("failed to convert DetectorParam to Yolov4Param");
+        }
 
         mOrigImgRoiX = param->origImgRoiX;
         mOrigImgRoiY = param->origImgRoiY;
@@ -111,6 +114,10 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
         Stopwatch sw;
         sw.start();
         std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
+        if (param == nullptr) {
+            throw std::runtime_error("failed to convert DetectorParam to Yolov4Param");
+            return kAifError;
+        }
 
         uint8_t* outTensorDataArr[2];
         size_t outConcatDimSize = 0;
@@ -202,6 +209,10 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
 
         // limit the maximum detections
         std::shared_ptr<Yolov4Descriptor> yolov4Descriptor = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
+        if (yolov4Descriptor == nullptr) {
+            throw std::runtime_error("failed to convert Descriptor to Yolov4Descriptor");
+        }
+
         for ( auto i = 0;
                         ( i < static_cast<int>( after_filtered.size() ) ) && ( i < param->numMaxPerson ); i++ )
         {

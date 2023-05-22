@@ -66,6 +66,10 @@ std::shared_ptr<DetectorParam> YuNetFaceDetectorV2::createParam()
 
 void YuNetFaceDetectorV2::setModelInfo(TfLiteTensor* inputTensor)
 {
+    if (inputTensor == nullptr) {
+        Loge(__func__, "inputTensor is nullptr");
+        return;
+    }
     m_modelInfo.batchSize = inputTensor->dims->data[0];
     m_modelInfo.height = inputTensor->dims->data[1];
     m_modelInfo.width = inputTensor->dims->data[2];
@@ -297,10 +301,11 @@ t_aif_status YuNetFaceDetectorV2::fillInputTensor(const cv::Mat &img)
         blob = blob.reshape(1, 1);
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
-        if (inputTensor != nullptr) {
-            std::memcpy(inputTensor, blob.data, blob.total()*blob.channels()*sizeof(float));
+        if (inputTensor == nullptr) {
+            throw std::runtime_error("failed to get inputTensor pointer");
+            return kAifError;
         }
-
+        std::memcpy(inputTensor, blob.data, blob.total()*blob.channels()*sizeof(float));
         return kAifOk;
     } catch (const std::exception &e) {
         Loge(__func__, "Error: ", e.what());

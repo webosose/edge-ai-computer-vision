@@ -34,13 +34,28 @@ bool FitTvPose2dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
     }
 
     auto fitTvDescriptor = std::dynamic_pointer_cast<FitTvPoseDescriptor>(pipeDescriptor);
+    if (fitTvDescriptor == nullptr) {
+        Loge(__func__, "failed to convert PipeDescriptor to FitTvPoseDescriptor");
+        return false;
+    }
+
+
     int trackId = 1;
     for (const auto& image : fitTvDescriptor->getCropImages()) {
         std::shared_ptr<Descriptor> descriptor =
             DetectorFactory::get().getDescriptor(m_model);
 
         auto pose2dDescriptor = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
+        if (pose2dDescriptor == nullptr) {
+            Loge(__func__, "failed to convert Descriptor to Pose2dDescriptor");
+            return false;
+        }
+
         auto pose2dDetector = std::dynamic_pointer_cast<Pose2dDetector>(m_detector);
+        if (pose2dDetector == nullptr) {
+            Loge(__func__, "failed to convert Detector to Pose2dDetector");
+            return false;
+        }
 
         auto cropData = fitTvDescriptor->getCropData(); // get scale data
         auto cropBbox = fitTvDescriptor->getCropBbox(); // get fixedBbox

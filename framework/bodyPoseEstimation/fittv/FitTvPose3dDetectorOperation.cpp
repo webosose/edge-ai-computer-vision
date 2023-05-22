@@ -35,15 +35,25 @@ bool FitTvPose3dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
 
 
     auto fitTvDescriptor = std::dynamic_pointer_cast<FitTvPoseDescriptor>(pipeDescriptor);
+    if (fitTvDescriptor == nullptr) {
+        Loge(__func__, "failed to convert PipeDescriptor to FitTvPoseDescriptor");
+        return false;
+    }
+
     int trackId = 1;
-    for (const auto& input: fitTvDescriptor->getPose3dInputs()) {
+    for (const auto& pose3dInput: fitTvDescriptor->getPose3dInputs()) {
         std::shared_ptr<Descriptor> descriptor =
             DetectorFactory::get().getDescriptor(m_model);
 
         auto pose3dDescriptor = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+        if (pose3dDescriptor == nullptr) {
+            Loge(__func__, "failed to convert Descriptor to Pose3dDescriptor");
+            return false;
+        }
+
         pose3dDescriptor->setTrackId(trackId++);
 
-        t_aif_status res = m_detector->detect(input, descriptor);
+        t_aif_status res = m_detector->detect(pose3dInput, descriptor);
         if (res != kAifOk) {
             Loge(m_id, ": failed to detect ", m_model);
             return false;

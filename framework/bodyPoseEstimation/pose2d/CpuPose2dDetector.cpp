@@ -66,6 +66,10 @@ t_aif_status CpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         normalizeImage(inputImg);
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
+        if (inputTensor == nullptr) {
+            throw std::runtime_error("inputTensor ptr is null");
+            return kAifError;
+        }
         std::memcpy(inputTensor, inputImg.ptr<float>(0), width * height * channels * sizeof(float));
 
         return kAifOk;
@@ -99,14 +103,16 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
 
     float* buffer = new float[outputSize];
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, 0, sizeof(float) * outputSize);
 
     float* data= reinterpret_cast<float*>(output->data.data);
     int i = 0;
     for (int h = 0; h < m_heatMapHeight; h++) {
         for (int w = 0; w < m_heatMapWidth; w++) {
             for (int k = 0; k < m_numKeyPoints; k++) {
-                buffer[k * (m_heatMapWidth * m_heatMapHeight) + h * m_heatMapWidth + w] = data[i++];
+                int index = k * (m_heatMapWidth * m_heatMapHeight) + h * m_heatMapWidth + w;
+                if ( index >= outputSize) continue;
+                buffer[index] = data[i++];
             }
         }
     }

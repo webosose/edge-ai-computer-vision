@@ -28,6 +28,10 @@ bool DetectorOperation::init(const std::shared_ptr<NodeOperationConfig>& config)
 
     std::shared_ptr<DetectorOperationConfig> doConfig =
         std::dynamic_pointer_cast<DetectorOperationConfig>(m_config);
+    if (doConfig == nullptr) {
+        Loge(__func__, "failed to convert NodeOperationConfig to DetectorOperationConfig");
+        return false;
+    }
 
     m_model = doConfig->getModel();
     m_param = doConfig->getParam();

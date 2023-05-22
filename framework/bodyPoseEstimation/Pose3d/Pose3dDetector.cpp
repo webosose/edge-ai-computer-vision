@@ -112,6 +112,11 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
 {
     try {
         std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
+        if (param == nullptr) {
+            Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
+            return kAifError;
+        }
+
 
         if (m_interpreter == nullptr) {
             throw std::runtime_error("pose3d.tflite interpreter not initialized!!");
@@ -182,8 +187,6 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
 t_aif_status Pose3dDetector::preProcessing()
 {
     try {
-        std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
-
         initializeParam();
 
         const std::vector<int> &inputs = m_interpreter->inputs();
@@ -224,6 +227,9 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
             }
 
             std::shared_ptr<Pose3dDescriptor> pose3dDescriptor = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+            if (pose3dDescriptor == nullptr) {
+                throw std::runtime_error("failed to convert descriptor to Pose3dDescriptor");
+            }
             pose3dDescriptor->addJoints3D(mResults[RESULT_3D_JOINT], mResults[RESULT_3D_TRAJ][0]);
         }
 
@@ -244,6 +250,11 @@ void
 Pose3dDetector::initializeParam()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
+        return;
+    }
+
 
     mMaxInputs = 1;
     mBatchSize = 1;
@@ -263,6 +274,10 @@ void
 Pose3dDetector::getCameraIntrinsics()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
+        return;
+    }
 
     auto focal_length = param->focalLength;
     auto center = param->center;
@@ -409,6 +424,10 @@ Pose3dDetector::fillFlippedJoints( uint8_t* inputTensorBuff)
     TRACE(__func__);
 
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
+        return;
+    }
 
     auto QUANT = [this](float data) {
         return static_cast<uint8_t>(( data / mScaleIn ) + mZeropointIn);
@@ -462,6 +481,10 @@ Pose3dDetector::postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output)
     // first batch, just only save the value
     // alloc for saving it
     TRACE(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
+    if (outputIdx < 0 || outputIdx >= RESULT_3D_IDX_MAX) {
+        Loge(__func__, "outputInx is out of range: ", outputIdx);
+        return;
+    }
 
     if (!mResultForFirstBatch[outputIdx]) {
         mResultForFirstBatch[outputIdx] = reinterpret_cast<uint8_t*>(std::malloc(output->bytes));
@@ -474,8 +497,19 @@ void
 Pose3dDetector::postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output)
 {
     TRACE(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
+    if (outputIdx < 0 || outputIdx >= RESULT_3D_IDX_MAX) {
+        Loge(__func__, "outputInx is out of range: ", outputIdx);
+        return;
+    }
+
 
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
+        return;
+    }
+
+
     if (!param->flipPoses) {
         throw std::runtime_error("Second Batch Detect can't be run without param->flipPoses!!");
     }
@@ -489,7 +523,17 @@ Pose3dDetector::postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output)
 void
 Pose3dDetector::averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, int numJoints)
 {
+    if (idx < 0 || idx >= RESULT_3D_IDX_MAX) {
+        Loge(__func__, "idx is out of range: ", idx);
+        return;
+    }
+
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
+        return;
+    }
+
 
     auto DEQ = [this, idx](uint8_t data) {
         return (mScaleOut[idx] * (data - mZeropointOut[idx]));

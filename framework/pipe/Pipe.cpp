@@ -157,6 +157,11 @@ void Pipe::drawPipeResults()
     Logi("result outputPath: ", outputPath);
 
     auto fd = std::dynamic_pointer_cast<FitTvPoseDescriptor>(m_descriptor);
+    if (fd == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to FitTvPoseDescriptor");
+        return;
+    }
+
     cv::Mat result = fd->getImage();
     for (auto& keyPoints : fd->getKeyPoints()) {
         result = Renderer::drawPose2d(result, keyPoints);

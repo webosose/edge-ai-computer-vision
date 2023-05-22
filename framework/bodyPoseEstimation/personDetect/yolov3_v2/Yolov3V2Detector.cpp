@@ -34,7 +34,11 @@ std::shared_ptr<DetectorParam> Yolov3V2Detector::createParam()
 
 void Yolov3V2Detector::setModelInfo(TfLiteTensor* inputTensor)
 {
-    m_modelInfo.batchSize = 1;//inputTensor->dims->data[0];
+    if (inputTensor == nullptr) {
+        Loge("inputTensor ptr is null");
+        return;
+    }
+     m_modelInfo.batchSize = 1;//inputTensor->dims->data[0];
     m_modelInfo.height = inputTensor->dims->data[0];
     m_modelInfo.width = inputTensor->dims->data[1];
     m_modelInfo.channels = inputTensor->dims->data[2];
@@ -95,6 +99,9 @@ t_aif_status Yolov3V2Detector::preProcessing()
 {
     try {
         std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+        if (param == nullptr) {
+            throw std::runtime_error("failed to convert DetectorParam to Yolov3V2Param");
+        }
 
         if (boost::iequals(param->detectObject, "body")) {
             m_IsBodyDetect = true;
@@ -156,8 +163,16 @@ t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat& img, std::shared_pt
         transform2OriginCoord(img, *result);
 
         std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
-        std::shared_ptr<Yolov3V2Descriptor> yolov3Descriptor = std::dynamic_pointer_cast<Yolov3V2Descriptor>(descriptor);
+        if (param == nullptr) {
+            throw std::runtime_error("failed to convert DetectorParam to Yolov3V2Param");
+        }
 
+        std::shared_ptr<Yolov3V2Descriptor> yolov3Descriptor = std::dynamic_pointer_cast<Yolov3V2Descriptor>(descriptor);
+        if (yolov3Descriptor == nullptr) {
+            throw std::runtime_error("failed to convert Descriptor to Yolov3V2Descriptor");
+        }
+
+ 
         std::vector<std::pair<BBox, float>> finalBboxList;
         for (int i=0; i< result->res_cnt; i++) {
             BBox finalBbox( img.cols , img.rows );
@@ -263,7 +278,7 @@ void Yolov3V2Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_resul
         roi_img_height = static_cast<float>( mOrigImgRoiHeight );
     }
 
-    if (m_ImgResizingScale == 1.f) {
+    if (std::abs(m_ImgResizingScale - 1.f) < aif::EPSILON) {
         m_ImgResizingScale = std::min( m_modelInfo.width / (roi_img_width * 1.0), m_modelInfo.height / (roi_img_height * 1.0) );
     }
 
@@ -336,6 +351,11 @@ void Yolov3V2Detector::OBD_ComputeResult(unsigned short* obd_lb_box_addr, unsign
 void Yolov3V2Detector::CV_BOX(BoxType boxType, unsigned short *obd_addr, unsigned short *obd_conf, std::vector<BBox> &bbox)
 {
     std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        return;
+    }
+
 
     int j,i,c,cnt,cnt_box,cnt_conf,conf_jump;
     int BX0,BY0,BX1,BY1,CO;
@@ -401,9 +421,14 @@ void Yolov3V2Detector::CV_BOX(BoxType boxType, unsigned short *obd_addr, unsigne
 
 std::vector<int> Yolov3V2Detector::fw_nms(std::vector<BBox> &bbox)
 {
-    std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
     std::vector<int> res_nms;
-    // sort
+    std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        return res_nms;
+    }
+
+// sort
     int num_sort = 0;
     int res_sort[MAX_BOX];
 
@@ -535,6 +560,11 @@ void Yolov3V2Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int nu
 bool Yolov3V2Detector::checkUpdate(int index, const BBox &currBbox)
 {
     std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        return false;
+    }
+
     if (m_prevBboxList.size() == 0) {
         Logd("UPDATE!!!!!!!!!!!!!!!!!");
         return true;
@@ -545,7 +575,7 @@ bool Yolov3V2Detector::checkUpdate(int index, const BBox &currBbox)
     cv::Rect2f prevRect(prevBbox.xmin, prevBbox.ymin, prevBbox.width, prevBbox.height);
     cv::Rect2f curRect(currBbox.xmin, currBbox.ymin, currBbox.width, currBbox.height);
 
-    if (index < m_prevBboxList.size() && isIOUOver(prevRect, curRect, param->thresh_iou_update)) {
+    if (index < m_prevBboxList.size() && isIOUOver(curRect, prevRect, param->thresh_iou_update)) {
         return false;
     }
     Logd("UPDATE!!!!!!!!!!!!!!!!!");

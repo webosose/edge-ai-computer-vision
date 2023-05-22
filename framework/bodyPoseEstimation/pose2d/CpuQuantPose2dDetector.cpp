@@ -61,7 +61,11 @@ t_aif_status CpuQuantPose2dDetector::fillInputTensor(const cv::Mat& img)/* overr
         inputImg.convertTo(inputImg, CV_8UC3);
 
         int8_t* inputTensor = m_interpreter->typed_input_tensor<int8_t>(0);
-        std::memcpy(inputTensor, inputImg.ptr<int8_t>(0), width * height * channels * sizeof(int8_t));
+        if (inputTensor == nullptr) {
+            throw std::runtime_error("inputTensor ptr is null");
+            return kAifError;
+        }
+ std::memcpy(inputTensor, inputImg.ptr<int8_t>(0), width * height * channels * sizeof(int8_t));
 
         return kAifOk;
     } catch(const std::exception& e) {
@@ -105,15 +109,16 @@ t_aif_status CpuQuantPose2dDetector::postProcessing(const cv::Mat& img, std::sha
 
     int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
     float* buffer = new float[outputSize];
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, 0, sizeof(float) * outputSize);
 
     int8_t* data= reinterpret_cast<int8_t*>(output->data.data);
     int i = 0;
     for (int h = 0; h < m_heatMapHeight; h++) {
         for (int w = 0; w < m_heatMapWidth; w++) {
             for (int k = 0; k < m_numKeyPoints; k++) {
-                buffer[k * (m_heatMapWidth * m_heatMapHeight) + h * m_heatMapWidth + w] =
-                    scale * (static_cast<int>(data[i++]) - zeroPoint);
+                int index = k * (m_heatMapWidth * m_heatMapHeight) + h * m_heatMapWidth + w;
+                if ( index >= outputSize) continue;
+                buffer[index] = scale * (static_cast<int>(data[i++]) - zeroPoint);
             }
         }
     }

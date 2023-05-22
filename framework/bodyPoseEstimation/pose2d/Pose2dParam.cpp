@@ -35,23 +35,23 @@ Pose2dParam::Pose2dParam(Pose2dParam&& other) noexcept
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
 
-Pose2dParam& Pose2dParam::operator=(const Pose2dParam& other)
-{
-    // TRACE(TAG, "ASSIGNMENT OPERATOR....");
-    if (this == &other) {
-        return *this;
-    }
-    return *this;
-}
-
-Pose2dParam& Pose2dParam::operator=(Pose2dParam&& other) noexcept
-{
-    // TRACE(TAG, "MOVE ASSIGNMENT OPERATOR....");
-    if (this == &other) {
-        return *this;
-    }
-    return *this;
-}
+//Pose2dParam& Pose2dParam::operator=(const Pose2dParam& other)
+//{
+//    // TRACE(TAG, "ASSIGNMENT OPERATOR....");
+//    if (this == &other) {
+//        return *this;
+//    }
+//    return *this;
+//}
+//
+//Pose2dParam& Pose2dParam::operator=(Pose2dParam&& other) noexcept
+//{
+//    // TRACE(TAG, "MOVE ASSIGNMENT OPERATOR....");
+//    if (this == &other) {
+//        return *this;
+//    }
+//    return *this;
+//}
 
 bool Pose2dParam::operator==(const Pose2dParam& other) const
 {

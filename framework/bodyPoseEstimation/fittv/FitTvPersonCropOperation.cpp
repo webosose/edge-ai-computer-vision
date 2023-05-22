@@ -29,6 +29,11 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     }
     std::shared_ptr<FitTvPoseDescriptor> fdescriptor=
         std::dynamic_pointer_cast<FitTvPoseDescriptor>(input->getDescriptor());
+    if (fdescriptor == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to FitTvPoseDescriptor");
+        return false;
+    }
+
 
     const cv::Mat& image = descriptor->getImage();
 
@@ -118,6 +123,10 @@ std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects_deprecated(const st
 
     std::shared_ptr<FitTvPoseDescriptor> descriptor =
         std::dynamic_pointer_cast<FitTvPoseDescriptor>(input->getDescriptor());
+    if (descriptor == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to FitTvPoseDescriptor");
+        return rects;
+    }
 
     const std::vector<BBox>& boxes = descriptor->getBboxes();
     for (auto& box :  boxes) {

@@ -173,8 +173,13 @@ std::ostream& operator<<(std::ostream& os, const Pose3dParam& fp)
     os << fp.radialDistortion[1] << ", " << fp.radialDistortion[2] << ",\n";
     os << "\ttanDistortion: " << fp.tanDistortion[0] << ", " << fp.tanDistortion[1] << "\n";
     os << "\tpose2DJoints: [\n";
-    for (int i = 0; i < fp.pose2DJoints.size() / 2;) {
-        os << "\t" << fp.pose2DJoints[i++] << ", " << fp.pose2DJoints[i++] << "\n";
+    for (int i = 0; i < fp.pose2DJoints.size(); i++) {
+        if (i & 1) {
+            os << ", " << fp.pose2DJoints[i++] << "\n";
+        } else {
+            os << "\t" << fp.pose2DJoints[i++] ;
+        }
+
     }
     os << "]\n";
     os << "}";

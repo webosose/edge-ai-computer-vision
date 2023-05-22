@@ -74,6 +74,10 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
 
     std::shared_ptr<Pose2dDescriptor> pose2dDescriptor =
         std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
+    if (pose2dDescriptor == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to Pose2dDescriptor");
+        return false;
+    }
 
     pose2dDescriptor->addKeyPoints(keyPoints);
     return true;

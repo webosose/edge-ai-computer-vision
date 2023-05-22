@@ -21,7 +21,9 @@ bool NodeOperationConfig::parse(const rj::Value& value)
         Loge("invalid operation config (no config)");
         return false;
     }
-    m_type = value["type"].GetString();
+    if (value["type"].GetString() != nullptr) {
+        m_type = value["type"].GetString();
+    }
     m_config = jsonObjectToString(value["config"]);
     return true;
 }
@@ -33,7 +35,7 @@ bool BridgeOperationConfig::parse(const rj::Value& value)
         return false;
     }
 
-    if (value["config"].HasMember("targetId")) {
+    if (value["config"].HasMember("targetId") && (value["config"]["targetId"].GetString() != nullptr)) {
         m_target = value["config"]["targetId"].GetString();
     }
     return true;
@@ -50,7 +52,7 @@ bool DetectorOperationConfig::parse(const rj::Value& value)
         return false;
     }
 
-    if (!value["config"].HasMember("model")) {
+    if (!value["config"].HasMember("model") || (value["config"]["model"].GetString() == nullptr)) {
         Loge("invalid detector operation config (no model)");
         return false;
     }
@@ -82,15 +84,21 @@ bool NodeConfig::parse(const rj::Value& value)
         return false;
     }
 
-    m_id = value["id"].GetString();
+    if (value["id"].GetString() != nullptr) {
+        m_id = value["id"].GetString();
+    }
 
     const rj::Value& itypes = value["input"];
     for (const auto& type : itypes.GetArray()) {
-        m_inputType.addType(NodeType::fromString(type.GetString()));
+        if (type.GetString() != nullptr) {
+            m_inputType.addType(NodeType::fromString(type.GetString()));
+        }
     }
     const rj::Value& otypes= value["output"];
     for (const auto& otype: otypes.GetArray()) {
-        m_outputType.addType(NodeType::fromString(otype.GetString()));
+        if (otype.GetString() != nullptr) {
+            m_outputType.addType(NodeType::fromString(otype.GetString()));
+        }
     }
 
     m_operation = NodeOperationFactory::get().createConfig(value["operation"]);
@@ -112,13 +120,15 @@ bool PipeConfig::parse(const std::string& config)
         return false;
     }
 
-    if (doc.HasMember("descriptor")) {
+    if (doc.HasMember("descriptor") && (doc["descriptor"].GetString() != nullptr)) {
         m_descriptorId = doc["descriptor"].GetString();
     } else {
         m_descriptorId = "default_descriptor";
     }
 
-    m_name = doc["name"].GetString();
+    if (doc.HasMember("name") && (doc["name"].GetString() != nullptr)) {
+        m_name = doc["name"].GetString();
+    }
     const rj::Value& nodes = doc["nodes"];
     if (!nodes.IsArray() || nodes.Size() == 0) {
         Loge("invalid pipe config (invalid nodes)");

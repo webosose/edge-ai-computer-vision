@@ -22,6 +22,11 @@ cv::Rect PersonCropOperation::getCropRect(const std::shared_ptr<NodeInput>& inpu
 {
     cv::Rect cropRect;
     std::shared_ptr<BridgeOperationConfig> config = std::dynamic_pointer_cast<BridgeOperationConfig>(m_config);
+    if (config == nullptr) {
+        Loge(__func__, "failed to convert NodeOperationConfig to BridgeOperationConfig");
+        return cropRect;
+    }
+
     const std::string& targetId = config->getTargetId();
 
     std::string result = input->getDescriptor()->getResult(targetId);

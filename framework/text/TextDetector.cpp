@@ -33,6 +33,10 @@ std::shared_ptr<DetectorParam> TextDetector::createParam()
 
 void TextDetector::setModelInfo(TfLiteTensor* inputTensor)
 {
+    if (inputTensor == nullptr) {
+        Loge(__func__, "input tensor is nullptr");
+        return;
+    }
     if (m_useNHWC) {
         m_modelInfo.batchSize = inputTensor->dims->data[0];
         m_modelInfo.height = inputTensor->dims->data[1];
@@ -55,6 +59,11 @@ t_aif_status TextDetector::fillInputTensor(const cv::Mat& img)/* override*/
 {
     try {
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
+        if (inputTensor == nullptr) {
+            Loge(__func__, "failed to get inputTensor pointer");
+            return kAifError;
+        }
+
         cv::Mat blob = cv::dnn::blobFromImage(img, 1.0/255.0,
                 cv::Size(m_modelInfo.width, m_modelInfo.height), cv::Scalar(103.939, 116.779, 123.68), false, false);
 
@@ -91,6 +100,10 @@ t_aif_status TextDetector::postProcessing(const cv::Mat& img, std::shared_ptr<De
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output0 = m_interpreter->tensor(outputs[0]);
     float* output = reinterpret_cast<float*>(output0->data.data);
+    if (output == nullptr) {
+        Loge(__func__, "failed to get output tensor pointer");
+        return kAifError;
+    }
 
 
     cv::Mat probabilityMap = cv::Mat::zeros(m_modelInfo.width, m_modelInfo.height, CV_32FC1);
@@ -103,6 +116,11 @@ t_aif_status TextDetector::postProcessing(const cv::Mat& img, std::shared_ptr<De
     convertOutputToBoxes(probabilityMap, resultRects, img.size());
 
     std::shared_ptr<TextDescriptor> textDescriptor = std::dynamic_pointer_cast<TextDescriptor>(descriptor);
+    if (textDescriptor == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to TextDescriptor");
+        return kAifError;
+    }
+
     textDescriptor->addTextRects(resultRects);
 
     return kAifOk;
@@ -112,6 +130,10 @@ t_aif_status TextDetector::postProcessing(const cv::Mat& img, std::shared_ptr<De
 void TextDetector::convertOutputToBoxes(cv::Mat& probabilityMap, std::vector<cv::Rect>& resultRects, cv::Size imgOriginalSize)
 {
     std::shared_ptr<TextParam> param = std::dynamic_pointer_cast<TextParam>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to TextParam");
+        return;
+    }
 
     float imgWidth = imgOriginalSize.width;
     float imgHeight = imgOriginalSize.height;

@@ -38,7 +38,6 @@ struct Joint3D
 class Pose3dDescriptor: public Descriptor
 {
 public:
-public:
     Pose3dDescriptor();
     virtual ~Pose3dDescriptor();
 
