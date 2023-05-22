@@ -17,6 +17,8 @@ set(PIPE_SRC
     ${PIPE_SRC_DIR}/Pipe.cpp
     ${PIPE_SRC_DIR}/PipeDescriptorFactory.cpp
     ${PIPE_SRC_DIR}/PersonCropOperation.cpp
+    ${PIPE_SRC_DIR}/FaceCropOperation.cpp
+    ${PIPE_SRC_DIR}/FaceMaskExtractOperation.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PIPE_SRC_DIR})

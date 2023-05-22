@@ -150,6 +150,9 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/palm_param_test.cpp
         ${SRC_DIR}/yunet_v2_face_detector_test.cpp
         ${SRC_DIR}/yunet_face_detector_test.cpp
+        ${SRC_DIR}/facemesh_descriptor_test.cpp
+        ${SRC_DIR}/facemesh_detector_test.cpp
+        ${SRC_DIR}/facemesh_param_test.cpp
     )
 ENDIF(WITH_EXTRA_MODELS)
 
