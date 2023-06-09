@@ -1,0 +1,26 @@
+{
+    "model": "text_paddleocr_320_v2",
+    "param": {
+        "delegates": [
+            {
+                "name": "gpu_delegate",
+                "option": {
+                    "backends": [
+                        "cl"
+                    ],
+                    "inference_priorities": [
+                        "MIN_LATENCY",
+                        "MIN_MEMORY_USAGE",
+                        "MAX_PRECISION"
+                    ],
+                    "enable_quantized_inference": true,
+                    "serialization" : {
+                        "dir_path" : "/media/aif",
+                        "model_token" : "text_paddleocr_320_v2"
+                    }
+                }
+            }
+       ]
+    }
+}
+

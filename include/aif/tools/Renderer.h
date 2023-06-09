@@ -29,6 +29,13 @@ public:
             const std::vector<BBox>& boxes,
             cv::Scalar color = cv::Scalar(255, 0, 0),
             int thickness = 1);
+
+    static cv::Mat drawRotatedRects(
+            const cv::Mat &img,
+            const std::vector<std::vector<cv::Point>>& rects,
+            cv::Scalar color = cv::Scalar(0, 0, 255),
+            int thickness = 1);
+
 };
 
 }

@@ -80,14 +80,34 @@ TEST_F(TextParamTest, 03_move_constructors)
 
 TEST_F(TextParamTest, 04_test_fromJson)
 {
+    std::string param = R"(
+            {
+                "modelParam": {
+                    "boxThreshold": 0.3,
+                    "detectionRegion" : [100, 100, 720, 480]
+                }
+            })";
     TextParam tp;
-    tp.fromJson(R"({ "modelParam": { "boxThreshold": 0.3 } })");
-    EXPECT_EQ(tp.m_boxThreshold, 0.3f);
+    EXPECT_TRUE((tp.m_boxThreshold - 0.7f) < aif::EPSILON);
+    EXPECT_FALSE(tp.m_useDetectionRegion);
+    EXPECT_TRUE(tp.m_detectionRegion == cv::Rect(0, 0, 0, 0));
+
+    tp.fromJson(param);
+    EXPECT_TRUE((tp.m_boxThreshold - 0.3f) < aif::EPSILON);
+    EXPECT_TRUE(tp.m_useDetectionRegion);
+    EXPECT_TRUE(tp.m_detectionRegion == cv::Rect(100, 100, 720, 480));
 }
 
-//TEST_F(TextParamTest, 05_test_fromJson_partial)
-//{
-//    TextParam tp;
-//    tp.fromJson(R"({ "modelParam": { "boxThreshold": 0.3 } })";
-//    EXPECT_EQ(tp.m_boxThreshold, 0.3f);
-//}
+TEST_F(TextParamTest, 05_test_fromJson_partial)
+{
+    TextParam tp;
+    tp.fromJson(R"({ "modelParam": { "boxThreshold": 0.3 } })");
+    EXPECT_TRUE((tp.m_boxThreshold - 0.3f) < aif::EPSILON);
+    EXPECT_FALSE(tp.m_useDetectionRegion);
+
+    TextParam tp1;
+    tp1.fromJson(R"({ "modelParam": { "detectionRegion": [100, 100, 200, 200] } })");
+    EXPECT_TRUE((tp1.m_boxThreshold - 0.7f) < aif::EPSILON);
+    EXPECT_TRUE(tp1.m_useDetectionRegion);
+    EXPECT_TRUE(tp1.m_detectionRegion == cv::Rect(100, 100, 200, 200));
+}

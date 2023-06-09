@@ -20,7 +20,8 @@ public:
     TextDescriptor();
     virtual ~TextDescriptor();
 
-    bool addTextRects(const std::vector<cv::Rect>& rects);
+    bool addBboxes(const std::vector<cv::Rect>& bboxes);
+    bool addBoxes(const std::vector<std::vector<cv::Point>>& boxes);
 
     int getTextRectCount() const { return m_textRectCount; }
 

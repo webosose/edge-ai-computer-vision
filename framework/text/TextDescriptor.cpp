@@ -24,7 +24,7 @@ TextDescriptor::TextDescriptor()
     , m_textRectCount(0)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
-    rj::Value texts(rj::kArrayType);
+    rj::Value texts(rj::kObjectType);
     m_root.AddMember("texts", texts, allocator);
 }
 
@@ -32,27 +32,56 @@ TextDescriptor::~TextDescriptor()
 {
 }
 
-bool TextDescriptor::addTextRects(const std::vector<cv::Rect>& rects)
+bool TextDescriptor::addBboxes(const std::vector<cv::Rect>& bboxes)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("texts")) {
-        rj::Value texts(rj::kArrayType);
+        rj::Value texts(rj::kObjectType);
         m_root.AddMember("texts", texts, allocator);
         m_textRectCount = 0;
     }
 
-    for (const auto& rect : rects) {
+    rj::Value bbox(rj::kObjectType);
+    rj::Value rects(rj::kArrayType);
+    for (const auto& rect : bboxes) {
         rj::Value region(rj::kArrayType);
         region.PushBack(rect.x, allocator)
             .PushBack(rect.y, allocator)
             .PushBack(rect.width, allocator)
             .PushBack(rect.height, allocator);
-        m_root["texts"].PushBack(region, allocator);
+        rects.PushBack(region, allocator);
     }
 
-    TRACE("rect count : ", rects.size());
-    m_textRectCount += rects.size();
+    m_root["texts"].AddMember("bbox", rects, allocator);
+
+    TRACE("rect count : ", bboxes.size());
+    m_textRectCount += bboxes.size();
     return true;
 }
+
+bool TextDescriptor::addBoxes(const std::vector<std::vector<cv::Point>>& boxes)
+{
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("texts")) {
+        rj::Value texts(rj::kObjectType);
+        m_root.AddMember("texts", texts, allocator);
+    }
+
+    rj::Value box(rj::kObjectType);
+    rj::Value points(rj::kArrayType);
+    for (const auto& pts : boxes) {
+        if (pts.size() < 4) continue;
+        rj::Value point(rj::kArrayType);
+        for (const auto& pt : pts) {
+            point.PushBack(pt.x, allocator)
+                 .PushBack(pt.y, allocator);
+        }
+        points.PushBack(point, allocator);
+    }
+    m_root["texts"].AddMember("box", points, allocator);
+
+    return true;
+}
+
 
 }

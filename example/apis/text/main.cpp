@@ -5,24 +5,13 @@
 
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
+#include <aif/tools/Renderer.h>
+#include <aif/tools/PerformanceReporter.h>
 #include <rapidjson/document.h>
 
 
 using namespace aif;
 namespace rj = rapidjson;
-
-cv::Mat drawRects(
-        const cv::Mat &img,
-        const std::vector<cv::Rect>& rects,
-        cv::Scalar color,
-        int thickness)
-{
-    cv::Mat temp = img;
-    for (const auto& rect : rects) {
-        cv::rectangle(img, rect, color, thickness);
-    }
-    return temp;
-}
 
 int main(int argc, char *argv[]) {
     std::cout << "Usage: apis-text-sample <input-file-path> <output-file-path> <config-path>" << std::endl;
@@ -60,21 +49,34 @@ int main(int argc, char *argv[]) {
 
     ai.deleteDetector(type);
     ai.shutdown();
+    PerformanceReporter::get().showReport();
 
     std::cout << output << std:: endl;
     rj::Document d;
     d.Parse(output.c_str());
 
     std::vector<cv::Rect> rects;
-    for (int i = 0; i < d["texts"].Size(); i++) {
+    for (int i = 0; i < d["texts"]["bbox"].Size(); i++) {
         rects.push_back({
-            d["texts"][i][0].GetInt(),
-            d["texts"][i][1].GetInt(),
-            d["texts"][i][2].GetInt(),
-            d["texts"][i][3].GetInt()
+            d["texts"]["bbox"][i][0].GetInt(),
+            d["texts"]["bbox"][i][1].GetInt(),
+            d["texts"]["bbox"][i][2].GetInt(),
+            d["texts"]["bbox"][i][3].GetInt()
         });
     }
-    cv::Mat result = drawRects(input, rects, cv::Scalar(0, 0, 255), 3);
+    cv::Mat result = Renderer::drawRects(input, rects, cv::Scalar(0, 0, 255), 3);
+
+    std::vector<std::vector<cv::Point>> boxes;
+    for (int i = 0; i < d["texts"]["box"].Size(); i++) {
+        std::vector<cv::Point> box;
+        for (int j = 0; j < 8; j+=2) {
+            box.push_back(cv::Point(d["texts"]["box"][i][j].GetInt(), 
+                                    d["texts"]["box"][i][j+1].GetInt()));
+
+        }
+        boxes.push_back(box);
+    }
+    result = Renderer::drawRotatedRects(result, boxes, cv::Scalar(255, 0, 0), 2);
     cv::imwrite(outputPath, result);
 
     return 0;

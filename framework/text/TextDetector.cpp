@@ -113,21 +113,17 @@ t_aif_status TextDetector::postProcessing(const cv::Mat& img, std::shared_ptr<De
         }
     }
     std::vector<cv::Rect> resultRects;
-    convertOutputToBoxes(probabilityMap, resultRects, img.size());
-
-    std::shared_ptr<TextDescriptor> textDescriptor = std::dynamic_pointer_cast<TextDescriptor>(descriptor);
-    if (textDescriptor == nullptr) {
-        Loge(__func__, "failed to convert Descriptor to TextDescriptor");
-        return kAifError;
-    }
-
-    textDescriptor->addTextRects(resultRects);
+    convertOutputToBoxes(probabilityMap, resultRects, img.size(), descriptor);
 
     return kAifOk;
 }
 
 
-void TextDetector::convertOutputToBoxes(cv::Mat& probabilityMap, std::vector<cv::Rect>& resultRects, cv::Size imgOriginalSize)
+void TextDetector::convertOutputToBoxes(
+        cv::Mat& probabilityMap,
+        std::vector<cv::Rect>& resultRects,
+        cv::Size imgOriginalSize,
+        std::shared_ptr<Descriptor>& descriptor)
 {
     std::shared_ptr<TextParam> param = std::dynamic_pointer_cast<TextParam>(m_param);
     if (param == nullptr) {
@@ -146,9 +142,10 @@ void TextDetector::convertOutputToBoxes(cv::Mat& probabilityMap, std::vector<cv:
     probabilityMap.convertTo(binaryMap, CV_8UC1, 255);
 
     std::vector<std::vector<cv::Point>> contours;
-    std::vector<std::vector<cv::Point>> processedContours;
     cv::findContours(binaryMap, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
+    std::vector<cv::Rect> bboxes;
+    std::vector<std::vector<cv::Point>> boxes;
     for (auto const& contour : contours) {
         std::vector<cv::Point> approx;
         double epsilon = 0.01 * cv::arcLength(contour, true);
@@ -163,23 +160,45 @@ void TextDetector::convertOutputToBoxes(cv::Mat& probabilityMap, std::vector<cv:
 
         cv::RotatedRect miniBox = cv::minAreaRect(approx);
         if (std::max(miniBox.size.height, miniBox.size.width) < 5) continue;
-
-        for (size_t j = 0; j < approx.size(); j++) {
+    
+       for (size_t j = 0; j < approx.size(); j++) {
             approx[j].x = (int)(approx[j].x / scaleRatioX);
             approx[j].y = (int)(approx[j].y / scaleRatioY);
         }
 
-        processedContours.push_back(approx);
+        cv::Rect brect = miniBox.boundingRect();
+        cv::Rect rect = cv::Rect(
+                    brect.x / scaleRatioX,
+                    brect.y / scaleRatioY,
+                    brect.width / scaleRatioX,
+                    brect.height / scaleRatioY);
+
+        if (rect.width < 5 || rect.height < 5 ||
+                (param->m_useDetectionRegion &&
+                (!param->m_detectionRegion.contains(cv::Point(rect.x, rect.y)) || 
+                 !param->m_detectionRegion.contains(cv::Point(rect.x + rect.width, rect.y + rect.height))))) {
+            continue;
+        }
+        bboxes.push_back(rect);
+
+        cv::Point2f pts[4];
+        miniBox.points(pts);
+        std::vector<cv::Point> points;
+        for (int j = 0; j < 4; j++) {
+            points.push_back(cv::Point(pts[j].x/scaleRatioX, pts[j].y/scaleRatioY));
+        }
+        boxes.push_back(points);
     }
 
-    for (auto const& contour : processedContours) {
-        cv::Rect rect = cv::boundingRect(contour);
-        rect.x = clip(rect.x, 0, imgWidth);
-        rect.y = clip(rect.y, 0, imgHeight);
-        rect.width = uint(clip(rect.x + rect.width, 0, imgWidth - 1) - rect.x);
-        rect.height = uint(clip(rect.y + rect.height, 0, imgHeight - 1) - rect.y);
-        resultRects.push_back(rect);
+    std::shared_ptr<TextDescriptor> textDescriptor = std::dynamic_pointer_cast<TextDescriptor>(descriptor);
+    if (textDescriptor == nullptr) {
+        Loge(__func__, "failed to convert descriptor to TextDescriptor");
+        return;
     }
+
+
+    textDescriptor->addBoxes(boxes);
+    textDescriptor->addBboxes(bboxes);
 }
 
 

@@ -109,6 +109,16 @@ void GpuDelegate::setupOptions() {
         m_delegateOptions.max_delegated_partitions =
             payload["max_delegated_partitions"].GetInt();
     }
+
+    if (payload.HasMember("serialization")) {
+        if (payload["serialization"].HasMember("dir_path") && payload["serialization"].HasMember("model_token")) {
+            m_delegateOptions.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
+            m_delegateOptions.serialization_dir = payload["serialization"]["dir_path"].GetString();
+            m_delegateOptions.model_token = payload["serialization"]["model_token"].GetString();
+        } else {
+            Loge("dir_path or model_token is invalid");
+        }
+    }
 }
 
 TfLiteDelegatePtr GpuDelegate::getTfLiteDelegate() const {

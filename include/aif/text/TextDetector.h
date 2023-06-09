@@ -28,7 +28,11 @@ protected:
             std::shared_ptr<Descriptor>& descriptor) override;
 
 
-    void convertOutputToBoxes(cv::Mat& probabilityMap, std::vector<cv::Rect>& resultRects, cv::Size imgOriginalSize);
+    void convertOutputToBoxes(
+            cv::Mat& probabilityMap,
+            std::vector<cv::Rect>& resultRects,
+            cv::Size imgOriginalSize,
+            std::shared_ptr<Descriptor>& descriptor);
     bool boxScoreFast(cv::Mat &binaryMap, std::vector<cv::Point> approx, float boxThresh);
     std::vector<cv::Point> unclip(const std::vector<cv::Point> &box, float unclipRatio);
     int clip(float n, float lower, float upper);

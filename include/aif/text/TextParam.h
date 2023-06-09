@@ -8,7 +8,7 @@
 
 #include <aif/base/Types.h>
 #include <aif/base/DetectorParam.h>
-
+#include <opencv2/opencv.hpp>
 #include <ostream>
 
 namespace aif {
@@ -34,6 +34,8 @@ public:
     t_aif_status fromJson(const std::string& param) override;
 
     float m_boxThreshold;
+    bool m_useDetectionRegion;
+    cv::Rect m_detectionRegion;
 };
 
 } // end of namespace aif

@@ -1,0 +1,10 @@
+
+{
+    "model": "text_paddleocr_320_v2",
+    "param": {
+    "autoDelegate": {
+            "policy": "LOAD_BALANCING",
+            "cpu_fallback_percentage": 10
+        }
+    }
+}

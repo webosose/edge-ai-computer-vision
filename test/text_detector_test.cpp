@@ -71,3 +71,21 @@ TEST_F(TextDetectorTest, 02_detect_texts)
     EXPECT_EQ(foundTexts->getTextRectCount(), 19);
     Logi("Output: ", foundTexts->toStr());
 }
+
+TEST_F(TextDetectorTest, 03_detect_texts_with_detection_region)
+{
+    std::string param = R"(
+            {
+                "modelParam": {
+                    "detectionRegion" : [500, 300, 780, 400]
+                }
+            })";
+
+    auto fd = DetectorFactory::get().getDetector("text_paddleocr_320_v2", param);
+    EXPECT_TRUE(fd.get() != nullptr);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<TextDescriptor>();
+    auto foundTexts = std::dynamic_pointer_cast<TextDescriptor>(descriptor);
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/text.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(foundTexts->getTextRectCount(), 6);
+    Logi("Output: ", foundTexts->toStr());
+}

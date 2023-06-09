@@ -148,5 +148,20 @@ cv::Mat Renderer::drawBoxes(
     return temp;
 }
 
+cv::Mat Renderer::drawRotatedRects(
+            const cv::Mat &img,
+            const std::vector<std::vector<cv::Point>>& rects,
+            cv::Scalar color,
+            int thickness)
+{
+    cv::Mat temp = img;
+    for (const auto& rect : rects) {
+        if (rect.size() < 4) continue;
+        for (int i = 0; i < 4; i++) {
+            cv::line(img, rect[i], rect[(i+1)%4], color, thickness);
+        }
+    }
+    return temp;
+}
 
 }
