@@ -12,7 +12,8 @@
 
 namespace aif {
 
-class FitTvOneEuroFilterOperation : public BridgeOperation {
+class FitTvOneEuroFilterOperation : public BridgeOperation
+{
     private:
         FitTvOneEuroFilterOperation(const std::string& id);
 
@@ -21,19 +22,24 @@ class FitTvOneEuroFilterOperation : public BridgeOperation {
         template<typename T1, typename T2>
             friend class NodeOperationFactoryRegistration;
         bool runImpl(const std::shared_ptr<NodeInput>& input) override;
+        enum {
+            DEFAULT_NUM_KEYPOINTS = 41,
+            DEFUALT_XY = 2,
+            DEFUALT_ONE_EURO_PARAMS = 2,
+            DEFAULT_LOW_PASS_FILTER_PARAMS = 3,
+            DEFAULT_LOW_PASS_FILTER_XDX = 2
+        };
+
+    private:
         float lowPassFilter(int idx, int is_y, int is_xflit, float x, float alpha);
-	    float oneEuroFilter(int idx, int is_y, float x, float t);
-	    float calAlpha(float cutoff, float freq);
+        float oneEuroFilter(int idx, int is_y, float x, float t, float mincutoff, float dcutoff, float beta);
+        float calAlpha(float cutoff, float freq);
 
 	private:
-        bool mInitFilter;
-        float mPrevTime;
-        float mBeta;
-        float mMincutoff;
-        float mDcutoff;
-	    float mOneEuroParam[42][2][2];
-	    float mLowPassParam[42][2][3][2];
-
+        bool m_initFilter;
+        float m_prevTime;
+        float m_oneEuroParam[DEFAULT_NUM_KEYPOINTS][DEFUALT_XY][DEFUALT_ONE_EURO_PARAMS];
+        float m_lowPassParam[DEFAULT_NUM_KEYPOINTS][DEFUALT_XY][DEFAULT_LOW_PASS_FILTER_PARAMS][DEFAULT_LOW_PASS_FILTER_XDX];
 };
 
 NodeOperationFactoryRegistration<FitTvOneEuroFilterOperation, FitTvOneEuroFilterOperationConfig>
