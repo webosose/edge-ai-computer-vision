@@ -123,10 +123,18 @@ t_aif_status CpuQuantPose2dDetector::postProcessing(const cv::Mat& img, std::sha
         }
     }
 
-    std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
+    std::shared_ptr<Pose2dDetector> detector;
+    try {
+        detector = this->get_shared_ptr();
+    } catch(const std::bad_weak_ptr& bwp) {
+        Loge("failed to get CpuQuantPose2dDetector's shared_ptr. It got bad_weak_ptr!");
+        delete [] buffer;
+        return kAifError;
+    }
     m_postProcess = std::make_shared<RegularPostProcess>(detector);
     if(!m_postProcess->execute(descriptor, buffer)){
         Loge("failed to get position x, y from heatmap");
+        delete [] buffer;
         return kAifError;
     }
 

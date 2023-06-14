@@ -257,13 +257,17 @@ void Yolov4Detector::getOutputTensorInfo(uint8_t **outTensorDataArr,
                                          size_t &outConcatDimSize)
 {
     std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
+    if (param == nullptr) {
+        Loge(__func__, "failed to convert DetectorParam to Yolov4Param");
+        return;
+    }
 
     int numAnchor[2];
     int numCell[2];
     for (auto i = 0; i < param->strides.size(); i++) {
         auto stride = param->strides[i];
-        auto nx = static_cast<unsigned int>( m_modelInfo.width / stride );
-        auto ny = static_cast<unsigned int>( m_modelInfo.height / stride );
+        auto nx = static_cast<unsigned int>(m_modelInfo.width / stride);
+        auto ny = static_cast<unsigned int>(m_modelInfo.height / stride);
         numAnchor[i] = param->anchors[i].size();
         numCell[i] = nx * ny;
     }

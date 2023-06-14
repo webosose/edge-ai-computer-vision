@@ -249,7 +249,7 @@ t_aif_status Yolov3V1Param::fromJson(const std::string& param)
     if (payload.HasMember("modelParam")) {
         rj::Value& modelParam = payload["modelParam"];
         if (modelParam.HasMember("detectObject")) {
-            detectObject = modelParam["detectObject"].GetString();
+            detectObject = (modelParam["detectObject"].GetString() != nullptr ? modelParam["detectObject"].GetString() : "");
         }
         if (modelParam.HasMember("gt_bboxes")) {
             gt_bboxes.clear();

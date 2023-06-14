@@ -22,10 +22,12 @@ bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
     float* buffer = new float[outputSize];
     std::memcpy(buffer, data, (outputSize * sizeof(float)));
 
-    if(!processHeatMap(descriptor, buffer)) return false;
-
+    if(!processHeatMap(descriptor, buffer)) {
+        delete [] buffer;
+        return false;
+    }
+    
     delete [] buffer;
-
     return true;
 }
 
@@ -47,7 +49,7 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         }
 
         float x = (argMaxIndex % m_heatMapWidth);
-        float y = (argMaxIndex / m_heatMapWidth);
+        float y = ((float)argMaxIndex / (float)m_heatMapWidth);
     //--------------------------------------------
 #if defined(GAUSSIANDARK)
         Logd("GaussianDark!!!");
@@ -130,7 +132,7 @@ void RegularPostProcess::taylor(float *heatMap, float& coord_x, float& coord_y) 
 
         float det = ( dxx * dyy ) - ( dxy * dxy );
 
-        if (det != 0.f) {
+        if (!(std::abs(det - 0.f) < aif::EPSILON)) {
             std::vector<std::pair<float, float>> hessianAdjointInv = { {dyy/det, -dxy/det}, {-dxy/det, dxx/det} };
             float offsetx = -( ( hessianAdjointInv[0].first * dx ) + ( hessianAdjointInv[0].second * dy ) );
             float offsety = -( ( hessianAdjointInv[1].first * dx ) + ( hessianAdjointInv[1].second * dy ) );

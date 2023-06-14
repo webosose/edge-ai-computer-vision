@@ -101,7 +101,6 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     m_numKeyPoints = output->dims->data[3];
 
     int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
-
     float* buffer = new float[outputSize];
     memset(buffer, 0, sizeof(float) * outputSize);
 
@@ -117,7 +116,15 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
         }
     }
 
-    std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
+    std::shared_ptr<Pose2dDetector> detector;
+    try {
+        detector = this->get_shared_ptr();
+    } catch(const std::bad_weak_ptr& bwp) {
+        Loge("failed to get CpuPose2dDetector's shared_ptr. It got bad_weak_ptr!");
+        delete [] buffer;
+        sw.stop();
+        return kAifError;
+    }
 #if defined(USE_XTENSOR)
     m_postProcess= std::make_shared<XtensorPostProcess>(detector);
 #else
@@ -125,6 +132,8 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 #endif
     if(!m_postProcess->execute(descriptor, buffer)){
         Loge("failed to get position x, y from heatmap");
+        delete [] buffer;
+        sw.stop();
         return kAifError;
     }
 

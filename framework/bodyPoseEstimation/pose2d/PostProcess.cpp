@@ -13,7 +13,7 @@ std::vector<T> flattenKeyPoints(std::vector<std::vector<T>> const &vec)
 {
     std::vector<T> flattened;
     for (auto const &v: vec) {
-        flattened.insert(flattened.end(), v.begin() + 1, v.end());
+        flattened.insert(flattened.end(), std::next(v.begin(), 1), v.end());
     }
     return flattened;
 }
@@ -126,7 +126,7 @@ bool PostProcess::applyInverseTransform(std::vector<std::vector<float>>& keyPoin
     for (int i = 0; i<result.rows; i++) {
         cv::Mat mat = result.row(i);
         double *data = (double*)mat.data;
-        std::vector<float> imageJoint = { keyPoints[i][0], data[0], data[1] };
+        std::vector<float> imageJoint = { keyPoints[i][0], static_cast<float>(data[0]), static_cast<float>(data[1])};
         imageJoints.push_back(imageJoint);
     }
 
