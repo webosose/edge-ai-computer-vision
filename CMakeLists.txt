@@ -36,7 +36,6 @@ ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test/test-dl)
 ENDIF()
 
-IF(NOT WITH_EXAMPLES AND WITH_FITTV)
+IF(WITH_FITTV)
     ADD_DEFINITIONS(-DUSE_FITTV)
-    add_subdirectory(example)
 ENDIF()
