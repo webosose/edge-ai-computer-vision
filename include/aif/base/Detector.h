@@ -20,6 +20,12 @@
 #include <tensorflow/lite/model.h>
 #include <tensorflow/lite/tools/gen_op_registration.h>
 
+#ifdef USE_AUTO_DELEGATE
+#include <aif/auto_delegation/AccelerationPolicyManager.h>
+#include <aif/auto_delegation/AutoDelegateSelector.h>
+#endif
+
+
 namespace aif {
 
 class Detector {
@@ -70,6 +76,7 @@ class Detector {
     std::vector<std::shared_ptr<Delegate>> m_delegates;
     bool m_autoDelegateMode;
     std::shared_ptr<PerformanceRecorder> m_performance;
+    std::unique_ptr<AutoDelegateSelector> m_ads;
 };
 
 } // end of namespace aif

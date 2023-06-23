@@ -10,18 +10,13 @@
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 
-#ifdef USE_AUTO_DELEGATE
-#include <aif/auto_delegation/AccelerationPolicyManager.h>
-#include <aif/auto_delegation/AutoDelegateSelector.h>
-#endif
-
 using aif::Stopwatch;
 
 namespace aif {
 
 Detector::Detector(const std::string &modelName)
     : m_modelName(modelName), m_model(nullptr), m_interpreter(nullptr),
-      m_param(nullptr), m_autoDelegateMode(false) {
+      m_param(nullptr), m_autoDelegateMode(false), m_ads(nullptr) {
     memset(&m_modelInfo, 0, sizeof(m_modelInfo));
 }
 
@@ -171,9 +166,9 @@ t_aif_status
 Detector::compileDelegates(tflite::ops::builtin::BuiltinOpResolver &resolver) {
     if (m_param->getUseAutoDelegate()) {
 #ifdef USE_AUTO_DELEGATE
-        AutoDelegateSelector ads;
+        m_ads = std::make_unique<AutoDelegateSelector>();
         AccelerationPolicyManager apm(m_param->getAutoDelegateConfig());
-        m_autoDelegateMode = ads.selectDelegate(*m_interpreter.get(), apm);
+        m_autoDelegateMode = m_ads->selectDelegate(*m_interpreter.get(), apm);
         if (m_autoDelegateMode) {
             Logi("auto delegate mode on");
         } else {
