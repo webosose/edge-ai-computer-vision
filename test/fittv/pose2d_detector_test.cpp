@@ -68,3 +68,16 @@ TEST_F(Pose2dDetectorTest, 02_detect)
     EXPECT_TRUE(pd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(pose2d->getPoseCount(), 1);
 }
+
+TEST_F(Pose2dDetectorTest, 03_detectWithNpu)
+{
+    auto pd = DetectorFactory::get().getDetector("pose2d_resnet_npu");
+    EXPECT_TRUE(pd.get() != nullptr);
+
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose2dDescriptor>();
+    auto pose2d = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
+    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(pose2d->getPoseCount(), 1);
+    EXPECT_EQ(pose2d->getKeyPoints().size(), 41);
+
+}
