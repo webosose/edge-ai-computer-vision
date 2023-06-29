@@ -59,16 +59,29 @@ t_aif_status Detector::init(const std::string &param) {
 
 void Detector::setModelInfo(TfLiteTensor* inputTensor)
 {
-    m_modelInfo.batchSize = inputTensor->dims->data[0];
-    m_modelInfo.height = inputTensor->dims->data[1];
-    m_modelInfo.width = inputTensor->dims->data[2];
-    m_modelInfo.channels = inputTensor->dims->data[3];
+    t_aif_modelinfo inputInfo;
+    memset(&inputInfo, 0, sizeof(inputInfo));
 
-    TRACE("input_size: ", m_modelInfo.inputSize);
-    TRACE("batch_size: ", m_modelInfo.batchSize);
-    TRACE("height:", m_modelInfo.height);
-    TRACE("width: ", m_modelInfo.width);
-    TRACE("channels: ", m_modelInfo.channels);
+    inputInfo.inputSize = inputTensor->dims->size;   // inputSize
+    if (inputTensor->dims->data[0] < 1) {            // batchSize
+        inputInfo.batchSize = 1;
+    } else {
+        inputInfo.batchSize = inputTensor->dims->data[0];
+    }
+    inputInfo.height = inputTensor->dims->data[1];   // height
+    inputInfo.width = inputTensor->dims->data[2];    // width
+    inputInfo.channels = inputTensor->dims->data[3]; // channels
+
+    TRACE("input_size: ", inputInfo.inputSize);
+    TRACE("batch_size: ", inputInfo.batchSize);
+    TRACE("height:", inputInfo.height);
+    TRACE("width: ", inputInfo.width);
+    TRACE("channels: ", inputInfo.channels);
+
+    m_modelInputInfo.emplace_back(inputInfo);
+    if (m_modelInputInfo.size() > 0) {
+        m_modelInfo = m_modelInputInfo[0];
+    }
 }
 
 std::string Detector::getModelPath() const
@@ -118,20 +131,22 @@ t_aif_status Detector::compile() {
         }
 
         const std::vector<int> &t_inputs = m_interpreter->inputs();
-        TfLiteTensor *tensor_input = m_interpreter->tensor(t_inputs[0]);
-        if (tensor_input == nullptr || tensor_input->dims == nullptr) {
-            throw std::runtime_error("tflite tensor_input invalid!!");
-        }
+        for(int i=0; i < t_inputs.size(); i++){
+            TfLiteTensor *tensor_input = m_interpreter->tensor(t_inputs[i]);
+            if (tensor_input == nullptr || tensor_input->dims == nullptr) {
+                throw std::runtime_error("tflite tensor_input invalid!!");
+            }
 
-        if (tensor_input->dims == nullptr) {
-            throw std::runtime_error("invalid tensor_input dimension!");
-        }
+            if (tensor_input->dims == nullptr) {
+                throw std::runtime_error("invalid tensor_input dimension!");
+            }
 
-        m_modelInfo.inputSize = tensor_input->dims->size;
-        if (m_modelInfo.inputSize <= 0) {
-            throw std::runtime_error("this model input require >0 tensors");
+            m_modelInfo.inputSize = tensor_input->dims->size;
+            if (m_modelInfo.inputSize <= 0) {
+                throw std::runtime_error("this model input require >0 tensors");
+            }
+            setModelInfo(tensor_input);
         }
-        setModelInfo(tensor_input);
 
         return kAifOk;
     } catch (const std::exception &e) {

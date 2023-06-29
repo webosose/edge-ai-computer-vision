@@ -172,7 +172,7 @@ t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat& img, std::shared_pt
             throw std::runtime_error("failed to convert Descriptor to Yolov3V2Descriptor");
         }
 
- 
+
         std::vector<std::pair<BBox, float>> finalBboxList;
         for (int i=0; i< result->res_cnt; i++) {
             BBox finalBbox( img.cols , img.rows );
@@ -260,7 +260,6 @@ void Yolov3V2Detector::getPaddedImage(const cv::Mat& src, cv::Mat& dst)
             srcW * (static_cast<float>(m_modelInfo.width)/width),
             srcH * (static_cast<float>(m_modelInfo.height)/height));
 }
-
 
 void Yolov3V2Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &result)
 {

@@ -47,6 +47,7 @@ class Detector {
 
     const std::string &getModelName() const { return m_modelName; }
     const t_aif_modelinfo &getModelInfo() const { return m_modelInfo; }
+    const std::vector<t_aif_modelinfo> &getModelInputInfo() const { return m_modelInputInfo; }
     std::shared_ptr<DetectorParam> getParam() const { return m_param; }
     size_t getNumDelegates() const { return m_delegates.size(); }
     bool getAutoDelegateMode() const { return m_autoDelegateMode; }
@@ -69,7 +70,8 @@ class Detector {
 
   protected:
     std::string m_modelName;
-    t_aif_modelinfo m_modelInfo;
+    t_aif_modelinfo m_modelInfo;                    // first input tensor info
+    std::vector<t_aif_modelinfo> m_modelInputInfo;  // all   input tensor info
     std::unique_ptr<tflite::FlatBufferModel> m_model;
     std::unique_ptr<tflite::Interpreter> m_interpreter;
     std::shared_ptr<DetectorParam> m_param;
