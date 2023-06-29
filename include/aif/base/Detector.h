@@ -76,7 +76,9 @@ class Detector {
     std::vector<std::shared_ptr<Delegate>> m_delegates;
     bool m_autoDelegateMode;
     std::shared_ptr<PerformanceRecorder> m_performance;
+#ifdef USE_AUTO_DELEGATE
     std::unique_ptr<AutoDelegateSelector> m_ads;
+#endif
 };
 
 } // end of namespace aif

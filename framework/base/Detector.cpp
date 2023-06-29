@@ -16,7 +16,7 @@ namespace aif {
 
 Detector::Detector(const std::string &modelName)
     : m_modelName(modelName), m_model(nullptr), m_interpreter(nullptr),
-      m_param(nullptr), m_autoDelegateMode(false), m_ads(nullptr) {
+      m_param(nullptr), m_autoDelegateMode(false) {
     memset(&m_modelInfo, 0, sizeof(m_modelInfo));
 }
 
