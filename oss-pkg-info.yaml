@@ -14,7 +14,7 @@ Open Source Software Package:
   version: 4.5.5
   source: https://github.com/opencv/opencv
   license: Apache-2.0
-- name: clipper
+- name: polyclipping
   version: 6.4.2
-  source: http://www.angusj.com
-  license: Boost Software License 1.0
+  source: https://sourceforge.net/projects/polyclipping
+  license: BSL-1.0
