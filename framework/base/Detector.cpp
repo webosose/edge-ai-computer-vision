@@ -20,13 +20,15 @@ Detector::Detector(const std::string &modelName)
     memset(&m_modelInfo, 0, sizeof(m_modelInfo));
 }
 
-Detector::~Detector() {}
+Detector::~Detector() {
+    PerformanceReporter::get().removeRecorder(m_modelName);
+}
 
 t_aif_status Detector::init(const std::string &param) {
     std::stringstream errlog;
     try {
         m_performance = std::make_shared<PerformanceRecorder>(m_modelName, param);
-        PerformanceReporter::get().addRecorder(m_performance);
+        PerformanceReporter::get().addRecorder(m_modelName, m_performance);
 
         m_performance->start(Performance::CREATE_DETECTOR);
         m_param = createParam();

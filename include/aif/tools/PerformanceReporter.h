@@ -9,6 +9,7 @@
 #include <aif/tools/Stopwatch.h>
 
 #include <vector>
+#include <unordered_map>
 #include <string>
 #include <memory>
 
@@ -74,9 +75,9 @@ public:
     void clear();
     void addReportType(int type) { m_reportType |= type; }
     int getReportType() const { return m_reportType; }
-    void addRecorder(const std::shared_ptr<PerformanceRecorder>& recorder) {
-        m_recorders.push_back(recorder);
-    }
+    void addRecorder(const std::string& name,
+            const std::shared_ptr<PerformanceRecorder>& recorder);
+    void removeRecorder(const std::string& name);
     void showReport(bool showRawData = true);
 
 private:
@@ -86,7 +87,7 @@ private:
 
 private:
     int m_reportType;
-    std::vector<std::shared_ptr<PerformanceRecorder>> m_recorders;
+    std::unordered_map<std::string, std::shared_ptr<PerformanceRecorder>> m_recorders;
 
 };
 

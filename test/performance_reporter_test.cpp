@@ -237,10 +237,12 @@ TEST_F(PerformanceReporterTest, reporter_test)
     PerformanceReporter::get().addReportType(type);
     EXPECT_EQ(type, PerformanceReporter::get().getReportType());
 
-    auto r1 = std::make_shared<PerformanceRecorder>("test model1", "test param1");
-    auto r2 = std::make_shared<PerformanceRecorder>("test model2", "test param2");
-    PerformanceReporter::get().addRecorder(r1);
-    PerformanceReporter::get().addRecorder(r2);
+    std::string model1 = "test model1";
+    std::string model2 = "test model2";
+    auto r1 = std::make_shared<PerformanceRecorder>(model1, "test param1");
+    auto r2 = std::make_shared<PerformanceRecorder>(model2, "test param2");
+    PerformanceReporter::get().addRecorder(model1, r1);
+    PerformanceReporter::get().addRecorder(model2, r2);
 
     for (int i = 0; i < 10; i++) {
         r1->start(Performance::CREATE_DETECTOR);

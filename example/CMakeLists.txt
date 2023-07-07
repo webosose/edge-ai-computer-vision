@@ -12,6 +12,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/posenet-sample)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/dl-sample)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/text)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pipe-sample)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/memory-sample)
 
 IF(WITH_EXTRA_MODELS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-websocket-server)

@@ -149,6 +149,19 @@ void PerformanceRecorder::printRawData()
 
 /////////////////////////////////////////////////////////////////////////////////
 // PerformanceReporter Impl
+void PerformanceReporter::addRecorder(
+        const std::string& name, const std::shared_ptr<PerformanceRecorder>& recorder)
+{
+    m_recorders[name] = recorder;
+}
+
+void PerformanceReporter::removeRecorder(const std::string& name)
+{
+    if (m_recorders.find(name) != m_recorders.end()) {
+        m_recorders.erase(name);
+    }
+}
+
 Performance::ReportType PerformanceReporter::strToReportType(const std::string& type) noexcept
 {
     if (type == "CONSOLE") {
@@ -169,8 +182,8 @@ void PerformanceReporter::clear()
 void PerformanceReporter::showReport(bool showRawData)
 {
     Logi("######### Performance Report ###############");
-    for (const std::shared_ptr<PerformanceRecorder>& recorder : m_recorders) {
-        recorder->printAll(showRawData);
+    for (auto& recorder : m_recorders) {
+        recorder.second->printAll(showRawData);
     }
     Logi("############################################");
 }
