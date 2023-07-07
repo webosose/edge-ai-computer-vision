@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Descriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
@@ -32,7 +32,7 @@ protected:
 
 TEST_F(Yolov3DescriptorTest, 01_constructor)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
     auto json = jfd.toStr();
     Logd(json);
 
@@ -44,7 +44,7 @@ TEST_F(Yolov3DescriptorTest, 01_constructor)
 
 TEST_F(Yolov3DescriptorTest, 02_addperson_one)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     BBox bbox(640, 480);
     bbox.xmin = 2.0f;
@@ -86,7 +86,7 @@ TEST_F(Yolov3DescriptorTest, 02_addperson_one)
 
 TEST_F(Yolov3DescriptorTest, 03_addperson_two)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     BBox bbox(640, 480);
     bbox.xmin = 2.0f;
@@ -127,7 +127,7 @@ TEST_F(Yolov3DescriptorTest, 03_addperson_two)
 
 TEST_F(Yolov3DescriptorTest, 04_add_response_and_returncode)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     jfd.addResponseName("person_detect");
     jfd.addReturnCode(kAifOk);
@@ -161,7 +161,7 @@ TEST_F(Yolov3DescriptorTest, 04_add_response_and_returncode)
 
 TEST_F(Yolov3DescriptorTest, 05_add_face)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     float score = 1.2;
     /*normalize 0~1 */
