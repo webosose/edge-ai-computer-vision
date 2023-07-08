@@ -35,6 +35,8 @@ class TestThread {
             m_ai = other.m_ai;
             m_input = other.m_input;
             m_count = other.m_count;
+
+            return *this;
         }
 
 
