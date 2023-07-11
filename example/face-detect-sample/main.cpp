@@ -5,6 +5,7 @@
 
 #include <aif/face/FaceDescriptor.h>
 #include <aif/sample/Sample.h>
+#include <aif/tools/Renderer.h>
 
 namespace rj = rapidjson;
 
@@ -21,15 +22,15 @@ class FaceDetectSample : public ImageSample {
   protected:
     virtual const cv::Mat &readImage() override {
         ImageSample::readImage();
-        m_inputSize = m_image.cols > m_image.rows ? m_image.cols : m_image.rows;
+        /*m_inputSize = m_image.cols > m_image.rows ? m_image.cols : m_image.rows;
         cv::Mat padded_image;
         padded_image.create(m_inputSize, m_inputSize, m_image.type());
         padded_image.setTo(cv::Scalar::all(0));
         m_image.copyTo(
-            padded_image(cv::Rect(0, 0, m_image.cols, m_image.rows)));
+            padded_image(cv::Rect(0, 0, m_image.cols, m_image.rows)));*/
 
-        m_width = m_inputSize;
-        m_height = m_inputSize;
+        m_width = m_image.cols;  //m_inputSize;
+        m_height = m_image.rows;  //m_inputSize;
         return m_image;
     }
 
@@ -40,22 +41,29 @@ class FaceDetectSample : public ImageSample {
         rj::Document json;
         json.Parse(descriptor->toStr());
         const rj::Value &faces = json["faces"];
+        std::vector<cv::Rect> rects;
         for (rj::SizeType i = 0; i < faces.Size(); i++) {
-            double xmin = faces[i]["region"][0].GetDouble();
-            double ymin = faces[i]["region"][1].GetDouble();
-            double xmax = faces[i]["region"][2].GetDouble();
-            double ymax = faces[i]["region"][3].GetDouble();
+            float xmin = faces[i]["region"][0].GetFloat();
+            float ymin = faces[i]["region"][1].GetFloat();
+            float width = faces[i]["region"][2].GetFloat();
+            float height = faces[i]["region"][3].GetFloat();
 
             // FaceDetection 결과는 0~1사이로 정규화되므로 원래 사이즈를
             // 이용하여 박스 좌표를 계산해야 한다.
             cv::Rect rect;
             rect.x = xmin * m_width;
             rect.y = ymin * m_height;
-            rect.width = (xmax - xmin) * m_width;
-            rect.height = (ymax - ymin) * m_height;
+            rect.width = width * m_width;
+            rect.height = height * m_height;
             std::cout << i << ": [ " << rect.x << ", " << rect.y << ", "
                       << rect.width << ", " << rect.height << " ]" << std::endl;
+
+            rects.push_back(rect);
+
         }
+
+        Renderer::drawRects(m_image, rects, cv::Scalar(255, 0, 0), 1);
+        cv::imwrite("./res.jpg", m_image);
     }
 
   private:
