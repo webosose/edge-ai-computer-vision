@@ -93,12 +93,12 @@ t_aif_status Yolov3YCV1Detector::fillInputTensor(const cv::Mat &img) /* override
         // memoryDump(input_y.data, "./y_input.bin", m_modelInputInfo[0].width * m_modelInputInfo[0].height * m_modelInputInfo[0].channels * sizeof(uint8_t));
         // memoryDump(input_uv.data, "./uv_input.bin", m_modelInputInfo[1].width * m_modelInputInfo[1].height * m_modelInputInfo[1].channels * sizeof(uint8_t));
 
-        uint8_t *inputTensor_f = m_interpreter->typed_input_tensor<uint8_t>(0);
-        uint8_t *inputTensor_s = m_interpreter->typed_input_tensor<uint8_t>(1);
+        uint8_t* inputTensor_f = m_interpreter->typed_input_tensor<uint8_t>(0);
+        uint8_t* inputTensor_s = m_interpreter->typed_input_tensor<uint8_t>(1);
         // memoryRestore(inputTensor_f, "./image_y.bin");
         // memoryRestore(inputTensor_s, "./image_uv.bin");
-        std::memcpy(inputTensor_f, input_y.ptr<uint8_t>(), m_modelInputInfo[0].width * m_modelInputInfo[0].height * m_modelInputInfo[0].channels * sizeof(uint8_t));
-        std::memcpy(inputTensor_s, input_uv.ptr<uint8_t>(), m_modelInputInfo[1].width * m_modelInputInfo[1].height * m_modelInputInfo[1].channels * sizeof(uint8_t));
+        std::memcpy(inputTensor_f, input_y.ptr<uint8_t>(0), m_modelInputInfo[0].width * m_modelInputInfo[0].height * m_modelInputInfo[0].channels * sizeof(uint8_t));
+        std::memcpy(inputTensor_s, input_uv.ptr<uint8_t>(0), m_modelInputInfo[1].width * m_modelInputInfo[1].height * m_modelInputInfo[1].channels * sizeof(uint8_t));
 
         return kAifOk;
     } catch (const std::exception &e) {
@@ -747,7 +747,7 @@ void Yolov3YCV1Detector::FaceMatching()
                     i_y1 = std::min(faceInput.pos_y1[fid], (m_obd_result).pos_y1[oid]);
                     i_area = std::max(i_x1 - i_x0, 0) * std::max(i_y1 - i_y0, 0);
                     i_dist = std::abs(faceInput.pos_x0[fid] + faceInput.pos_x1[fid] - (m_obd_result).pos_x0[oid] - (m_obd_result).pos_x1[oid]);
-                    i_conf = (m_obd_result).res_val[bid];
+                    i_conf = (m_obd_result).res_val[oid];
 
                     if (i_area > max_area) {
                         max_area = i_area;
