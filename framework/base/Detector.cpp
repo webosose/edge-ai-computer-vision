@@ -209,6 +209,9 @@ Detector::compileDelegates(tflite::ops::builtin::BuiltinOpResolver &resolver) {
     try {
         TfLiteStatus res = kTfLiteError;
         for (auto &delegate : m_delegates) {
+            if (delegate == nullptr)
+                continue;
+
             res = m_interpreter->ModifyGraphWithDelegate(
                 delegate->getTfLiteDelegate());
             if (res == kTfLiteOk) {
