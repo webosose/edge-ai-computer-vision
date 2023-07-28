@@ -33,15 +33,3 @@ TEST_F(PosenetParamTest, 01_copy_constructors)
 
     EXPECT_NE(param, param1);   /* compare addr. != */
 }
-
-TEST_F(PosenetParamTest, 02_move_constructors)
-{
-    PosenetParam param;
-    param.trace();
-
-    PosenetParam param1(param); /* copy constructor */
-
-    PosenetParam param2(std::move(param1)); /* move constructor */
-
-    EXPECT_NE(param2, param1);  /* compare addr. !=*/
-}

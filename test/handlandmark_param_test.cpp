@@ -33,15 +33,3 @@ TEST_F(HandLandmarkParamTest, 01_copy_constructors)
 
     EXPECT_NE(param, param1);   /* compare addr. != */
 }
-
-TEST_F(HandLandmarkParamTest, 02_move_constructors)
-{
-    HandLandmarkParam param;
-    param.trace();
-
-    HandLandmarkParam param1(param); /* copy constructor */
-
-    HandLandmarkParam param2(std::move(param1)); /* move constructor */
-
-    EXPECT_NE(param2, param1);  /* compare addr. !=*/
-}

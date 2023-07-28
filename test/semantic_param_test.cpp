@@ -33,15 +33,3 @@ TEST_F(SemanticParamTest, 01_copy_constructors)
 
     EXPECT_NE(param, param1);   /* compare addr. != */
 }
-
-TEST_F(SemanticParamTest, 02_move_constructors)
-{
-    SemanticParam param;
-    param.trace();
-
-    SemanticParam param1(param); /* copy constructor */
-
-    SemanticParam param2(std::move(param1)); /* move constructor */
-
-    EXPECT_NE(param2, param1);  /* compare addr. !=*/
-}

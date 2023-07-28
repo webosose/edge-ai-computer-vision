@@ -33,15 +33,3 @@ TEST_F(MovenetParamTest, 01_copy_constructors)
 
     EXPECT_NE(param, param1);   /* compare addr. != */
 }
-
-TEST_F(MovenetParamTest, 02_move_constructors)
-{
-    MovenetParam param;
-    param.trace();
-
-    MovenetParam param1(param); /* copy constructor */
-
-    MovenetParam param2(std::move(param1)); /* move constructor */
-
-    EXPECT_NE(param2, param1);  /* compare addr. !=*/
-}

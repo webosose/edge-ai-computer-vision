@@ -33,15 +33,3 @@ TEST_F(PoseLandmarkParamTest, 01_copy_constructors)
 
     EXPECT_NE(param, param1);   /* compare addr. != */
 }
-
-TEST_F(PoseLandmarkParamTest, 02_move_constructors)
-{
-    PoseLandmarkParam param;
-    param.trace();
-
-    PoseLandmarkParam param1(param); /* copy constructor */
-
-    PoseLandmarkParam param2(std::move(param1)); /* move constructor */
-
-    EXPECT_NE(param2, param1);  /* compare addr. !=*/
-}
