@@ -26,7 +26,9 @@ public:
 private:
     void setupOptions();
     tflite::StatefulNnApiDelegate::Options m_delegateOptions;
-
+    std::string m_cacheDir;
+    std::string m_modelToken;
+    std::string m_acceleratorName;
 };
 
 DelegateFactoryRegistration<NnapiDelegate> nnapi_delegate("nnapi_delegate");
