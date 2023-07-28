@@ -20,7 +20,7 @@ bool (*edgeai_detectFromBase64)(int type, const std::string &input, std::string 
 
 bool init()
 {
-    handle = dlopen("/usr/lib/libedgeai-vision.so", RTLD_LAZY);
+    handle = dlopen("/usr/lib/libedgeai-vision.so.1", RTLD_LAZY);
     if(handle == NULL) {
         printf("error %s\n", dlerror());
         return false;
@@ -113,7 +113,7 @@ bool deinit() {
 int main(int argc, char **argv)
 {
     if (!init()) {
-        printf("failed to init libedgeai-vision.so\n");
+        printf("failed to init libedgeai-vision.so.1\n");
         return 0;
     }
     cv::Mat input = cv::imread("/usr/share/aif/images/person.jpg", cv::IMREAD_COLOR);

@@ -48,7 +48,7 @@ protected:
 public:
     bool init()
     {
-        handle = dlopen("/usr/lib/libedgeai-vision.so", RTLD_LAZY);
+        handle = dlopen("/usr/lib/libedgeai-vision.so.1", RTLD_LAZY);
         if(handle == NULL) {
             printf("error %s\n", dlerror());
             return false;
