@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/base/WSServerSession.h>
+#include <WSServerSession.h>
 #include <aif/log/Logger.h>
 
 #include <boost/beast/websocket.hpp>

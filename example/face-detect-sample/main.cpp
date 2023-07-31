@@ -4,8 +4,8 @@
  */
 
 #include <aif/face/FaceDescriptor.h>
-#include <aif/sample/Sample.h>
-#include <aif/tools/Renderer.h>
+#include <Sample.h>
+#include <Renderer.h>
 
 namespace rj = rapidjson;
 

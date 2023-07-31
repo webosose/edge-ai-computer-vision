@@ -21,9 +21,9 @@ bool NodeOperationConfig::parse(const rj::Value& value)
         Loge("invalid operation config (no config)");
         return false;
     }
-    if (value["type"].GetString() != nullptr) {
-        m_type = value["type"].GetString();
-    }
+    const char* type = value["type"].GetString();
+    m_type = (type ? type : "");
+
     m_config = jsonObjectToString(value["config"]);
     return true;
 }
@@ -35,8 +35,9 @@ bool BridgeOperationConfig::parse(const rj::Value& value)
         return false;
     }
 
-    if (value["config"].HasMember("targetId") && (value["config"]["targetId"].GetString() != nullptr)) {
-        m_target = value["config"]["targetId"].GetString();
+    if (value["config"].HasMember("targetId")) {
+        const char* target = value["config"]["targetId"].GetString();
+        m_target = (target ? target : "");
     }
     return true;
 }
@@ -52,11 +53,13 @@ bool DetectorOperationConfig::parse(const rj::Value& value)
         return false;
     }
 
-    if (!value["config"].HasMember("model") || (value["config"]["model"].GetString() == nullptr)) {
-        Loge("invalid detector operation config (no model)");
+    if (value["config"].HasMember("model")) {
+        const char* model = value["config"]["model"].GetString();
+        m_model = (model ? model : "");
+    } else {
+        Loge("invalid node config (no model)");
         return false;
     }
-    m_model = value["config"]["model"].GetString();
 
     if (value["config"].HasMember("param")) {
         m_param = jsonObjectToString(value["config"]["param"]);
@@ -84,8 +87,9 @@ bool NodeConfig::parse(const rj::Value& value)
         return false;
     }
 
-    if (value["id"].GetString() != nullptr) {
-        m_id = value["id"].GetString();
+    if (value.HasMember("id")) {
+        const char* id = value["id"].GetString();
+        m_id = (id ? id : "");
     }
 
     const rj::Value& itypes = value["input"];
@@ -120,14 +124,16 @@ bool PipeConfig::parse(const std::string& config)
         return false;
     }
 
-    if (doc.HasMember("descriptor") && (doc["descriptor"].GetString() != nullptr)) {
-        m_descriptorId = doc["descriptor"].GetString();
+    if (doc.HasMember("descriptor")) {
+        const char* descriptorId = doc["descriptor"].GetString();
+        m_descriptorId = (descriptorId ? descriptorId : "");
     } else {
         m_descriptorId = "default_descriptor";
     }
 
-    if (doc.HasMember("name") && (doc["name"].GetString() != nullptr)) {
-        m_name = doc["name"].GetString();
+    if (doc.HasMember("name")) {
+        const char* name = doc["name"].GetString();
+        m_name = (name ? name : "");
     }
     const rj::Value& nodes = doc["nodes"];
     if (!nodes.IsArray() || nodes.Size() == 0) {
@@ -152,7 +158,7 @@ bool PipeConfig::parse(const std::string& config)
 
 std::shared_ptr<NodeConfig> PipeConfig::getNode(int index) const
 {
-    if (index < m_nodes.size()) {
+    if (0 <= index && index < m_nodes.size()) {
         return m_nodes[index];
     }
     return nullptr;

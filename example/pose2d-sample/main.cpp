@@ -6,7 +6,7 @@
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
-#include <aif/tools/Renderer.h>
+#include <Renderer.h>
 
 #include <opencv2/opencv.hpp>
 

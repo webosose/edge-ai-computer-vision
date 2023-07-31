@@ -15,18 +15,12 @@ t_aif_status DetectorFactory::registerGenerator(
         const DetectorGenerator& detectorGenerator,
         const DescriptorGenerator& descriptorGenerator)
 {
-    try {
-        if (m_detectorGenerators.find(id) != m_detectorGenerators.end()) {
-            throw std::runtime_error(id + " detector generator is already registered");
-        }
-        if (m_descriptorGenerators.find(id) != m_descriptorGenerators.end()) {
-            throw std::runtime_error(id + " descriptor generator is already registered");
-        }
-    } catch (const std::exception& e) {
-        std::cerr << __func__ << " Error: " << e.what() << std::endl;
+    if (m_detectorGenerators.find(id) != m_detectorGenerators.end()) {
+        Loge(id, " detector generator is already registered");
         return kAifError;
-    } catch (...) {
-        std::cerr << __func__ << " Error: Unknown exception occured!!\n";
+    }
+    if (m_descriptorGenerators.find(id) != m_descriptorGenerators.end()) {
+        Loge(id, " descriptor generator is already registered");
         return kAifError;
     }
 
@@ -47,42 +41,29 @@ std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, co
         return nullptr;
     }
 
-    try {
-        if (m_detectors.find(id) == m_detectors.end() &&
+    if (m_detectors.find(id) == m_detectors.end() &&
             m_detectorGenerators.find(id) == m_detectorGenerators.end()) {
-            throw std::runtime_error(id + " detector generator is not registered");
-        }
-        if (m_detectors.find(id) != m_detectors.end()) {
-            return m_detectors[id];
-        }
-        m_detectors[id] = m_detectorGenerators[id]();
-        if (m_detectors[id]->init(param) != kAifOk) {
-            throw std::runtime_error("detector init error");
-        }
-        return m_detectors[id];
-
-    } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return nullptr;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+        Loge(id, " detector generator is not registered");
         return nullptr;
     }
+    if (m_detectors.find(id) != m_detectors.end()) {
+        return m_detectors[id];
+    }
+
+    m_detectors[id] = m_detectorGenerators[id]();
+    if (m_detectors[id]->init(param) != kAifOk) {
+        Loge(id, "detector init error");
+        return nullptr;
+    }
+    return m_detectors[id];
 }
 
 std::shared_ptr<Descriptor> DetectorFactory::getDescriptor(const std::string& id) {
-    try {
-        if (m_descriptorGenerators.find(id) == m_descriptorGenerators.end()) {
-            throw std::runtime_error(id + " descriptor generator is not registered");
-        }
-        return m_descriptorGenerators[id]();
-    } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return nullptr;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    if (m_descriptorGenerators.find(id) == m_descriptorGenerators.end()) {
+        Loge(id, " descriptor generator is not registered");
         return nullptr;
     }
+    return m_descriptorGenerators[id]();
 }
 
 void DetectorFactory::clear()

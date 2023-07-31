@@ -33,17 +33,16 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
                 }
             }
             optionMap[opt.name.GetString()] = optStr;
-            numOptions++;
-            Logi("[option ", numOptions, " ] ",
-                opt.name.GetString(), " : ", optionMap[opt.name.GetString()]);
         }
         else if (opt.value.IsString()) {
             optionMap[opt.name.GetString()] = opt.value.GetString();
-            numOptions++;
-            Logi("[option ", numOptions, " ] ",
-                opt.name.GetString(), " : ", optionMap[opt.name.GetString()]);
         } else {
             Loge("option is not string: ", opt.name.GetString());
+        }
+
+        if (UINT_MAX - numOptions > 0) {
+            numOptions++;
+            Logi(opt.name.GetString(), " : ", optionMap[opt.name.GetString()]);
         }
     }
 
@@ -56,21 +55,23 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
         }
     }
 
-    std::unique_ptr<const char*> keys =
-        std::unique_ptr<const char*>(new const char*[numOptions + 1]);
-    std::unique_ptr<const char*> values =
-        std::unique_ptr<const char*>(new const char*[numOptions + 1]);
-    int i = 0;
-    for (auto& opt : optionMap) {
-        Logi("armnn option: ", opt.first, " : ", opt.second);
-        keys.get()[i]   = opt.first.c_str();
-        values.get()[i] = opt.second.c_str();
-        i++;
-    }
-    armnnDelegate::DelegateOptions options(
-            keys.get(), values.get(), numOptions, nullptr);
+    if (UINT_MAX - numOptions > 0) {
+        std::unique_ptr<const char*> keys =
+            std::unique_ptr<const char*>(new const char*[numOptions + 1]);
+        std::unique_ptr<const char*> values =
+            std::unique_ptr<const char*>(new const char*[numOptions + 1]);
+        int i = 0;
+        for (auto& opt : optionMap) {
+            Logi("armnn option: ", opt.first, " : ", opt.second);
+            keys.get()[i]   = opt.first.c_str();
+            values.get()[i] = opt.second.c_str();
+            if (INT_MAX - i > 0) i++;
+        }
+        armnnDelegate::DelegateOptions options(
+                keys.get(), values.get(), numOptions, nullptr);
 
-    m_delegateOptions = options;
+        m_delegateOptions = options;
+    }
 }
 
 ArmNNDelegate::~ArmNNDelegate()
@@ -79,9 +80,13 @@ ArmNNDelegate::~ArmNNDelegate()
 
 bool ArmNNDelegate::updateCachedNetworkFile(const std::string& filepath) const
 {
+    int err = 0;
     if (FILE *file = fopen(filepath.c_str(), "r")) {
-        fclose(file);
         Logi("use cached network file: ", filepath);
+        err = fclose(file);
+        if (err != 0) {
+            Loge("file close error: ", filepath);
+        }
         return false;
     }
 

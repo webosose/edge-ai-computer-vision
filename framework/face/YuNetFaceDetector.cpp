@@ -49,6 +49,9 @@
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 
+#include <cerrno>
+#include <cfenv>
+
 namespace aif {
 
 YuNetFaceDetector::YuNetFaceDetector()
@@ -80,13 +83,7 @@ void YuNetFaceDetector::setModelInfo(TfLiteTensor* inputTensor)
 
 t_aif_status YuNetFaceDetector::preProcessing()
 {
-    try {
-        generatePriors();
-    } catch(const std::exception& e) {
-        std::cerr << __func__ << "Error: " << e.what() << std::endl;
-    } catch(...) {
-        std::cerr << __func__ << "Error: Unknown exception occured!!\n";
-    }
+     generatePriors();
      return kAifOk;
 }
 
@@ -94,139 +91,148 @@ t_aif_status YuNetFaceDetector::postProcessing(const cv::Mat &img,
         std::shared_ptr<Descriptor> &descriptor)
 {
 
-    try{
-        Stopwatch sw;
-        sw.start();
-        if (faceDetect(descriptor) != kAifOk) {
-            throw std::runtime_error("generateOutput failed!!");
-        }
-        TRACE("\tfaceDetect(): ", sw.getMs(), "ms");
-        sw.stop();
-        return kAifOk;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    Stopwatch sw;
+    sw.start();
+    if (faceDetect(descriptor) != kAifOk) {
+        Loge("generateOutput failed!!");
         return kAifError;
     }
+    TRACE("\tfaceDetect(): ", sw.getMs(), "ms");
+    sw.stop();
+    return kAifOk;
 }
 
 
 t_aif_status YuNetFaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
 {
-    try {
-        std::shared_ptr<YuNetFaceParam> param = std::dynamic_pointer_cast<YuNetFaceParam>(m_param);
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter not initilaized!!");
-        }
-
-        const std::vector<int>& t_outputs = m_interpreter->outputs();
-        TRACE("t_outputs.size: ", t_outputs.size());
-        TfLiteTensor* conf = m_interpreter->tensor(t_outputs[0]);
-        if (conf == nullptr) {
-            throw std::runtime_error("can't get tflite conf!!");
-        }
-        TfLiteTensor* loc = m_interpreter->tensor(t_outputs[1]);
-        if (loc == nullptr) {
-            throw std::runtime_error("can't get tflite loc!!");
-        }
-        TfLiteTensor* iou = m_interpreter->tensor(t_outputs[2]);
-        if (iou == nullptr) {
-            throw std::runtime_error("can't get tflite iou!!");
-        }
-
-        const float scoreThreshold = param->scoreThreshold;
-        const float nmsThreshold = param->nmsThreshold;
-        const int topK = param->topK;
-
-        // Decode from deltas and priors
-        const std::vector<float> variance = {0.1f, 0.2f};
-        float* loc_v = loc->data.f;
-        float* conf_v = conf->data.f;
-        float* iou_v = iou->data.f;
-
-        cv::Mat faces;
-        cv::Mat face(1, 15, CV_32FC1);
-        for (size_t i = 0; i < m_priors.size(); ++i) {
-            // Get score
-            float clsScore = conf_v[i*2+1];
-            float iouScore = iou_v[i];
-            // Clamp
-            if (iouScore < 0.f) {
-                iouScore = 0.f;
-            }
-            else if (iouScore > 1.f) {
-                iouScore = 1.f;
-            }
-            float score = std::sqrt(clsScore * iouScore);
-            face.at<float>(0, 14) = score;
-
-            // Get bounding box
-            int paddedW = m_paddedSize.width;
-            int paddedH = m_paddedSize.height;
-
-
-            float cx = (m_priors[i].x + loc_v[i*14+0] * variance[0] * m_priors[i].width)  * paddedW;
-            float cy = (m_priors[i].y + loc_v[i*14+1] * variance[0] * m_priors[i].height) * paddedH;
-            float w  = m_priors[i].width  * exp(loc_v[i*14+2] * variance[0]) * paddedW;
-            float h  = m_priors[i].height * exp(loc_v[i*14+3] * variance[1]) * paddedH;
-            float x1 = cx - w / 2;
-            float y1 = cy - h / 2;
-            face.at<float>(0, 0) = x1;
-            face.at<float>(0, 1) = y1;
-            face.at<float>(0, 2) = w;
-            face.at<float>(0, 3) = h;
-
-
-            // Get landmarks
-            face.at<float>(0, 4) = (m_priors[i].x + loc_v[i*14+ 4] * variance[0] * m_priors[i].width)  * paddedW;  // right eye, x
-            face.at<float>(0, 5) = (m_priors[i].y + loc_v[i*14+ 5] * variance[0] * m_priors[i].height) * paddedH;  // right eye, y
-            face.at<float>(0, 6) = (m_priors[i].x + loc_v[i*14+ 6] * variance[0] * m_priors[i].width)  * paddedW;  // left eye, x
-            face.at<float>(0, 7) = (m_priors[i].y + loc_v[i*14+ 7] * variance[0] * m_priors[i].height) * paddedH;  // left eye, y
-            face.at<float>(0, 8) = (m_priors[i].x + loc_v[i*14+ 8] * variance[0] * m_priors[i].width)  * paddedW;  // nose tip, x
-            face.at<float>(0, 9) = (m_priors[i].y + loc_v[i*14+ 9] * variance[0] * m_priors[i].height) * paddedH;  // nose tip, y
-            face.at<float>(0, 10) = (m_priors[i].x + loc_v[i*14+10] * variance[0] * m_priors[i].width)  * paddedW; // right corner of mouth, x
-            face.at<float>(0, 11) = (m_priors[i].y + loc_v[i*14+11] * variance[0] * m_priors[i].height) * paddedH; // right corner of mouth, y
-            face.at<float>(0, 12) = (m_priors[i].x + loc_v[i*14+12] * variance[0] * m_priors[i].width)  * paddedW; // left corner of mouth, x
-            face.at<float>(0, 13) = (m_priors[i].y + loc_v[i*14+13] * variance[0] * m_priors[i].height) * paddedH; // left corner of mouth, y
-
-            faces.push_back(face);
-        }
-
-        cv::Mat result;
-        if (faces.rows > 1) {
-            // Retrieve boxes and scores
-            std::vector<cv::Rect2i> faceBoxes;
-            std::vector<float> faceScores;
-            for (int rIdx = 0; rIdx < faces.rows; rIdx++) {
-                faceBoxes.push_back(cv::Rect2i(int(faces.at<float>(rIdx, 0)), int(faces.at<float>(rIdx, 1)), int(faces.at<float>(rIdx, 2)), int(faces.at<float>(rIdx, 3))));
-                faceScores.push_back(faces.at<float>(rIdx, 14));
-            }
-
-            std::vector<int> keepIdx;
-            cv::dnn::NMSBoxes(faceBoxes, faceScores, scoreThreshold, nmsThreshold, keepIdx, 1.f, topK);
-
-            // Get NMS results
-            cv::Mat nms_faces;
-            for (int idx: keepIdx) {
-                nms_faces.push_back(faces.row(idx));
-            }
-
-            nms_faces.convertTo(result, CV_32FC1);
-        } else {
-            faces.convertTo(result, CV_32FC1);
-        }
-        convertToDescriptor(result, descriptor);
-        return kAifOk;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    std::shared_ptr<YuNetFaceParam> param = std::dynamic_pointer_cast<YuNetFaceParam>(m_param);
+    if (m_interpreter == nullptr) {
+        Loge("tflite interpreter not initilaized!!");
         return kAifError;
     }
 
+    const std::vector<int>& t_outputs = m_interpreter->outputs();
+    TRACE("t_outputs.size: ", t_outputs.size());
+    TfLiteTensor* conf = m_interpreter->tensor(t_outputs[0]);
+    if (conf == nullptr) {
+        Loge("can't get tflite conf!!");
+        return kAifError;
+    }
+    TfLiteTensor* loc = m_interpreter->tensor(t_outputs[1]);
+    if (loc == nullptr) {
+        Loge("can't get tflite loc!!");
+        return kAifError;
+    }
+    TfLiteTensor* iou = m_interpreter->tensor(t_outputs[2]);
+    if (iou == nullptr) {
+        Loge("can't get tflite iou!!");
+        return kAifError;
+    }
+
+    const float scoreThreshold = param->scoreThreshold;
+    const float nmsThreshold = param->nmsThreshold;
+    const int topK = param->topK;
+
+    // Decode from deltas and priors
+    const std::vector<float> variance = {0.1f, 0.2f};
+    float* loc_v = loc->data.f;
+    float* conf_v = conf->data.f;
+    float* iou_v = iou->data.f;
+
+    cv::Mat faces;
+    cv::Mat face(1, 15, CV_32FC1);
+    for (size_t i = 0; i < m_priors.size(); ++i) {
+        // Get score
+        float clsScore = conf_v[i*2+1];
+        float iouScore = iou_v[i];
+        // Clamp
+        if (iouScore < 0.f) {
+            iouScore = 0.f;
+        }
+        else if (iouScore > 1.f) {
+            iouScore = 1.f;
+        }
+
+        if (std::isless(clsScore * iouScore, 0.0)) {
+            Loge("face detect error.");
+            return kAifError;
+        }
+        float score = std::sqrt(clsScore * iouScore);
+        face.at<float>(0, 14) = score;
+
+        // Get bounding box
+        int paddedW = m_paddedSize.width;
+        int paddedH = m_paddedSize.height;
+
+
+        float cx = (m_priors[i].x + loc_v[i*14+0] * variance[0] * m_priors[i].width)  * paddedW;
+        float cy = (m_priors[i].y + loc_v[i*14+1] * variance[0] * m_priors[i].height) * paddedH;
+
+        errno = 0;
+        float w  = m_priors[i].width  * exp(loc_v[i*14+2] * variance[0]) * paddedW;
+        if (errno == ERANGE) {
+            Loge("errno == ERANGE: ", std::strerror(errno));
+            return kAifError;
+        }
+        if (std::fetestexcept(FE_OVERFLOW)) {
+        }
+
+        errno = 0;
+        float h  = m_priors[i].height * exp(loc_v[i*14+3] * variance[1]) * paddedH;
+        if (errno == ERANGE) {
+            Loge("errno == ERANGE: ", std::strerror(errno));
+            return kAifError;
+        }
+        if (std::fetestexcept(FE_OVERFLOW)) {
+        }
+
+        float x1 = cx - w / 2;
+        float y1 = cy - h / 2;
+        face.at<float>(0, 0) = x1;
+        face.at<float>(0, 1) = y1;
+        face.at<float>(0, 2) = w;
+        face.at<float>(0, 3) = h;
+
+
+        // Get landmarks
+        face.at<float>(0, 4) = (m_priors[i].x + loc_v[i*14+ 4] * variance[0] * m_priors[i].width)  * paddedW;  // right eye, x
+        face.at<float>(0, 5) = (m_priors[i].y + loc_v[i*14+ 5] * variance[0] * m_priors[i].height) * paddedH;  // right eye, y
+        face.at<float>(0, 6) = (m_priors[i].x + loc_v[i*14+ 6] * variance[0] * m_priors[i].width)  * paddedW;  // left eye, x
+        face.at<float>(0, 7) = (m_priors[i].y + loc_v[i*14+ 7] * variance[0] * m_priors[i].height) * paddedH;  // left eye, y
+        face.at<float>(0, 8) = (m_priors[i].x + loc_v[i*14+ 8] * variance[0] * m_priors[i].width)  * paddedW;  // nose tip, x
+        face.at<float>(0, 9) = (m_priors[i].y + loc_v[i*14+ 9] * variance[0] * m_priors[i].height) * paddedH;  // nose tip, y
+        face.at<float>(0, 10) = (m_priors[i].x + loc_v[i*14+10] * variance[0] * m_priors[i].width)  * paddedW; // right corner of mouth, x
+        face.at<float>(0, 11) = (m_priors[i].y + loc_v[i*14+11] * variance[0] * m_priors[i].height) * paddedH; // right corner of mouth, y
+        face.at<float>(0, 12) = (m_priors[i].x + loc_v[i*14+12] * variance[0] * m_priors[i].width)  * paddedW; // left corner of mouth, x
+        face.at<float>(0, 13) = (m_priors[i].y + loc_v[i*14+13] * variance[0] * m_priors[i].height) * paddedH; // left corner of mouth, y
+
+        faces.push_back(face);
+    }
+
+    cv::Mat result;
+    if (faces.rows > 1) {
+        // Retrieve boxes and scores
+        std::vector<cv::Rect2i> faceBoxes;
+        std::vector<float> faceScores;
+        for (int rIdx = 0; rIdx < faces.rows; rIdx++) {
+            faceBoxes.push_back(cv::Rect2i(int(faces.at<float>(rIdx, 0)), int(faces.at<float>(rIdx, 1)), int(faces.at<float>(rIdx, 2)), int(faces.at<float>(rIdx, 3))));
+            faceScores.push_back(faces.at<float>(rIdx, 14));
+        }
+
+        std::vector<int> keepIdx;
+        cv::dnn::NMSBoxes(faceBoxes, faceScores, scoreThreshold, nmsThreshold, keepIdx, 1.f, topK);
+
+        // Get NMS results
+        cv::Mat nms_faces;
+        for (int idx: keepIdx) {
+            nms_faces.push_back(faces.row(idx));
+        }
+
+        nms_faces.convertTo(result, CV_32FC1);
+    } else {
+        faces.convertTo(result, CV_32FC1);
+    }
+    convertToDescriptor(result, descriptor);
     return kAifOk;
 }
 
@@ -265,50 +271,49 @@ void YuNetFaceDetector::convertToDescriptor(cv::Mat& faces, std::shared_ptr<Desc
 
 t_aif_status YuNetFaceDetector::fillInputTensor(const cv::Mat &img)
 {
-    try {
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("invalid opencv image!!");
-        }
-
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter not initialized!!");
-        }
-        m_scaleSize = img.size();
-
-        int height = m_modelInfo.height;
-        int width = m_modelInfo.width;
-        int channels = m_modelInfo.channels;
-
-        cv::Mat padded_input_image;
-        getPaddedImage(img, cv::Size(width, height), padded_input_image);
-
-        cv::Mat blob = cv::dnn::blobFromImage(padded_input_image, 1.0, cv::Size(width, height));
-        if (blob.empty()) {
-            Logi("can't get input_blob image");
-            return kAifError;
-        }
-        blob = blob.reshape(1, 1);
-
-        float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
-        // CID9333391
-        if (inputTensor != nullptr) {
-            std::memcpy(inputTensor, blob.data, blob.total()*sizeof(float));
-        }
-
-        m_paddedSize = padded_input_image.size();
-
-        return kAifOk;
-    } catch (const std::exception &e) {
-        Loge(__func__, "Error: ", e.what());
-        return kAifError;
-    } catch (...) {
-        Loge(__func__, "Error: Unknown exception occured!!");
+    if (img.rows == 0 || img.cols == 0) {
+        Loge("invalid opencv image!!");
         return kAifError;
     }
+
+    if (m_interpreter == nullptr) {
+        Loge("tflite interpreter not initialized!!");
+        return kAifError;
+    }
+    m_scaleSize = img.size();
+
+    int height = m_modelInfo.height;
+    int width = m_modelInfo.width;
+    int channels = m_modelInfo.channels;
+
+    cv::Mat padded_input_image;
+    getPaddedImage(img, cv::Size(width, height), padded_input_image);
+
+    cv::Mat blob = cv::dnn::blobFromImage(padded_input_image, 1.0, cv::Size(width, height));
+    if (blob.empty()) {
+        Loge("can't get input_blob image");
+        return kAifError;
+    }
+    blob = blob.reshape(1, 1);
+
+    float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
+    // CID9333391
+    if (inputTensor != nullptr) {
+        std::memcpy(inputTensor, blob.data, blob.total()*sizeof(float));
+    }
+
+    m_paddedSize = padded_input_image.size();
+
+    return kAifOk;
 }
 
 void YuNetFaceDetector::generatePriors()
 {
+    if (m_inputWidth > INT_MAX - 1 ||  m_inputHeight > INT_MAX -1) {
+        Loge("input width height error");
+        return;
+    }
+
     // Calculate shapes of different scales according to the shape of input image
     cv::Size feature_map_2nd = {
         int(int((m_inputWidth+1)/2)/2), int(int((m_inputHeight+1)/2)/2)
@@ -377,14 +382,30 @@ void YuNetFaceDetector::getPaddedImage(const cv::Mat& src, const cv::Size& model
     int dstW = 0;
     int dstH = 0;
     int n = 1;
+    if (srcW <= 0 || srcH <= 0 || modelW <= 0 || modelH <= 0) {
+        Loge("padding error");
+        return;
+    }
     if (srcW > srcH) {
         n = (srcW / modelW) + ((srcW % modelW) != 0 ? 1 : 0);
     } else {
         n = (srcH / modelH) + ((srcH % modelH) != 0 ? 1 : 0);
     }
     n = (n == 0) ? 1 : n;
+
+
+    if (modelW > (INT_MAX / n) || modelH > (INT_MAX / n)) {
+        Loge("padding error");
+        return;
+    }
     dstW = modelW * n;
     dstH = modelH * n;
+
+    if (dstH < srcH || dstW < srcW) {
+        Loge("padding error");
+        return;
+
+    }
 
     cv::copyMakeBorder(src, dst, 0, (dstH-srcH), 0, (dstW-srcW), cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
 }

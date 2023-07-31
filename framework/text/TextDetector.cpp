@@ -57,34 +57,26 @@ void TextDetector::setModelInfo(TfLiteTensor* inputTensor)
 
 t_aif_status TextDetector::fillInputTensor(const cv::Mat& img)/* override*/
 {
-    try {
-        float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
-        if (inputTensor == nullptr) {
-            Loge(__func__, "failed to get inputTensor pointer");
-            return kAifError;
-        }
+    float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
+    if (inputTensor == nullptr) {
+        Loge(__func__, "failed to get inputTensor pointer");
+        return kAifError;
+    }
 
-        cv::Mat blob = cv::dnn::blobFromImage(img, 1.0/255.0,
-                cv::Size(m_modelInfo.width, m_modelInfo.height), cv::Scalar(103.939, 116.779, 123.68), false, false);
+    cv::Mat blob = cv::dnn::blobFromImage(img, 1.0/255.0,
+            cv::Size(m_modelInfo.width, m_modelInfo.height), cv::Scalar(103.939, 116.779, 123.68), false, false);
 
-        if (m_useNHWC) {
-            for(int c = 0; c < m_modelInfo.channels; ++c) {
-                for(int y = 0; y < m_modelInfo.height; ++y) {
-                    for(int x = 0; x < m_modelInfo.width; ++x) {
-                        inputTensor[y * (m_modelInfo.width * m_modelInfo.channels) + x * m_modelInfo.channels + c]
-                            = blob.at<float>(c * m_modelInfo.height * m_modelInfo.width + y * m_modelInfo.width + x);
-                    }
+    if (m_useNHWC) {
+        for(int c = 0; c < m_modelInfo.channels; ++c) {
+            for(int y = 0; y < m_modelInfo.height; ++y) {
+                for(int x = 0; x < m_modelInfo.width; ++x) {
+                    inputTensor[y * (m_modelInfo.width * m_modelInfo.channels) + x * m_modelInfo.channels + c]
+                        = blob.at<float>(c * m_modelInfo.height * m_modelInfo.width + y * m_modelInfo.width + x);
                 }
             }
-        } else {
-            memcpy(inputTensor, blob.data, blob.total() * blob.elemSize());
         }
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
-        return kAifError;
+    } else {
+        memcpy(inputTensor, blob.data, blob.total() * blob.elemSize());
     }
 
     return kAifOk;

@@ -5,6 +5,7 @@ IF("${AIF_INSTALL_EXAMPLE_DIR}" STREQUAL "")
     set(AIF_INSTALL_EXAMPLE_DIR "${AIF_INSTALL_DIR}/example")
 ENDIF()
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tools)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/face)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/websocket-service)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-detect-sample)

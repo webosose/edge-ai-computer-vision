@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/tools/Renderer.h>
+#include <Renderer.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

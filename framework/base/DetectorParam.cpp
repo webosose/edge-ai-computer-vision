@@ -63,7 +63,7 @@ t_aif_status DetectorParam::fromJson(const std::string &param) {
 
 bool DetectorParam::getUseXnnpack() const { return m_useXnnpack; }
 
-size_t DetectorParam::getNumThreads() const { return m_numThreads; }
+int DetectorParam::getNumThreads() const { return m_numThreads; }
 
 const std::vector<std::pair<std::string, std::string>> &
 DetectorParam::getDelegates() const {

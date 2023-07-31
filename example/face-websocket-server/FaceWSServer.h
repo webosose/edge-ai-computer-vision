@@ -6,7 +6,7 @@
 #ifndef FACE_WSSERVER_H
 #define FACE_WSSERVER_H
 
-#include <aif/base/WSServer.h>
+#include <WSServer.h>
 
 class FaceWSServer : public aif::WSServer
 {

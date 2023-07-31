@@ -36,7 +36,8 @@ void BodypixDescriptor::addMaskData(int width, int height, uint8_t* mask)
     }
     rj::Value segment(rj::kObjectType);
     rj::Value maskData(rj::kArrayType);
-    for (int i = 0; i < width * height; i++) {
+    int maskSize = width * height;
+    for (int i = 0; i < maskSize; i++) {
         int q = (int)mask[i];
         float t = 0.08946539461612701 * (q - 160);
         if (t > 0.2)

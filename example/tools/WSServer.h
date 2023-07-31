@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include <aif/base/WSServerSession.h>
+#include <WSServerSession.h>
 
 namespace aif {
 

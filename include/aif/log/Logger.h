@@ -82,7 +82,12 @@ private:
 #define LOG_CONTEXT        "AIF"
 #endif
 
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+inline const char *basename(const char *path) {
+    const char *cp = strrchr(path, '/');
+    return (cp ? cp+1 : path);
+}
+
+#define __FILENAME__ (basename(__FILE__))
 
 #if defined(ENABLE_DEBUG)
 

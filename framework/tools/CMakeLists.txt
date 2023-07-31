@@ -7,8 +7,6 @@ set(TOOLS_SRC
     ${TOOLS_SRC_DIR}/Utils.cpp
     ${TOOLS_SRC_DIR}/CAPIForTas.cpp
     ${TOOLS_SRC_DIR}/PerformanceReporter.cpp
-    ${TOOLS_SRC_DIR}/VideoTester.cpp
-    ${TOOLS_SRC_DIR}/Renderer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${TOOLS_SRC_DIR})

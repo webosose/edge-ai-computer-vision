@@ -25,26 +25,18 @@ t_aif_status CpuBodypixDetector::compileModel(
     tflite::ops::builtin::BuiltinOpResolver &resolver) /* override*/
 {
     Logi("Compile Model: CpuBodypixDetector");
-    std::stringstream errlog;
-    try {
-        TfLiteStatus res = kTfLiteError;
-        resolver.AddCustom(coral::kPosenetDecoderOp,
-                           coral::RegisterPosenetDecoderOp());
-        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
+    TfLiteStatus res = kTfLiteError;
+    resolver.AddCustom(coral::kPosenetDecoderOp,
+            coral::RegisterPosenetDecoderOp());
+    res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
             &m_interpreter, MAX_INTERPRETER_THREADS);
 
-        if (res != kTfLiteOk || m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter build failed!!");
-        }
-
-        return kAifOk;
-    } catch (const std::exception &e) {
-        Loge(__func__, "Error: ", e.what());
-        return kAifError;
-    } catch (...) {
-        Loge(__func__, "Error: Unknown exception occured!!");
+    if (res != kTfLiteOk || m_interpreter == nullptr) {
+        Loge("tflite interpreter build failed!!");
         return kAifError;
     }
+
+    return kAifOk;
 }
 
 } // namespace aif

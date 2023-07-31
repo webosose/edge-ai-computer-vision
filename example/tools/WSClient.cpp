@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/base/WSClient.h>
+#include <WSClient.h>
 #include <aif/log/Logger.h>
 
 #include <msgpack.hpp>

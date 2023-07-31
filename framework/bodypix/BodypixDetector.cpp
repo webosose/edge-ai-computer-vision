@@ -27,40 +27,35 @@ std::shared_ptr<DetectorParam> BodypixDetector::createParam()
 
 t_aif_status BodypixDetector::fillInputTensor(const cv::Mat& img)/* override*/
 {
-    try {
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("invalid opencv image!!");
-        }
-
-        int height = m_modelInfo.height;
-        int width = m_modelInfo.width;
-        int channels = m_modelInfo.channels;
-
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter not initialized!!");
-        }
-
-        t_aif_status res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
-                m_interpreter.get(),
-                img,
-                width,
-                height,
-                channels,
-                true,
-                aif::kAifNone
-                );
-        if (res != kAifOk) {
-            throw std::runtime_error("fillInputTensor failed!!");
-        }
-
-        return res;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    if (img.rows == 0 || img.cols == 0) {
+        Loge("invalid opencv image!!");
         return kAifError;
     }
+
+    int height = m_modelInfo.height;
+    int width = m_modelInfo.width;
+    int channels = m_modelInfo.channels;
+
+    if (m_interpreter == nullptr) {
+        Loge("tflite interpreter not initialized!!");
+        return kAifError;
+    }
+
+    t_aif_status res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
+            m_interpreter.get(),
+            img,
+            width,
+            height,
+            channels,
+            true,
+            aif::kAifNone
+            );
+    if (res != kAifOk) {
+        Loge("fillInputTensor failed!!");
+        return kAifError;
+    }
+
+    return res;
 }
 
 t_aif_status BodypixDetector::preProcessing()

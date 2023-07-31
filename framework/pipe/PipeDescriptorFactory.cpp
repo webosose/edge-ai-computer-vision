@@ -14,15 +14,8 @@ t_aif_status PipeDescriptorFactory::registerGenerator(
         const std::string& id,
         const PipeDescriptorGenerator& generator)
 {
-    try {
-        if (m_generators.find(id) != m_generators.end()) {
-            throw std::runtime_error(id + " operation generator is already registered");
-        }
-     } catch (const std::exception& e) {
-        Loge(__func__, e.what());
-        return kAifError;
-    } catch (...) {
-        Loge("Unknown exception occured!!");
+    if (m_generators.find(id) != m_generators.end()) {
+        Loge(id + " operation generator is already registered");
         return kAifError;
     }
 
@@ -38,21 +31,13 @@ std::shared_ptr<PipeDescriptor> PipeDescriptorFactory::create(
         return nullptr;
     }
 
-    try {
-        if (m_generators.find(id) == m_generators.end()) {
-            Logi("create default pipe descriptor");
-            return std::make_shared<PipeDescriptor>();
-        }
-        Logi("create node descriptor: ", id);
-        std::shared_ptr<PipeDescriptor> descriptor= m_generators[id]();
-        return descriptor;
-    } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return nullptr;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
-        return nullptr;
+    if (m_generators.find(id) == m_generators.end()) {
+        Logi("create default pipe descriptor");
+        return std::make_shared<PipeDescriptor>();
     }
+    Logi("create node descriptor: ", id);
+    std::shared_ptr<PipeDescriptor> descriptor = m_generators[id]();
+    return descriptor;
 }
 
 } // end of namespace aif

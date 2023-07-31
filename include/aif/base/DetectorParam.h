@@ -22,7 +22,7 @@ class DetectorParam {
     virtual t_aif_status fromJson(const std::string &param);
 
     bool getUseXnnpack() const;
-    size_t getNumThreads() const;
+    int getNumThreads() const;
     const std::vector<std::pair<std::string, std::string>> &
     getDelegates() const;
 
@@ -33,7 +33,7 @@ class DetectorParam {
     std::string m_param;
     bool m_useAutoDelegate;
     bool m_useXnnpack;
-    size_t m_numThreads;
+    int m_numThreads;
     std::vector<std::pair<std::string, std::string>> m_delegates;
     std::string m_autoDelegateConfig;
 };

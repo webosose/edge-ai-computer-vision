@@ -35,69 +35,57 @@ EdgeTpuFaceDetector::~EdgeTpuFaceDetector() {
 }
 
 t_aif_status EdgeTpuFaceDetector::compileModel(
-    tflite::ops::builtin::BuiltinOpResolver &resolver) {
+        tflite::ops::builtin::BuiltinOpResolver &resolver) {
     Logi("Compile Model: EdgeTpuFaceDetector");
-    std::stringstream errlog;
-    try {
-        TfLiteStatus res = kTfLiteError;
-        // Sets up the edgetpu_context. available for any 1 TPU device.
-        m_edgetpuContext =
-            edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
-        if (m_edgetpuContext == nullptr) {
-            throw std::runtime_error("can't get edgetpu context!!");
-        }
 
-        // Registers Edge TPU custom op handler with Tflite resolver.
-        resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
-
-        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
-            &m_interpreter, MAX_INTERPRETER_THREADS);
-        if (res != kTfLiteOk || m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter build failed!!");
-        }
-
-        m_interpreter->SetExternalContext(kTfLiteEdgeTpuContext,
-                                          m_edgetpuContext.get());
-        return kAifOk;
-    } catch (const std::exception &e) {
-        Loge(__func__, "Error: ", e.what());
-        return kAifError;
-    } catch (...) {
-        Loge(__func__, "Error: Unknown exception occured!!");
+    // Sets up the edgetpu_context. available for any 1 TPU device.
+    m_edgetpuContext =
+        edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
+    if (m_edgetpuContext == nullptr) {
+        Loge("can't get edgetpu context!!");
         return kAifError;
     }
+
+    // Registers Edge TPU custom op handler with Tflite resolver.
+    resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
+
+    TfLiteStatus res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
+            &m_interpreter, MAX_INTERPRETER_THREADS);
+    if (res != kTfLiteOk || m_interpreter == nullptr) {
+        Loge("tflite interpreter build failed!!");
+        return kAifError;
+    }
+
+    m_interpreter->SetExternalContext(kTfLiteEdgeTpuContext,
+            m_edgetpuContext.get());
+    return kAifOk;
 }
 
 t_aif_status
 EdgeTpuFaceDetector::fillInputTensor(const cv::Mat &img) /* override*/
 {
-    try {
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("invalid opencv image!!");
-        }
-
-        int height = m_modelInfo.height;
-        int width = m_modelInfo.width;
-        int channels = m_modelInfo.channels;
-
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter not initialized!!");
-        }
-
-        t_aif_status res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
-            m_interpreter.get(), img, width, height, channels, true,
-            aif::kAifNone);
-        if (res != kAifOk) {
-            throw std::runtime_error("fillInputTensor failed!!");
-        }
-        return res;
-    } catch (const std::exception &e) {
-        Loge(__func__, "Error: ", e.what());
-        return kAifError;
-    } catch (...) {
-        Loge(__func__, "Error: Unknown exception occured!!");
+    if (img.rows == 0 || img.cols == 0) {
+        Loge("invalid opencv image!!");
         return kAifError;
     }
+
+    int height = m_modelInfo.height;
+    int width = m_modelInfo.width;
+    int channels = m_modelInfo.channels;
+
+    if (m_interpreter == nullptr) {
+        Loge("tflite interpreter not initialized!!");
+        return kAifError;
+    }
+
+    t_aif_status res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
+            m_interpreter.get(), img, width, height, channels, true,
+            aif::kAifNone);
+    if (res != kAifOk) {
+        Loge("fillInputTensor failed!!");
+        return kAifError;
+    }
+    return res;
 }
 
 //------------------------------------------------------

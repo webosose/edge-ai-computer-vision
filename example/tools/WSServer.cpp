@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/base/WSServer.h>
+#include <WSServer.h>
 #include <aif/log/Logger.h>
 
 namespace aif {

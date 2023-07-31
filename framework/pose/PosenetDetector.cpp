@@ -28,22 +28,23 @@ std::shared_ptr<DetectorParam> PosenetDetector::createParam()
 
 t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
 {
-    try {
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("invalid opencv image!!");
-        }
+    if (img.rows == 0 || img.cols == 0) {
+        Loge("invalid opencv image!!");
+        return kAifError;
+    }
 
-        int height = m_modelInfo.height;
-        int width = m_modelInfo.width;
-        int channels = m_modelInfo.channels;
+    int height = m_modelInfo.height;
+    int width = m_modelInfo.width;
+    int channels = m_modelInfo.channels;
 
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter not initialized!!");
-        }
+    if (m_interpreter == nullptr) {
+        Loge("tflite interpreter not initialized!!");
+        return kAifError;
+    }
 
-        t_aif_status res;
-        if (m_modelName.find("quant")!=std::string::npos) {
-            res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
+    t_aif_status res;
+    if (m_modelName.find("quant")!=std::string::npos) {
+        res = aif::fillInputTensor<uint8_t, cv::Vec3b>(
                 m_interpreter.get(),
                 img,
                 width,
@@ -52,8 +53,8 @@ t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
                 true,
                 aif::kAifNone
                 );
-        } else {
-            res = aif::fillInputTensor<float, cv::Vec3f>(
+    } else {
+        res = aif::fillInputTensor<float, cv::Vec3f>(
                 m_interpreter.get(),
                 img,
                 width,
@@ -62,19 +63,13 @@ t_aif_status PosenetDetector::fillInputTensor(const cv::Mat& img)/* override*/
                 false,
                 aif::kAifStandardization
                 );
-        }
-        if (res != kAifOk) {
-            throw std::runtime_error("fillInputTensor failed!!");
-        }
-
-        return res;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    }
+    if (res != kAifOk) {
+        Loge("fillInputTensor failed!!");
         return kAifError;
     }
+
+    return res;
 }
 
 t_aif_status PosenetDetector::preProcessing()
@@ -113,11 +108,11 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     TRACE("poses count: ", *pose_count);
 
     std::shared_ptr<PosenetDescriptor> posenetDescriptor = std::dynamic_pointer_cast<PosenetDescriptor>(descriptor);
-    int k = 0;
-    for (int i = 0; i < *pose_count; i++ ) {
+    size_t k = 0;
+    for (size_t i = 0; i < *pose_count; i++ ) {
         std::vector<cv::Point2f> points;
         std::vector<float> scores;
-        for (int j = 0; j < PosenetDescriptor::NUM_KEYPOINT_TYPES; j++ ) {
+        for (size_t j = 0; j < PosenetDescriptor::NUM_KEYPOINT_TYPES; j++ ) {
             float height = keyPoints[k] / m_modelInfo.height;
             float width = keyPoints[k+1] / m_modelInfo.width;
             points.push_back(cv::Point2f(width, height));

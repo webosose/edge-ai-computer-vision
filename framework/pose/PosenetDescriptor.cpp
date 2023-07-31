@@ -50,7 +50,7 @@ cv::Rect2f PosenetDescriptor::getRect(
     float left, right, top, bottom;
     left = top = 1.0f;
     right = bottom = 0.0f;
-    for (int type = beginType; type <= endType; type++) {
+    for (size_t type = beginType; type <= endType; type++) {
         left = std::min(left, keyPoints[type].x);
         right = std::max(right, keyPoints[type].x);
         top = std::min(top, keyPoints[type].y);
@@ -67,7 +67,7 @@ float PosenetDescriptor::getScore(
         KeyPointType begin,
         KeyPointType end) const {
     float score = 0;
-    for (int i = begin; i <= end; i++) {
+    for (size_t i = begin; i <= end; i++) {
         score += scores[i];
     }
     score = score / (end - begin + 1);
@@ -88,7 +88,7 @@ PosenetDescriptor::makeBodyParts(std::vector<std::vector<cv::Rect2f>> prev, floa
 
     TRACE("keypoint size: " , m_keyPoints.size());
     std::vector<std::vector<cv::Rect2f>> current;
-    for (int i = 0; i < m_keyPoints.size(); i++) {
+    for (size_t i = 0; i < m_keyPoints.size(); i++) {
         auto& keyPoints = m_keyPoints[i];
         auto& scores = m_keyPointsScores[i];
 

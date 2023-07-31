@@ -12,7 +12,7 @@
 #include <cctype>
 #include <experimental/filesystem> // C++14
 
-#include <aif/tools/Renderer.h>
+#include <Renderer.h>
 #include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
 
 using namespace aif;

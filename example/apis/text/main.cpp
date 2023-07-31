@@ -5,8 +5,8 @@
 
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
-#include <aif/tools/Renderer.h>
 #include <aif/tools/PerformanceReporter.h>
+#include <Renderer.h>
 #include <rapidjson/document.h>
 
 

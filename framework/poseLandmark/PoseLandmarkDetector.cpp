@@ -28,40 +28,35 @@ std::shared_ptr<DetectorParam> PoseLandmarkDetector::createParam()
 
 t_aif_status PoseLandmarkDetector::fillInputTensor(const cv::Mat& img)/* override*/
 {
-    try {
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("invalid opencv image!!");
-        }
-
-        int height = m_modelInfo.height;
-        int width = m_modelInfo.width;
-        int channels = m_modelInfo.channels;
-
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter not initialized!!");
-        }
-
-        t_aif_status res = aif::fillInputTensor<float, cv::Vec3f>(
-                m_interpreter.get(),
-                img,
-                width,
-                height,
-                channels,
-                false,
-                aif::kAifNormalization
-                );
-        if (res != kAifOk) {
-            throw std::runtime_error("fillInputTensor failed!!");
-        }
-
-        return res;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    if (img.rows == 0 || img.cols == 0) {
+        Loge("invalid opencv image!!");
         return kAifError;
     }
+
+    int height = m_modelInfo.height;
+    int width = m_modelInfo.width;
+    int channels = m_modelInfo.channels;
+
+    if (m_interpreter == nullptr) {
+        Loge("tflite interpreter not initialized!!");
+        return kAifError;
+    }
+
+    t_aif_status res = aif::fillInputTensor<float, cv::Vec3f>(
+            m_interpreter.get(),
+            img,
+            width,
+            height,
+            channels,
+            false,
+            aif::kAifNormalization
+            );
+    if (res != kAifOk) {
+        Loge("fillInputTensor failed!!");
+        return kAifError;
+    }
+
+    return res;
 }
 
 t_aif_status PoseLandmarkDetector::preProcessing()
@@ -102,7 +97,7 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
     std::vector<std::vector<float>> outLandmarks(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES);
     for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
         for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
-            int index = i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j;
+            size_t index = i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j;
             float data = landmarks->data.f[index];
             if (j == PoseLandmarkDescriptor::COOD_X) {
                 data = data / 255.0f;

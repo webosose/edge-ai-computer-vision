@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <VideoTester.h>
 #include <aif/log/Logger.h>
-#include <aif/tools/VideoTester.h>
 
 namespace aif {
 VideoTester::VideoTester()

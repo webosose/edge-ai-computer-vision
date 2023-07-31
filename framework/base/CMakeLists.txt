@@ -9,9 +9,6 @@ set(BASE_SRC
     ${BASE_SRC_DIR}/DetectorFactory.cpp
     ${BASE_SRC_DIR}/Delegate.cpp
     ${BASE_SRC_DIR}/DelegateFactory.cpp
-    ${BASE_SRC_DIR}/WSServer.cpp
-    ${BASE_SRC_DIR}/WSServerSession.cpp
-    ${BASE_SRC_DIR}/WSClient.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${BASE_SRC_DIR})

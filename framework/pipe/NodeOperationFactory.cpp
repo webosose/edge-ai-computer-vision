@@ -15,18 +15,12 @@ t_aif_status NodeOperationFactory::registerGenerator(
         const NodeOperationGenerator& generator,
         const NodeOperationConfigGenerator& configGenerator)
 {
-    try {
-        if (m_generators.find(type) != m_generators.end()) {
-            throw std::runtime_error(type + " operation generator is already registered");
-        }
-        if (m_configGenerators.find(type) != m_configGenerators.end()) {
-            throw std::runtime_error(type + " operation generator is already registered");
-        }
-     } catch (const std::exception& e) {
-        Loge(__func__, e.what());
+    if (m_generators.find(type) != m_generators.end()) {
+        Loge(type, " operation generator is already registered");
         return kAifError;
-    } catch (...) {
-        Loge("Unknown exception occured!!");
+    }
+    if (m_configGenerators.find(type) != m_configGenerators.end()) {
+        Loge(type, " operation generator is already registered");
         return kAifError;
     }
 
@@ -44,50 +38,39 @@ std::shared_ptr<NodeOperation> NodeOperationFactory::create(
         return nullptr;
     }
 
-    try {
-        std::string type = config->getType();
-        if (m_generators.find(type) == m_generators.end()) {
-            throw std::runtime_error(type + " operation generator is not registered");
-        }
-
-        Logi(id, ": create operation - type: ", type);
-        std::shared_ptr<NodeOperation> operation = m_generators[type](id);
-        if (!operation->init(config)) {
-            Loge("failed to initialize operation: ", id);
-        }
-
-        return operation;
-    } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return nullptr;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    std::string type = config->getType();
+    if (m_generators.find(type) == m_generators.end()) {
+        Loge(type, " operation generator is not registered");
         return nullptr;
     }
+
+    Logi(id, ": create operation - type: ", type);
+    std::shared_ptr<NodeOperation> operation = m_generators[type](id);
+    if (!operation->init(config)) {
+        Loge("failed to initialize operation: ", id);
+        return nullptr;
+    }
+
+    return operation;
 }
 
 std::shared_ptr<NodeOperationConfig> NodeOperationFactory::createConfig(const rj::Value& value)
 {
-    try {
-        if (!value.HasMember("type")) {
-            throw std::runtime_error("node operation config has no type");
-        }
-        std::string type = value["type"].GetString();
-        if (m_configGenerators.find(type) == m_configGenerators.end())  {
-            throw std::runtime_error(type + " operation config generator is not registered");
-        }
-        std::shared_ptr<NodeOperationConfig> config= m_configGenerators[type]();
-        if (!config->parse(value)) {
-            throw std::runtime_error("failed to parse node operation config " + type);
-        }
-        return config;
-    } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return nullptr;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    if (!value.HasMember("type")) {
+        Loge("node operation config has no type");
         return nullptr;
     }
+    std::string type = value["type"].GetString();
+    if (m_configGenerators.find(type) == m_configGenerators.end())  {
+        Loge(type, " operation config generator is not registered");
+        return nullptr;
+    }
+    std::shared_ptr<NodeOperationConfig> config= m_configGenerators[type]();
+    if (!config->parse(value)) {
+        Loge("failed to parse node operation config ", type);
+        return nullptr;
+    }
+    return config;
 }
 
 } // end of namespace aif

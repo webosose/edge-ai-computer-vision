@@ -104,6 +104,7 @@ set(LIBS
     ${OPENCV_LIBRARIES}
     ${RAPIDJSON_LIBRARIES}
     edgeai-vision
+    example-tools
     pthread
     -lstdc++fs
 )

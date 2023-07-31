@@ -26,9 +26,9 @@ class FaceDetector : public Detector {
 
     t_aif_status generateAnchors(int width, int height);
     t_aif_status faceDetect(std::shared_ptr<Descriptor> &descriptor);
-    float calculateScale(float min_scale, float max_scale, int stride_index,
-                         int num_strides);
-    bool checkUpdate(int idx, float cur_x, float cur_y, float cur_w,
+    float calculateScale(float min_scale, float max_scale, size_t stride_index,
+                         size_t num_strides);
+    bool checkUpdate(size_t idx, float cur_x, float cur_y, float cur_w,
                      float cur_h, float threshold);
 
   protected:

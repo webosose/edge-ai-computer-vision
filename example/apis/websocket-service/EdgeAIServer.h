@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <aif/base/WSServer.h>
+#include <WSServer.h>
 
 class EdgeAIServer : public aif::WSServer
 {

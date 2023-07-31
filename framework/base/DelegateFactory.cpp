@@ -13,15 +13,8 @@ t_aif_status DelegateFactory::registerGenerator(
         const std::string& id,
         const DelegateGenerator& delegateGenerator)
 {
-    try {
-        if (m_delegateGenerators.find(id) != m_delegateGenerators.end()) {
-            throw std::runtime_error(id + " delegate generator is already registered");
-        }
-    } catch (const std::exception& e) {
-        Loge(__func__ , " Error: ", e.what());
-        return kAifError;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    if (m_delegateGenerators.find(id) != m_delegateGenerators.end()) {
+        Loge(id, " delegate generator is already registered");
         return kAifError;
     }
 
@@ -31,29 +24,20 @@ t_aif_status DelegateFactory::registerGenerator(
 
 std::shared_ptr<Delegate> DelegateFactory::getDelegate(const std::string& id, const std::string& option)
 {
-
     if (!AIVision::isInitialized()) {
         Loge(__func__, "AIVision is not initialized");
         return nullptr;
     }
-    try {
-        if (m_delegates.find(id) == m_delegates.end() &&
+    if (m_delegates.find(id) == m_delegates.end() &&
             m_delegateGenerators.find(id) == m_delegateGenerators.end()) {
-            throw std::runtime_error(id + " delegate generator is not registered");
-        }
-        if (m_delegates.find(id) != m_delegates.end()) {
-            return m_delegates[id];
-        }
-        m_delegates[id] = m_delegateGenerators[id](option);
-        return m_delegates[id];
-
-    } catch (const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return nullptr;
-    } catch (...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+        Loge(id, " delegate generator is not registered");
         return nullptr;
     }
+    if (m_delegates.find(id) != m_delegates.end()) {
+        return m_delegates[id];
+    }
+    m_delegates[id] = m_delegateGenerators[id](option);
+    return m_delegates[id];
 }
 
 } // end of idspace aif

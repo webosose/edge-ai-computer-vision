@@ -15,6 +15,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cerrno>
+#include <cfenv>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <tensorflow/lite/interpreter.h>
@@ -26,9 +28,9 @@
 namespace rj = rapidjson;
 namespace aif {
 
-bool floatEquals(
-    float a,
-    float b);
+bool floatEquals(float a, float b);
+bool floatLessThan(float a, float b);
+bool floatGreaterThan(float a, float b);
 
 std::string fileToStr(
     const std::string& file);
@@ -89,88 +91,90 @@ t_aif_status fillInputTensor(
     bool quantized,
     t_aif_rescale rescaleOption)
 {
-    try {
-
-        if (interpreter == nullptr) {
-            throw std::runtime_error("invalid interpreter!!");
-        }
-
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("can't load image!!");
-        }
-
-        cv::Mat img_resized;
-        if (img.cols < width || img.rows < height) // expand
-            cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
-        else // shrink...
-            cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_AREA);
-
-        TRACE("resized size: ", img_resized.size());
-        if (img_resized.rows != height || img_resized.cols != width) {
-            throw std::runtime_error("image resize failed!!");
-        }
-
-        if (!quantized) {
-            img_resized.convertTo(img_resized, CV_32FC3);
-        } else {
-            img_resized.convertTo(img_resized, CV_8UC3);
-        }
-
-        if (rescaleOption == kAifNone) {
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    const auto &rgb = img_resized.at<CvDataType>(i, j);
-                    // CID 9333374, CID 9333400
-                    if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2];
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1];
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0];
-                    }
-                }
-            }
-        } else if (rescaleOption == kAifNormalization) {
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    const auto &rgb = img_resized.at<CvDataType>(i, j);
-                    // normalization: 0~1
-                    // CID 9333374, CID 9333400
-                    if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2] / 255;
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1] / 255;
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0] / 255;
-                    }
-                }
-            }
-        } else if (rescaleOption == kAifStandardization) {
-            const float input_mean = 127.5f;
-            const float input_std  = 127.5f;
-
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    const auto &rgb = img_resized.at<CvDataType>(i, j);
-                    // standardization: -1~1
-                    // CID 9333374, CID 9333400
-                    if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = (rgb[2] - input_mean) / input_std;
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = (rgb[1] - input_mean) / input_std;
-                        interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = (rgb[0] - input_mean) / input_std;
-                    }
-                }
-            }
-        }
-        return kAifOk;
-    } catch(std::exception& e) {
-        Loge(__func__, "Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__, "Error: Unknow exception occured!!");
+    if (interpreter == nullptr) {
+        Loge("invalid interpreter!!");
         return kAifError;
     }
+
+    if (img.rows == 0 || img.cols == 0) {
+        Loge("can't load image!!");
+        return kAifError;
+    }
+
+    cv::Mat img_resized;
+    if (img.cols < width || img.rows < height) // expand
+        cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
+    else // shrink...
+        cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_AREA);
+
+    TRACE("resized size: ", img_resized.size());
+    if (img_resized.rows != height || img_resized.cols != width) {
+        Loge("image resize failed!!");
+        return kAifError;
+    }
+
+    if (!quantized) {
+        img_resized.convertTo(img_resized, CV_32FC3);
+    } else {
+        img_resized.convertTo(img_resized, CV_8UC3);
+    }
+
+    if (rescaleOption == kAifNone) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                const auto &rgb = img_resized.at<CvDataType>(i, j);
+                // CID 9333374, CID 9333400
+                if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2];
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1];
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0];
+                }
+            }
+        }
+    } else if (rescaleOption == kAifNormalization) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                const auto &rgb = img_resized.at<CvDataType>(i, j);
+                // normalization: 0~1
+                // CID 9333374, CID 9333400
+                if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2] / 255;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1] / 255;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0] / 255;
+                }
+            }
+        }
+    } else if (rescaleOption == kAifStandardization) {
+        const float input_mean = 127.5f;
+        const float input_std  = 127.5f;
+
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                const auto &rgb = img_resized.at<CvDataType>(i, j);
+                // standardization: -1~1
+                // CID 9333374, CID 9333400
+                if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = (rgb[2] - input_mean) / input_std;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = (rgb[1] - input_mean) / input_std;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = (rgb[0] - input_mean) / input_std;
+                }
+            }
+        }
+    }
+    return kAifOk;
 }
 
 template<typename T>
 T sigmoid(T value) {
-    return 1 / (1 + std::exp(-value));
+    errno = 0;
+    T result = 1 / (1 + std::exp(-value));
+    if (errno == ERANGE) {
+        return 0;
+    }
+    else if (std::fetestexcept(FE_OVERFLOW)) {
+        return result;
+    }
+    return result;
 }
 
 std::string jsonObjectToString(const rj::Value& object);

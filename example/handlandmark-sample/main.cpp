@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/sample/Sample.h>
+#include <Sample.h>
 #include <aif/handLandmark/HandLandmarkDescriptor.h>
 
 namespace rj = rapidjson;

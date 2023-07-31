@@ -155,10 +155,10 @@ TEST_F(UtilTest, util06_base64Decode_to_file)
 
 TEST_F(UtilTest, util07_base64Decode_normalize)
 {
-    auto base64str = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
+    auto base64str = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 200 x 298 
 
-    const int width = 128;
-    const int height = 128;
+    const int width = 200;
+    const int height = 298;
     const int channels = 3;
     int imgDataSize = height * width * channels;
     std::vector<float> imgData(imgDataSize);

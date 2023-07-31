@@ -1,7 +1,7 @@
 #ifndef FACE_WSSERVER_SESSION_H
 #define FACE_WSSERVER_SESSION_H
 
-#include <aif/base/WSServerSession.h>
+#include <WSServerSession.h>
 #include <aif/facade/EdgeAIVision.h>
 
 #include <map>

@@ -28,7 +28,7 @@ protected:
 
     t_aif_status generateAnchors(int width, int height);
     t_aif_status palmDetect(std::shared_ptr<Descriptor>& descriptor);
-    float calculateScale(float min_scale, float max_scale, int stride_index, int num_strides);
+    float calculateScale(float min_scale, float max_scale, size_t stride_index, size_t num_strides);
 
 private:
     void printOutput();

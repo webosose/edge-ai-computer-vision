@@ -37,17 +37,17 @@ void HandLandmarkDescriptor::addLandmarks(float presence, float handedness, floa
     }
     rj::Value hand(rj::kObjectType);
     rj::Value points(rj::kArrayType);
-    for (int i = 0; i < LANDMARK_TYPES::LANDMARK_TYPE_COUNT; i++) {
+    for (size_t i = 0; i < LANDMARK_TYPES::LANDMARK_TYPE_COUNT; i++) {
         rj::Value point(rj::kArrayType);
-        for (int j = i * LANDMARK_ITEM_COUNT; j < (i+1) * LANDMARK_ITEM_COUNT; j++) {
+        for (size_t j = i * LANDMARK_ITEM_COUNT; j < (i+1) * LANDMARK_ITEM_COUNT; j++) {
             point.PushBack(landmarks[j], allocator);
         }
         points.PushBack(point, allocator);
     }
     rj::Value points3d(rj::kArrayType);
-    for (int i = 0; i < LANDMARK_TYPES::LANDMARK_TYPE_COUNT; i++) {
+    for (size_t i = 0; i < LANDMARK_TYPES::LANDMARK_TYPE_COUNT; i++) {
         rj::Value point(rj::kArrayType);
-        for (int j = i * LANDMARK_ITEM_COUNT; j < (i+1) * LANDMARK_ITEM_COUNT; j++) {
+        for (size_t j = i * LANDMARK_ITEM_COUNT; j < (i+1) * LANDMARK_ITEM_COUNT; j++) {
             point.PushBack(landmarks3d[j], allocator);
         }
         points3d.PushBack(point, allocator);

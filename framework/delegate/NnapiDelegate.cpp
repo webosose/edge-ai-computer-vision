@@ -41,12 +41,14 @@ void NnapiDelegate::setupOptions() {
 
     if (payload.HasMember("cache_dir")) {
         const rj::Value &cache_dir = payload["cache_dir"];
-        m_cacheDir = cache_dir.GetString();
+        const char* dir = cache_dir.GetString();
+        m_cacheDir = (dir ? dir : "");
         m_delegateOptions.cache_dir = m_cacheDir.c_str();
     }
     if (payload.HasMember("model_token")) {
         const rj::Value &model_token = payload["model_token"];
-        m_modelToken = model_token.GetString();
+        const char* token  = model_token.GetString();
+        m_modelToken = (token ? token : "");
         m_delegateOptions.model_token = m_modelToken.c_str();
     }
     if (payload.HasMember("disallow_nnapi_cpu")) {
@@ -59,7 +61,8 @@ void NnapiDelegate::setupOptions() {
     }
     if (payload.HasMember("accelerator_name")) {
         const rj::Value &accelName = payload["accelerator_name"];
-        m_acceleratorName = accelName.GetString();
+        const char* name = accelName.GetString();
+        m_acceleratorName = (name ? name : "");
         m_delegateOptions.accelerator_name = m_acceleratorName.c_str();
     }
 }

@@ -24,37 +24,29 @@ EdgeTpuHandLandmarkDetector::~EdgeTpuHandLandmarkDetector() {
 }
 
 t_aif_status EdgeTpuHandLandmarkDetector::compileModel(
-    tflite::ops::builtin::BuiltinOpResolver &resolver) {
+        tflite::ops::builtin::BuiltinOpResolver &resolver) {
     Logi("Compile Model: EdgeTpuHandLandmarkDetector");
-    std::stringstream errlog;
-    try {
-        TfLiteStatus res = kTfLiteError;
 
-        // Sets up the edgetpu_context. available for any 1 TPU device.
-        m_edgetpuContext =
-            edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
-        if (m_edgetpuContext == nullptr) {
-            throw std::runtime_error("can't get edgetpu context!!");
-        }
-
-        // Registers Edge TPU custom op handler with Tflite resolver.
-        resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
-        res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
-            &m_interpreter, MAX_INTERPRETER_THREADS);
-        if (res != kTfLiteOk || m_interpreter == nullptr) {
-            throw std::runtime_error("tflite interpreter build failed!!");
-        }
-
-        m_interpreter->SetExternalContext(kTfLiteEdgeTpuContext,
-                                          m_edgetpuContext.get());
-        return kAifOk;
-    } catch (const std::exception &e) {
-        Loge(__func__, "Error: ", e.what());
-        return kAifError;
-    } catch (...) {
-        Loge(__func__, "Error: Unknown exception occured!!");
+    // Sets up the edgetpu_context. available for any 1 TPU device.
+    m_edgetpuContext =
+        edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
+    if (m_edgetpuContext == nullptr) {
+        Loge("can't get edgetpu context!!");
         return kAifError;
     }
+
+    // Registers Edge TPU custom op handler with Tflite resolver.
+    resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
+    TfLiteStatus res = tflite::InterpreterBuilder(*m_model.get(), resolver)(
+            &m_interpreter, MAX_INTERPRETER_THREADS);
+    if (res != kTfLiteOk || m_interpreter == nullptr) {
+        Loge("tflite interpreter build failed!!");
+        return kAifError;
+    }
+
+    m_interpreter->SetExternalContext(kTfLiteEdgeTpuContext,
+            m_edgetpuContext.get());
+    return kAifOk;
 }
 
 } // namespace aif

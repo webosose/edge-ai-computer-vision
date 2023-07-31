@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <Sample.h>
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/log/Logger.h>
-#include <aif/sample/Sample.h>
 
 namespace aif {
 
