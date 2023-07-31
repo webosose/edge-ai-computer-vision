@@ -9,7 +9,7 @@
 #include <aif/log/Logger.h>
 #include <vector>
 
-#include "clipper.hpp"
+#include <clipper/clipper.hpp>
 
 namespace aif {
 

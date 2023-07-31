@@ -6,7 +6,6 @@ set(TEXT_SRC
     ${TEXT_SRC_DIR}/TextDetector.cpp
     ${TEXT_SRC_DIR}/CpuTextDetector.cpp
     ${TEXT_SRC_DIR}/TextDescriptor.cpp
-    ${TEXT_SRC_DIR}/clipper.cpp
 )
 
 IF(WITH_EDGETPU)

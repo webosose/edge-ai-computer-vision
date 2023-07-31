@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include <aif/pose/posenet_decoder_op.h>
+#include <posenet/posenet_decoder_op.h>
 
 #include <cmath>
 #include <numeric>
 #include <string>
 
-#include <aif/pose/posenet_decoder.h>
+#include <posenet/posenet_decoder.h>
 //#include "flatbuffers/flexbuffers.h"
 #include <tensorflow/lite/kernels/internal/tensor.h>
 #include <tensorflow/lite/kernels/kernel_util.h>

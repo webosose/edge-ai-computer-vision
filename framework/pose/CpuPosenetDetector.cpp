@@ -5,9 +5,9 @@
 
 #include <aif/log/Logger.h>
 #include <aif/pose/CpuPosenetDetector.h>
-#include <aif/pose/posenet_decoder_op.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
+#include <posenet/posenet_decoder_op.h>
 
 #include <sstream>
 #include <stdexcept>

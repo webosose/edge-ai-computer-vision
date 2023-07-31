@@ -5,9 +5,10 @@
 
 #include <aif/log/Logger.h>
 #include <aif/selfie/CpuSelfieDetector.h>
-#include <aif/selfie/transpose_conv_bias.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
+
+#include <mediapipe/selfie/transpose_conv_bias.h>
 
 #include <sstream>
 #include <stdexcept>

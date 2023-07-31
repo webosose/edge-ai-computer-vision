@@ -5,9 +5,10 @@
 
 #include <aif/log/Logger.h>
 #include <aif/pose/EdgeTpuPosenetDetector.h>
-#include <aif/pose/posenet_decoder_op.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
+
+#include <posenet/posenet_decoder_op.h>
 
 #include <tensorflow/lite/kernels/internal/reference/non_max_suppression.h>
 #include <tensorflow/lite/kernels/register.h>

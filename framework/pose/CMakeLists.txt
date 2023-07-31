@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8.7)
 
 set(POSENET_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(POSENET_SRC
-    ${POSENET_SRC_DIR}/posenet_decoder.cc
-    ${POSENET_SRC_DIR}/posenet_decoder_op.cc
     ${POSENET_SRC_DIR}/PosenetParam.cpp
     ${POSENET_SRC_DIR}/PosenetDetector.cpp
     ${POSENET_SRC_DIR}/CpuPosenetDetector.cpp

@@ -8,7 +8,7 @@ OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
 OPTION(WITH_FITTV "Enable FitTV Model and Example" OFF)
 
-set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 
 IF("${AIF_INSTALL_DIR}" STREQUAL "")
     set(AIF_INSTALL_DIR "/usr/share/aif")
@@ -39,3 +39,5 @@ ENDIF()
 IF(WITH_FITTV)
     ADD_DEFINITIONS(-DUSE_FITTV)
 ENDIF()
+
+add_subdirectory(third_party)

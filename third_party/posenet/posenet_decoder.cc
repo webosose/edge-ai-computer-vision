@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include <aif/pose/posenet_decoder.h>
+#include <posenet/posenet_decoder.h>
 
 #include <algorithm>
 #include <array>

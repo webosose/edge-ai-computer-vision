@@ -16,7 +16,7 @@
 // This version has been modified by MediaPipe authors to support bias. Details
 // of the modification is marked below in the code.
 
-#include <aif/selfie/transpose_conv_bias.h>
+#include "transpose_conv_bias.h"
 
 #include <tensorflow/lite/kernels/internal/tensor.h>
 #include <tensorflow/lite/kernels/padding.h>
