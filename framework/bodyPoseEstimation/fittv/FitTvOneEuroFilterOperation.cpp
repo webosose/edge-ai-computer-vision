@@ -49,7 +49,6 @@ bool FitTvOneEuroFilterOperation::runImpl(const std::shared_ptr<NodeInput>& inpu
         Loge(m_id, ": failed to get Pose2d Keypoints from FitTvPoseDescriptor");
         return false;
     }
-    auto& new_keyPoints = const_cast<std::vector<std::vector<std::vector<float>>>&>(fdescriptor->getKeyPoints());
 
     std::shared_ptr<FitTvOneEuroFilterOperationConfig> config = std::dynamic_pointer_cast<FitTvOneEuroFilterOperationConfig>(m_config);
     if (config == nullptr) {
@@ -79,8 +78,9 @@ bool FitTvOneEuroFilterOperation::runImpl(const std::shared_ptr<NodeInput>& inpu
         m_initFilter = true;
     }
 
-    for (auto& keyPoints : new_keyPoints) {
-        std::vector<float> joints2d;
+    std::vector<std::vector<std::vector<float>>> updatedKeypoints;
+    for (auto& keyPoints : fdescriptor->getKeyPoints()) {
+        std::vector<std::vector<float>> updated_pairXY;
         int idx = 0;
         double cur_time = sw.getMs();
 
@@ -91,11 +91,14 @@ bool FitTvOneEuroFilterOperation::runImpl(const std::shared_ptr<NodeInput>& inpu
         }
 
         for (auto& keyPoint : keyPoints) {
-            keyPoint[1] = oneEuroFilter(idx, 0, keyPoint[1], cur_time, mincutoff, dcutoff, beta); // x
-            keyPoint[2] = oneEuroFilter(idx, 1, keyPoint[2], cur_time, mincutoff, dcutoff, beta); // y
+            float updatedX = oneEuroFilter(idx, 0, keyPoint[1], cur_time, mincutoff, dcutoff, beta); // x
+            float updatedY = oneEuroFilter(idx, 1, keyPoint[2], cur_time, mincutoff, dcutoff, beta); // y
             idx++;
+            updated_pairXY.push_back({keyPoint[0], updatedX, updatedY});
         }
+        updatedKeypoints.push_back(updated_pairXY);
     }
+    if (!(fdescriptor->updateKeyPoints(updatedKeypoints))) return false;
 
     sw.stop();
     return true;
