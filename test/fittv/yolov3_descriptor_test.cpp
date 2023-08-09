@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Descriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
@@ -32,7 +32,7 @@ protected:
 
 TEST_F(Yolov3DescriptorTest, 01_constructor)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
     auto json = jfd.toStr();
     Logd(json);
 
@@ -44,7 +44,7 @@ TEST_F(Yolov3DescriptorTest, 01_constructor)
 
 TEST_F(Yolov3DescriptorTest, 02_addperson_one)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     BBox bbox(640, 480);
     bbox.xmin = 2.0f;
@@ -53,8 +53,8 @@ TEST_F(Yolov3DescriptorTest, 02_addperson_one)
     bbox.ymax = 5.0f;
     bbox.width = 2.0f;
     bbox.height = 2.0f;
-    bbox.c_x = 3.0f;
-    bbox.c_y = 4.0f;
+    bbox.c0 = 3.0f;
+    bbox.c1 = 4.0f;
 
     jfd.addPerson(80.0f, bbox);
 
@@ -67,26 +67,24 @@ TEST_F(Yolov3DescriptorTest, 02_addperson_one)
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("persons"));
     EXPECT_TRUE(d["persons"].IsArray());
-    EXPECT_TRUE(d["persons"].Size() == 1);
+    EXPECT_TRUE(floatEquals(d["persons"].Size(), 1));
     EXPECT_TRUE(d["persons"][0].IsObject());
     EXPECT_TRUE(d["persons"][0].HasMember("score"));
-    EXPECT_TRUE(d["persons"][0]["score"].GetDouble() == 80.0);
+    EXPECT_TRUE(floatEquals(d["persons"][0]["score"].GetDouble(), 80.0));
     EXPECT_TRUE(d["persons"][0].HasMember("bbox"));
     EXPECT_TRUE(d["persons"][0]["bbox"].IsArray());
-    EXPECT_TRUE(d["persons"][0]["bbox"].Size() == 8);
-    EXPECT_TRUE(d["persons"][0]["bbox"][0].GetDouble() == 2.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][1].GetDouble() == 3.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][2].GetDouble() == 4.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][3].GetDouble() == 5.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][4].GetDouble() == 2.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][5].GetDouble() == 2.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][6].GetDouble() == 3.0);
-    EXPECT_TRUE(d["persons"][0]["bbox"][7].GetDouble() == 4.0);
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"].Size(), 6));
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][0].GetDouble(), 2.0));
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][1].GetDouble(), 3.0));
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][2].GetDouble(), 4.0));
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][3].GetDouble(), 5.0));
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][4].GetDouble(), 3.0));
+    EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][5].GetDouble(), 4.0));
 }
 
 TEST_F(Yolov3DescriptorTest, 03_addperson_two)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     BBox bbox(640, 480);
     bbox.xmin = 2.0f;
@@ -122,12 +120,12 @@ TEST_F(Yolov3DescriptorTest, 03_addperson_two)
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("persons"));
     EXPECT_TRUE(d["persons"].IsArray());
-    EXPECT_TRUE(d["persons"].Size() == 2);
+    EXPECT_TRUE(floatEquals(d["persons"].Size(), 2));
 }
 
 TEST_F(Yolov3DescriptorTest, 04_add_response_and_returncode)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     jfd.addResponseName("person_detect");
     jfd.addReturnCode(kAifOk);
@@ -156,12 +154,12 @@ TEST_F(Yolov3DescriptorTest, 04_add_response_and_returncode)
     EXPECT_TRUE(d.HasMember("returnCode"));
     EXPECT_TRUE(d.HasMember("persons"));
     EXPECT_TRUE(d["persons"].IsArray());
-    EXPECT_TRUE(d["persons"].Size() == 1);
+    EXPECT_TRUE(floatEquals(d["persons"].Size(), 1));
 }
 
 TEST_F(Yolov3DescriptorTest, 05_add_face)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     float score = 1.2;
     /*normalize 0~1 */
@@ -180,12 +178,12 @@ TEST_F(Yolov3DescriptorTest, 05_add_face)
 
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("faces"));
-    EXPECT_TRUE(d["faces"].Size() == 1);
-    EXPECT_TRUE(d["faces"][0]["score"].GetDouble() == 1.2);
-    EXPECT_TRUE(d["faces"][0]["region"][0].GetDouble() == 1.0);
-    EXPECT_TRUE(d["faces"][0]["region"][1].GetDouble() == 0.7);
-    EXPECT_TRUE(d["faces"][0]["region"][2].GetDouble() == 0.5);
-    EXPECT_TRUE(d["faces"][0]["region"][3].GetDouble() == 0.0);
+    EXPECT_TRUE(floatEquals(d["faces"].Size(), 1));
+    EXPECT_TRUE(floatEquals(d["faces"][0]["score"].GetDouble(), 1.2));
+    EXPECT_TRUE(floatEquals(d["faces"][0]["region"][0].GetDouble(), 1.0));
+    EXPECT_TRUE(floatEquals(d["faces"][0]["region"][1].GetFloat(), 0.6999));
+    EXPECT_TRUE(floatEquals(d["faces"][0]["region"][2].GetFloat(), 0.5));
+    EXPECT_TRUE(floatEquals(d["faces"][0]["region"][3].GetDouble(), 0.0));
 }
 
 

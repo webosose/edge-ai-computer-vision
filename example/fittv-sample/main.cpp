@@ -51,6 +51,9 @@ int main(int argc, char* argv[])
                         "config": {
                             "model": "person_yolov3_npu",
                             "param": {
+                                "modelParam": {
+                                    "detectObject": "BODY"
+                                },
                                 "delegates": [
                                     {
                                         "name": "npu_delegate",

@@ -7,8 +7,8 @@
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/Detector.h>
 #include <aif/base/Descriptor.h>
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Descriptor.h>
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Detector.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Detector.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -211,16 +211,16 @@ protected:
 
 TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
 {
-    auto fd = std::dynamic_pointer_cast<Yolov3V1Detector>(DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate));
+    auto fd = std::dynamic_pointer_cast<Yolov3Detector>(DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate));
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 270);
     EXPECT_EQ(modelInfo.width, 480);
     EXPECT_EQ(modelInfo.channels, 3);
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/person.jpg");
@@ -255,16 +255,16 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
 
 TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
 {
-    auto fd = std::dynamic_pointer_cast<Yolov3V1Detector>(DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_and_face_detect));
+    auto fd = std::dynamic_pointer_cast<Yolov3Detector>(DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_face_detect));
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 270);
     EXPECT_EQ(modelInfo.width, 480);
     EXPECT_EQ(modelInfo.channels, 3);
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/person.jpg");
@@ -299,14 +299,14 @@ TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
 
 TEST_F(Yolov3DetectorTest, 03_yolov3_detect_90_pose_person)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate);
-    //auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_and_face_detect);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate);
+    //auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_face_detect);
 
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
 
     for (auto i = 1; i < 10; i++) {
@@ -328,12 +328,12 @@ TEST_F(Yolov3DetectorTest, 03_yolov3_detect_90_pose_person)
 
 TEST_F(Yolov3DetectorTest, 04_yolov3_detect_people)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_and_people);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_people);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/people.jpg");
@@ -343,12 +343,12 @@ TEST_F(Yolov3DetectorTest, 04_yolov3_detect_people)
 
 TEST_F(Yolov3DetectorTest, 05_yolov3_detect_not_people_default)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_and_not_people_default);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_not_people_default);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/people.jpg");
@@ -357,12 +357,12 @@ TEST_F(Yolov3DetectorTest, 05_yolov3_detect_not_people_default)
 }
 TEST_F(Yolov3DetectorTest, 06_yolov3_detect_not_people)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_and_not_people);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_and_not_people);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/people.jpg");
@@ -372,12 +372,12 @@ TEST_F(Yolov3DetectorTest, 06_yolov3_detect_not_people)
 
 TEST_F(Yolov3DetectorTest, 07_yolov3_detect_person_in_people)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_person_in_people);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person_in_people);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/people.jpg");
@@ -387,12 +387,12 @@ TEST_F(Yolov3DetectorTest, 07_yolov3_detect_person_in_people)
 
 TEST_F(Yolov3DetectorTest, 08_yolov3_detect_person2_in_people)
 {
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_person2_in_people);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person2_in_people);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     EXPECT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
     foundYolov3s->drawBbox(basePath + "/images/people.jpg");
@@ -403,12 +403,12 @@ TEST_F(Yolov3DetectorTest, 08_yolov3_detect_person2_in_people)
 TEST_F(Yolov3DetectorTest, 09_yolov3_detect_person_iou_update)
 {
     /* 0.7 */
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     for (auto i = 1; i < 10; i++) {
         std::string inputPathDir = R"(/usr/share/aif/images/pose_model_val_data/)";
@@ -428,12 +428,12 @@ TEST_F(Yolov3DetectorTest, 09_yolov3_detect_person_iou_update)
 TEST_F(Yolov3DetectorTest, 10_yolov3_detect_person_iou_update1)
 {
     /* 0.9 */
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_person_in_iou_update);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person_in_iou_update);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     for (auto i = 1; i < 10; i++) {
         std::string inputPathDir = R"(/usr/share/aif/images/pose_model_val_data/)";
@@ -454,12 +454,12 @@ TEST_F(Yolov3DetectorTest, 10_yolov3_detect_person_iou_update1)
 TEST_F(Yolov3DetectorTest, 11_yolov3_detect_person_iou_update2)
 {
     /* 1.0 */
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_person_in_iou_update2);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person_in_iou_update2);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     for (auto i = 1; i < 10; i++) {
         std::string inputPathDir = R"(/usr/share/aif/images/pose_model_val_data/)";
@@ -480,12 +480,12 @@ TEST_F(Yolov3DetectorTest, 11_yolov3_detect_person_iou_update2)
 TEST_F(Yolov3DetectorTest, 12_yolov3_detect_person_iou_update3)
 {
     /* 0.5 */
-    auto fd = DetectorFactory::get().getDetector("person_yolov3_v1_npu", use_npu_delegate_person_in_iou_update3);
+    auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate_person_in_iou_update3);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3_V1.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Detector_Yolov3.tflite");
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3V1Descriptor>();
-    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3V1Descriptor>(descriptor);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov3Descriptor>();
+    auto foundYolov3s = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
 
     for (auto i = 1; i < 10; i++) {
         std::string inputPathDir = R"(/usr/share/aif/images/pose_model_val_data/)";

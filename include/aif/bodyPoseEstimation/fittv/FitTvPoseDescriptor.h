@@ -12,6 +12,7 @@
 #include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
 
 #include <aif/bodyPoseEstimation/common.h>
+#include <aif/log/Logger.h>
 
 namespace aif {
 
@@ -49,6 +50,43 @@ class FitTvPoseDescriptor : public PipeDescriptor
         const std::vector<Scale>& getCropData() const { return m_cropScales; }
         const std::vector<std::vector<std::vector<float>>>& getKeyPoints() const { return m_keyPoints; }
         const std::vector<cv::Mat>& getPose3dInputs() const { return m_pose3dInputs; }
+        bool updateKeyPoints(std::vector<std::vector<std::vector<float>>>& updatedKeyPoints) {
+                m_keyPoints.swap(updatedKeyPoints); // update pose2d keypoints
+
+                int index = m_trackId - 2;
+                if (m_keyPoints.size() != (index+1)) {
+                    Loge("cannot update keyPoints by trackId: ", m_trackId-1);
+                    return false;
+                }
+
+                rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+                if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
+                    Loge("not exist bbox");
+                    return false;
+                }
+
+                const auto& poses = m_root["poseEstimation"].GetArray();
+                if (m_trackId <= 0 || poses.Size() < m_trackId-1 || !poses[index].HasMember("id")) {
+                    Loge("cannot find trackId: ", m_trackId-1);
+                    return false;
+                }
+
+                const auto& pose = poses[index].GetObject();
+                pose.RemoveMember("joints2D");
+                rj::Value pose2d(rj::kArrayType);
+
+                for(auto& pos: m_keyPoints[index]) {
+                    rj::Value keyPoint(rj::kArrayType);
+                    keyPoint.PushBack(pos[1], allocator); // x
+                    keyPoint.PushBack(pos[2], allocator); // y
+                    keyPoint.PushBack(pos[0], allocator); // score
+                    pose2d.PushBack(keyPoint, allocator);
+                }
+                pose.AddMember("joints2D", pose2d, allocator); // update joints2D values for final json output
+
+                return true;
+        }
+
 
    private:
         bool addCropBridgeResult(

@@ -1,5 +1,6 @@
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 #include <aif/log/Logger.h>
+#include <aif/tools/Utils.h>
 
 #include <limits>
 #include <cmath>
@@ -74,7 +75,10 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
 
     std::shared_ptr<Pose2dDescriptor> pose2dDescriptor =
         std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
-
+    if (pose2dDescriptor == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to Pose2dDescriptor");
+        return false;
+    }
     pose2dDescriptor->addKeyPoints(keyPoints);
     return true;
 }
@@ -123,7 +127,7 @@ void XtensorPostProcess::taylor(const xt::xarray<float>& heatMap , xt::xarray<fl
 
         float det = (dxx * dyy) - (dxy * dxy);
 
-        if (det != 0.f) {
+        if (!floatEquals(det, 0.f)) {
             xt::xarray<float> hessianAdjointInv = {{dyy/det, -dxy/det}, {-dxy/det, dxx/det}};
             float offsetx = -((hessianAdjointInv(0, 0) * dx) + (hessianAdjointInv(0, 1) * dy));
             float offsety = -((hessianAdjointInv(1, 0) * dx) + (hessianAdjointInv(1, 1) * dy));
