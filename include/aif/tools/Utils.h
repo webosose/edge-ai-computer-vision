@@ -124,10 +124,15 @@ t_aif_status fillInputTensor(
             for (int j = 0; j < width; j++) {
                 const auto &rgb = img_resized.at<CvDataType>(i, j);
                 // CID 9333374, CID 9333400
+                int index  = CHECK_INT_MUL(i, width);
+                index = CHECK_INT_MUL(index, channels);
+                int index2 = CHECK_INT_MUL(j, channels);
+                index = CHECK_INT_ADD(index, index2);
+
                 if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2];
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1];
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0];
+                    interpreter->typed_input_tensor<TensorDataType>(0)[index + 0] = rgb[2];
+                    interpreter->typed_input_tensor<TensorDataType>(0)[CHECK_INT_ADD(index, 1)] = rgb[1];
+                    interpreter->typed_input_tensor<TensorDataType>(0)[CHECK_INT_ADD(index, 2)] = rgb[0];
                 }
             }
         }
@@ -137,10 +142,16 @@ t_aif_status fillInputTensor(
                 const auto &rgb = img_resized.at<CvDataType>(i, j);
                 // normalization: 0~1
                 // CID 9333374, CID 9333400
+                int index  = CHECK_INT_MUL(i, width);
+                index = CHECK_INT_MUL(index, channels);
+                int index2 = CHECK_INT_MUL(j, channels);
+                index = CHECK_INT_ADD(index, index2);
+
+
                 if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = rgb[2] / 255;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = rgb[1] / 255;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = rgb[0] / 255;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[index + 0] = rgb[2] / 255;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[CHECK_INT_ADD(index, 1)] = rgb[1] / 255;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[CHECK_INT_ADD(index, 2)] = rgb[0] / 255;
                 }
             }
         }
@@ -153,10 +164,16 @@ t_aif_status fillInputTensor(
                 const auto &rgb = img_resized.at<CvDataType>(i, j);
                 // standardization: -1~1
                 // CID 9333374, CID 9333400
+                int index  = CHECK_INT_MUL(i, width);
+                index = CHECK_INT_MUL(index, channels);
+                int index2 = CHECK_INT_MUL(j, channels);
+                index = CHECK_INT_ADD(index, index2);
+
+
                 if (interpreter->typed_input_tensor<TensorDataType>(0) != nullptr) {
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 0] = (rgb[2] - input_mean) / input_std;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 1] = (rgb[1] - input_mean) / input_std;
-                    interpreter->typed_input_tensor<TensorDataType>(0)[i * width * channels + j * channels + 2] = (rgb[0] - input_mean) / input_std;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[index + 0] = (rgb[2] - input_mean) / input_std;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[CHECK_INT_ADD(index, 1)] = (rgb[1] - input_mean) / input_std;
+                    interpreter->typed_input_tensor<TensorDataType>(0)[CHECK_INT_ADD(index, 2)] = (rgb[0] - input_mean) / input_std;
                 }
             }
         }
@@ -166,15 +183,7 @@ t_aif_status fillInputTensor(
 
 template<typename T>
 T sigmoid(T value) {
-    errno = 0;
-    T result = 1 / (1 + std::exp(-value));
-    if (errno == ERANGE) {
-        return 0;
-    }
-    else if (std::fetestexcept(FE_OVERFLOW)) {
-        return result;
-    }
-    return result;
+    return 1 / (1 + std::exp(-value));
 }
 
 std::string jsonObjectToString(const rj::Value& object);

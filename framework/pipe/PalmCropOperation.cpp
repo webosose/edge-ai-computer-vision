@@ -60,7 +60,7 @@ cv::Rect PalmCropOperation::getCropRect(const std::shared_ptr<NodeInput>& input)
     cropRect.width = imgSize.width * region[2].GetFloat();
     cropRect.height = imgSize.height * region[3].GetFloat();
 
-    int cx = cropRect.x + (cropRect.width/2);
+    int cx = CHECK_INT_ADD(cropRect.x, (cropRect.width/2));
     int cy = cropRect.y;
 
     cropRect.x = cx - (cropRect.width * 1.5f);

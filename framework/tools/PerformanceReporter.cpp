@@ -5,6 +5,7 @@
 
 #include <aif/tools/PerformanceReporter.h>
 #include <aif/log/Logger.h>
+#include <aif/base/Types.h>
 #include <numeric>
 #include <iostream>
 namespace aif {
@@ -33,10 +34,11 @@ const std::string PerformanceRecorder::recordTypeToStr(Performance::RecordType t
     return "";
 }
 
-int PerformanceRecorder::getNum(Performance::RecordType type) const
+size_t PerformanceRecorder::getNum(Performance::RecordType type) const
 {
-    if (0 <= type && type < m_time.size()) {
-        return m_time[type].size();
+    size_t utype = INT_TO_ULONG(type);
+    if (utype < m_time.size()) {
+        return m_time[utype].size();
     }
     return 0;
 }
@@ -45,28 +47,30 @@ void PerformanceRecorder::start(Performance::RecordType type)
 {
     if (PerformanceReporter::get().getReportType() == Performance::NONE) return;
 
-    if (0 <= type && type < m_stopwatch.size()) {
-        m_stopwatch[type].start();
+    size_t utype = INT_TO_ULONG(type);
+    if (utype < m_stopwatch.size()) {
+        m_stopwatch[utype].start();
     }
 }
 
 void PerformanceRecorder::stop(Performance::RecordType type)
 {
 
-    if (0 <= type && type < m_stopwatch.size() && type < m_time.size()) {
+    size_t utype = INT_TO_ULONG(type);
+    if (utype < m_stopwatch.size() && utype < m_time.size()) {
         int reportType = PerformanceReporter::get().getReportType();
         if (reportType == Performance::NONE) return;
 
-        Stopwatch::tick_t tick = m_stopwatch[type].getMs();
+        Stopwatch::tick_t tick = m_stopwatch[utype].getMs();
         if (reportType & Performance::CONSOLE) {
             Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)), tick, "ms");
         }
         if ((reportType & Performance::REPORT) &&
-                m_time[type].size() < Performance::MAX_RECORD_SIZE) {
-            m_time[type].push_back(tick);
+                m_time[utype].size() < Performance::MAX_RECORD_SIZE) {
+            m_time[utype].push_back(tick);
         }
 
-        m_stopwatch[type].stop();
+        m_stopwatch[utype].stop();
     }
 }
 

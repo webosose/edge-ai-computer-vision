@@ -311,7 +311,7 @@ t_aif_status PalmDetector::palmDetect(std::shared_ptr<Descriptor>& descriptor)
     std::vector<float> selected_scores(select_num);
     int num_selected_indices;
 
-    tflite::reference_ops::NonMaxSuppression(good_region.data(), good_score.size(),
+    tflite::reference_ops::NonMaxSuppression(good_region.data(), ULONG_TO_INT(good_score.size()),
             good_score.data(), max_output_size,
             iou_threshold,
             score_thresh,
@@ -320,9 +320,9 @@ t_aif_status PalmDetector::palmDetect(std::shared_ptr<Descriptor>& descriptor)
             &num_selected_indices);
 
     TRACE("Found ", num_selected_indices, " palms...");
-    for(int i = 0 ; i < num_selected_indices ; i++){
-        int idx = selected_indices[i];
-        if (idx < 0 || 4*idx+3 >= good_region.size() || 14*idx+14 >= good_palmpoint.size()) {
+    for(size_t i = 0 ; i < INT_TO_ULONG(num_selected_indices); i++){
+        size_t idx = INT_TO_ULONG(selected_indices[i]);
+        if (4*idx+3 >= good_region.size() || 14*idx+14 >= good_palmpoint.size()) {
             Loge("idx error!");
             continue;
         }

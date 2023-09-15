@@ -95,7 +95,7 @@ t_aif_status FaceDetector::generateAnchors(
 
     std::vector<float> opt_aspect_ratios = param->optAspectRatios;
 
-    const int opt_aspect_ratios_size = (opt_aspect_ratios.size() < INT_MAX) ? opt_aspect_ratios.size() : 0;
+    const int opt_aspect_ratios_size = ULONG_TO_INT(opt_aspect_ratios.size());
 
     std::vector<float> opt_feature_map_height;
     std::vector<float> opt_feature_map_width;
@@ -289,7 +289,7 @@ t_aif_status FaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
     std::vector<float> selected_scores(select_num);
     int num_selected_indices;
 
-    tflite::reference_ops::NonMaxSuppression(good_region.data(), good_score.size(),
+    tflite::reference_ops::NonMaxSuppression(good_region.data(), ULONG_TO_INT(good_score.size()),
             good_score.data(), max_output_size,
             iou_threshold,
             score_thresh,
@@ -298,10 +298,10 @@ t_aif_status FaceDetector::faceDetect(std::shared_ptr<Descriptor>& descriptor)
             &num_selected_indices);
 
     TRACE("Found ", num_selected_indices, " faces...");
-    for(size_t i = 0 ; i < num_selected_indices ; i++){
-        int idx = selected_indices[i];
+    for(size_t i = 0 ; i < INT_TO_ULONG(num_selected_indices); i++){
+        size_t idx = INT_TO_ULONG(selected_indices[i]);
 
-        if (idx < 0 || 4*idx+3 >= good_region.size() || 12*idx+11 >= good_facepoint.size()) {
+        if (4*idx+3 >= good_region.size() || 12*idx+11 >= good_facepoint.size()) {
             Loge("idx error!");
             continue;
         }

@@ -45,7 +45,7 @@ void PoseLandmarkDescriptor::addMaskData(int width, int height, float* mask)
     rj::Value segment(rj::kObjectType);
     rj::Value maskData(rj::kArrayType);
     int j = 0;
-    for (int i = 0; i < width * height; i++) {
+    for (int i = 0; i < CHECK_INT_MUL(width,  height); i++) {
         if (sigmoid<float>(mask[j++]) > 0.1f){
             maskData.PushBack(1, allocator);
         }
@@ -62,7 +62,7 @@ void PoseLandmarkDescriptor::addMaskData(int width, int height, float* mask)
 void PoseLandmarkDescriptor::addLandmarks(const std::vector<std::vector<float>>& landmarks)
 {
     m_landmarks = landmarks;
-    m_poseCount++;
+    m_poseCount = CHECK_ULONG_ADD(m_poseCount, 1);
 }
 
 std::vector<std::vector<cv::Rect2f>>
@@ -144,7 +144,7 @@ cv::Rect2f PoseLandmarkDescriptor::getRect(
     float left, right, top, bottom;
     left = top = 1.0f;
     right = bottom = 0.0f;
-    for (int type = beginType; type <= endType; type++) {
+    for (size_t type = INT_TO_ULONG(beginType); type <= INT_TO_ULONG(endType); type++) {
         left = std::min(left, m_landmarks[type][COOD_X]);
         right = std::max(right, m_landmarks[type][COOD_X]);
         top = std::min(top, m_landmarks[type][COOD_Y]);
@@ -160,7 +160,7 @@ float PoseLandmarkDescriptor::getScore(
         LandmarkType beginType, LandmarkType endType) const
 {
     float score = 0;
-    for (int type = beginType; type <= endType; type++) {
+    for (size_t type = INT_TO_ULONG(beginType); type <= INT_TO_ULONG(endType); type++) {
         score += m_landmarks[type][PRESENCE];
     }
     score = score / (endType - beginType + 1);

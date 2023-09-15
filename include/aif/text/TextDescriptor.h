@@ -23,10 +23,10 @@ public:
     bool addBboxes(const std::vector<cv::Rect>& bboxes);
     bool addBoxes(const std::vector<std::vector<cv::Point>>& boxes);
 
-    int getTextRectCount() const { return m_textRectCount; }
+    size_t getTextRectCount() const { return m_textRectCount; }
 
 private:
-    int m_textRectCount;
+    size_t m_textRectCount;
 };
 
 } // end of namespace aif

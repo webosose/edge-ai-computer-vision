@@ -169,24 +169,8 @@ t_aif_status YuNetFaceDetectorV2::faceDetect(std::shared_ptr<Descriptor>& descri
 
         float cx = (m_priors[i].x + loc_v[i*14+0] * variance[0] * m_priors[i].width)  * paddedW;
         float cy = (m_priors[i].y + loc_v[i*14+1] * variance[0] * m_priors[i].height) * paddedH;
-
-        errno = 0;
         float w  = m_priors[i].width  * exp(loc_v[i*14+2] * variance[0]) * paddedW;
-        if (errno == ERANGE) {
-            Loge("errno == ERANGE: ", std::strerror(errno));
-            return kAifError;
-        }
-        if (std::fetestexcept(FE_OVERFLOW)) {
-        }
-
-        errno = 0;
         float h  = m_priors[i].height * exp(loc_v[i*14+3] * variance[1]) * paddedH;
-        if (errno == ERANGE) {
-            Loge("errno == ERANGE: ", std::strerror(errno));
-            return kAifError;
-        }
-        if (std::fetestexcept(FE_OVERFLOW)) {
-        }
 
         float x1 = cx - w / 2;
         float y1 = cy - h / 2;

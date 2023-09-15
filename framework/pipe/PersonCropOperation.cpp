@@ -62,8 +62,8 @@ cv::Rect PersonCropOperation::getCropRect(const std::shared_ptr<NodeInput>& inpu
         (int)bbox[4].GetFloat(),
         (int)bbox[5].GetFloat()};
 
-    int cx = cropRect.x + (cropRect.width / 2);
-    int cy = cropRect.y + (cropRect.height / 2);
+    int cx = CHECK_INT_ADD(cropRect.x, (cropRect.width / 2));
+    int cy = CHECK_INT_ADD(cropRect.y, (cropRect.height / 2));
 
     cropRect.width = cropRect.width * 1.4f;
     cropRect.height = cropRect.height * 1.2f;
@@ -72,10 +72,10 @@ cv::Rect PersonCropOperation::getCropRect(const std::shared_ptr<NodeInput>& inpu
     cropRect.y = std::max(0, cy - (cropRect.height / 2));
 
     auto originSize = input->getDescriptor()->getImage().size();
-    if (originSize.width < cropRect.x + cropRect.width) {
+    if (originSize.width < CHECK_INT_ADD(cropRect.x, cropRect.width)) {
         cropRect.width = originSize.width - cropRect.x;
     }
-    if (originSize.height < cropRect.y + cropRect.height) {
+    if (originSize.height < CHECK_INT_ADD(cropRect.y, cropRect.height)) {
         cropRect.height = originSize.height - cropRect.y;
     }
 

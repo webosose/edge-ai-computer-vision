@@ -84,6 +84,7 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
 
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *landmarks = m_interpreter->tensor(outputs[0]);
+    size_t landmarksSize = landmarks->bytes / sizeof(float);
     TfLiteTensor *segments = m_interpreter->tensor(outputs[2]);
     int height = segments->dims->data[1];
     int width = segments->dims->data[2];
@@ -95,9 +96,13 @@ t_aif_status PoseLandmarkDetector::postProcessing(const cv::Mat& img, std::share
     }
 
     std::vector<std::vector<float>> outLandmarks(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES);
-    for (int i = 0; i < PoseLandmarkDescriptor::NUM_LANDMARK_TYPES; i++) {
-        for (int j = 0; j < PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS; j++) {
-            size_t index = i * PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS + j;
+    for (size_t i = 0; i < INT_TO_ULONG(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES); i++) {
+        for (size_t j = 0; j < INT_TO_ULONG(PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS); j++) {
+            size_t index = i * INT_TO_ULONG(PoseLandmarkDescriptor::NUM_LANDMARK_ITEMS) + j;
+            if (landmarksSize <= index) {
+                Loge("pose landmarks index error");
+                return kAifError;
+            }
             float data = landmarks->data.f[index];
             if (j == PoseLandmarkDescriptor::COOD_X) {
                 data = data / 255.0f;

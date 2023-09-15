@@ -45,7 +45,7 @@ public:
 
     const std::string recordTypeToStr(Performance::RecordType type) noexcept;
 
-    int getNum(Performance::RecordType type) const;
+    size_t getNum(Performance::RecordType type) const;
     void start(Performance::RecordType type);
     void stop(Performance::RecordType type);
 

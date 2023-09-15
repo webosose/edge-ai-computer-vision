@@ -40,7 +40,7 @@ void SelfieDescriptor::addMaskData(int width, int height, float* mask)
     int j = 0;
     rj::Value segment(rj::kObjectType);
     rj::Value maskData(rj::kArrayType);
-    for (int i = 0; i < width * height; i++) {
+    for (int i = 0; i < CHECK_INT_MUL(width, height); i++) {
         if (mask[j++] > 0.9f)
             maskData.PushBack(1, allocator);
         else

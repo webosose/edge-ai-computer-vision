@@ -96,6 +96,7 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     const std::vector<int> &t_outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(t_outputs[0]);         // poseCount * 17 keyPoints
     float* keyPoints = reinterpret_cast<float*>(output->data.data);
+    size_t keyPointsSize = output->bytes/sizeof(float);
 
     TfLiteTensor *output2 = m_interpreter->tensor(t_outputs[1]);        // poseCount * 17 keyPoiints score
     float* keyPointsScore = reinterpret_cast<float*>(output2->data.data);
@@ -113,10 +114,18 @@ t_aif_status PosenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
         std::vector<cv::Point2f> points;
         std::vector<float> scores;
         for (size_t j = 0; j < PosenetDescriptor::NUM_KEYPOINT_TYPES; j++ ) {
+            if (keyPointsSize <= k) {
+                Loge("keyPoints index error : ", k);
+                return kAifError;
+            }
             float height = keyPoints[k] / m_modelInfo.height;
-            float width = keyPoints[k+1] / m_modelInfo.width;
+            if (keyPointsSize <= k + 1) {
+                Loge("keyPoints index error : ", k);
+                return kAifError;
+            }
+            float width = keyPoints[CHECK_UINT_ADD(k,1)] / m_modelInfo.width;
             points.push_back(cv::Point2f(width, height));
-            k = k + 2;
+            k = CHECK_UINT_ADD(k, 2);
             scores.push_back(keyPointsScore[i * PosenetDescriptor::NUM_KEYPOINT_TYPES + j]);
         }
 

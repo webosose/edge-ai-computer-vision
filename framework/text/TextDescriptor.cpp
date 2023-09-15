@@ -55,7 +55,7 @@ bool TextDescriptor::addBboxes(const std::vector<cv::Rect>& bboxes)
     m_root["texts"].AddMember("bbox", rects, allocator);
 
     TRACE("rect count : ", bboxes.size());
-    m_textRectCount += bboxes.size();
+    m_textRectCount = CHECK_ULONG_ADD(m_textRectCount, bboxes.size());
     return true;
 }
 

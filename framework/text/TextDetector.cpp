@@ -76,7 +76,7 @@ t_aif_status TextDetector::fillInputTensor(const cv::Mat& img)/* override*/
             }
         }
     } else {
-        memcpy(inputTensor, blob.data, blob.total() * blob.elemSize());
+        memcpy(inputTensor, blob.data, CHECK_ULONG_MUL(blob.total(), blob.elemSize()));
     }
 
     return kAifOk;
@@ -152,7 +152,7 @@ void TextDetector::convertOutputToBoxes(
 
         cv::RotatedRect miniBox = cv::minAreaRect(approx);
         if (std::max(miniBox.size.height, miniBox.size.width) < 5) continue;
-    
+
        for (size_t j = 0; j < approx.size(); j++) {
             approx[j].x = (int)(approx[j].x / scaleRatioX);
             approx[j].y = (int)(approx[j].y / scaleRatioY);
@@ -167,7 +167,7 @@ void TextDetector::convertOutputToBoxes(
 
         if (rect.width < 5 || rect.height < 5 ||
                 (param->m_useDetectionRegion &&
-                (!param->m_detectionRegion.contains(cv::Point(rect.x, rect.y)) || 
+                (!param->m_detectionRegion.contains(cv::Point(rect.x, rect.y)) ||
                  !param->m_detectionRegion.contains(cv::Point(rect.x + rect.width, rect.y + rect.height))))) {
             continue;
         }
@@ -243,7 +243,7 @@ std::vector<cv::Point> TextDetector::unclip(const std::vector<cv::Point> &box, f
     co.Execute(solution, distance);
 
     for (auto const& intPoint: solution[0]) {
-        expandedContours.push_back(cv::Point(intPoint.X, intPoint.Y));
+        expandedContours.push_back(cv::Point(LLONG_TO_INT(intPoint.X), LLONG_TO_INT(intPoint.Y)));
     }
     return expandedContours;
 

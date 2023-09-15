@@ -47,11 +47,11 @@ TEST_F(Pose3dDescriptorTest, 02_addjoints3d_one)
 
     std::vector<Joint3D> joints3d;
     for (int i=0; i<41; i++) {
-        joints3d.push_back({i+0.0, i+0.1, i+0.2});
+        joints3d.push_back({i+0.0f, i+0.1f, i+0.2f});
     }
     EXPECT_EQ(joints3d.size(), 41);
 
-    Joint3D joint3dPos = {1.0, 2.0, 3.0};
+    Joint3D joint3dPos = {1.0f, 2.0f, 3.0f};
 
     jpd.addJoints3D(joints3d, joint3dPos);
 
@@ -97,11 +97,11 @@ TEST_F(Pose3dDescriptorTest, 03_add_response_and_returncode)
 
     std::vector<Joint3D> joints3d;
     for (int i=0; i<41; i++) {
-        joints3d.push_back({i+0.0, i+0.1, i+0.2});
+        joints3d.push_back({i+0.0f, i+0.1f, i+0.2f});
     }
     EXPECT_EQ(joints3d.size(), 41);
 
-    Joint3D joint3dPos = {1.0, 2.0, 3.0};
+    Joint3D joint3dPos = {1.0f, 2.0f, 3.0f};
 
     jpd.addJoints3D(joints3d, joint3dPos);
 

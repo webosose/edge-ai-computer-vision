@@ -42,7 +42,9 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
 
         if (UINT_MAX - numOptions > 0) {
             numOptions++;
-            Logi(opt.name.GetString(), " : ", optionMap[opt.name.GetString()]);
+            std::string name = opt.name.GetString();
+            std::string value  = optionMap[name];
+            Logi(name, " : ", value);
         }
     }
 

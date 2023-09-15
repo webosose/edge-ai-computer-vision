@@ -81,6 +81,7 @@ t_aif_status MovenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
     float* keyPoints = reinterpret_cast<float*>(output->data.data);
+    size_t keyPointsSize = output->bytes / sizeof(float);
 
     std::shared_ptr<MovenetDescriptor> movenetDescriptor = std::dynamic_pointer_cast<MovenetDescriptor>(descriptor);
     float scaleX = (float)img.size().width / (float)m_modelInfo.width;
@@ -95,9 +96,23 @@ t_aif_status MovenetDetector::postProcessing(const cv::Mat& img, std::shared_ptr
     std::vector<cv::Point2f> points;
     std::vector<float> scores;
     for (size_t j = 0; j < 17; j++ ) {
+        if (keyPointsSize <= k) {
+            Loge("keyPoints index error : ", k);
+            return kAifError;
+        }
         float height = keyPoints[k]; // * scaleY;
+
+        if (keyPointsSize <= k + 1) {
+            Loge("keyPoints index error : ", k);
+            return kAifError;
+        }
         float width = keyPoints[k+1];// * scaleX;
         points.push_back(cv::Point2f(width, height));
+
+        if (keyPointsSize <= k + 2) {
+            Loge("keyPoints index error : ", k);
+            return kAifError;
+        }
         scores.push_back(keyPoints[k+2]);
         k = k + 3;
     }

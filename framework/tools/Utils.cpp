@@ -78,7 +78,7 @@ std::string base64Encode(const std::string& inputfile)
     }
 
     fin.seekg(0, fin.end);
-    std::size_t data_length = static_cast<std::size_t>(fin.tellg());
+    std::size_t data_length = LONG_TO_ULONG(fin.tellg());
     fin.seekg(0, fin.beg);
 
     std::vector<char> data_buffer(data_length);
@@ -111,7 +111,7 @@ bool base64Encode(const std::string& inputfile, const std::string& outfile)
         Loge("file open error: ", outfile);
         return false;
     }
-    fout.write(encoded_str.data(), encoded_str.size());
+    fout.write(encoded_str.data(), ULONG_TO_INT(encoded_str.size()));
     fout.close();
     return true;
 }
@@ -128,7 +128,7 @@ std::vector<char> base64Decode(const std::string& base64str, int& dataSize)
     // std::cout << "input.len: " << result.second << std::endl;
     // std::cout << "buffer data size: " << buffer.size() << std::endl;
 
-    dataSize = result.first;
+    dataSize = ULONG_TO_INT(result.first);
     return buffer;
 }
 
@@ -184,14 +184,21 @@ bool normalizeWithImage(
         for (int j = 0; j < width; j++) {
             const auto &rgb = img_resized_rgb.at<cv::Vec3f>(i, j);
             // normalization: 0~1
-            imgData[i * width * channels + j * channels + 0] = (rgb[0] - INPUT_MEAN) / INPUT_STD;
-            imgData[i * width * channels + j * channels + 1] = (rgb[1] - INPUT_MEAN) / INPUT_STD;
-            imgData[i * width * channels + j * channels + 2] = (rgb[2] - INPUT_MEAN) / INPUT_STD;
+            // index = i * width * channels + j * channels
+            int index  = CHECK_INT_MUL(i, width);
+            index = CHECK_INT_MUL(index, channels);
+            int index2 = CHECK_INT_MUL(j, channels);
+            index = CHECK_INT_ADD(index, index2);
+            imgData[INT_TO_ULONG(index + 0)] = (rgb[0] - INPUT_MEAN) / INPUT_STD;
+            imgData[INT_TO_ULONG(CHECK_INT_ADD(index, 1))] = (rgb[1] - INPUT_MEAN) / INPUT_STD;
+            imgData[INT_TO_ULONG(CHECK_INT_ADD(index, 2))] = (rgb[2] - INPUT_MEAN) / INPUT_STD;
         }
     }
 
+    int index = CHECK_INT_MUL(height, width);
+    index = CHECK_INT_MUL(index, channels);
     // EXPECT_EQ(imgData.size(), height*width*channels);
-    if (imgData.size() != height*width*channels) {
+    if (imgData.size() != INT_TO_ULONG(index)) {
         Loge("normalize failed!!");
         return false;
     }
@@ -232,13 +239,21 @@ bool normalizeWithBase64Image(
         for (int j = 0; j < width; j++) {
             const auto &rgb = img_resized_rgb.at<cv::Vec3f>(i, j);
             // normalization: 0~1
-            imgData[i * width * channels + j * channels + 0] = (rgb[0] - INPUT_MEAN) / INPUT_STD;
-            imgData[i * width * channels + j * channels + 1] = (rgb[1] - INPUT_MEAN) / INPUT_STD;
-            imgData[i * width * channels + j * channels + 2] = (rgb[2] - INPUT_MEAN) / INPUT_STD;
+            // index = i * width * channels + j * channels
+            int index  = CHECK_INT_MUL(i, width);
+            index = CHECK_INT_MUL(index, channels);
+            int index2 = CHECK_INT_MUL(j, channels);
+            index = CHECK_INT_ADD(index, index2);
+            imgData[INT_TO_ULONG(index + 0)] = (rgb[0] - INPUT_MEAN) / INPUT_STD;
+            imgData[INT_TO_ULONG(CHECK_INT_ADD(index, 1))] = (rgb[1] - INPUT_MEAN) / INPUT_STD;
+            imgData[INT_TO_ULONG(CHECK_INT_ADD(index, 2))] = (rgb[2] - INPUT_MEAN) / INPUT_STD;
         }
     }
+
+    int index = CHECK_INT_MUL(height, width);
+    index = CHECK_INT_MUL(index, channels);
     // EXPECT_EQ(imgData.size(), height*width*channels);
-    if (imgData.size() != height*width*channels) {
+    if (imgData.size() != INT_TO_ULONG(index)) {
         Loge("normalize failed!!");
         return false;
     }

@@ -40,7 +40,7 @@ void SemanticDescriptor::addMaskData(int width, int height, int64_t* mask)
     int j = 0;
     rj::Value segment(rj::kObjectType);
     rj::Value maskData(rj::kArrayType);
-    for (int i = 0; i < width * height; i++) {
+    for (int i = 0; i < CHECK_INT_MUL(width, height); i++) {
         if (mask[j++] == 15)
             maskData.PushBack(1, allocator);
         else
