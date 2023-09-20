@@ -220,7 +220,7 @@ t_aif_status Yolov3YCDetector::postProcessing(const cv::Mat &img, std::shared_pt
             } else {
                 /* normalize 0~1 */
                 Logi("Faces: ", score, ", ",finalBbox.width, ", ", finalBbox.height, ", ");
-                yolov3Descriptor->addFace(score,
+                yolov3Descriptor->addFace(std::min((score + 0.35), 1.0),
                                         finalBbox.xmin / img.cols, finalBbox.ymin / img.rows,
                                         finalBbox.width / img.cols, finalBbox.height / img.rows,
                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
