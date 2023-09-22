@@ -10,13 +10,13 @@
 #include <fstream>
 #include <string>
 #include <cctype>
-#include <experimental/filesystem> // C++14
+#include <filesystem> // C++17
 
-#include <Renderer.h>
+#include "Renderer.h"
 #include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
 
 using namespace aif;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 void drawResults(const std::string& inputPath, const std::string & outputPath, const Pipe& pipe)
 {
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
                     "operation" : {
                         "type" : "detector",
                         "config": {
-                            "model": "person_yolov3_npu",
+                            "model": "person_yolov3_v1_npu",
                             "param": {
                                 "modelParam": {
                                     "detectObject": "BODY"
@@ -175,7 +175,6 @@ int main(int argc, char* argv[])
             config.append(line);
         }
     }
-
 
     AIVision::init();
     Pipe pipe;

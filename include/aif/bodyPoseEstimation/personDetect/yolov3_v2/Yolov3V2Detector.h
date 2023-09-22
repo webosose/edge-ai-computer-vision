@@ -1,0 +1,259 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef AIF_YOLOV3_V2_DETECTOR_H
+#define AIF_YOLOV3_V2_DETECTOR_H
+
+#include <aif/bodyPoseEstimation/personDetect/PersonDetectDetector.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3_v2/Yolov3V2Descriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3_v2/Yolov3V2Param.h>
+
+#define OBD_SCORE_MAX    65535 // 0xFF
+#define OBD_RESULT_NUM   10
+#define SZ_COORD         (5 + OBD_RESULT_NUM) // 15
+#define MAX_BOX          200 //(SZ_LBBOX + SZ_MBBOX) // 405+1620 = 2025
+#define tcnt_init_PERSON 8
+#define tcnt_init_FACE   8
+#define tcnt_init_PET    8
+#define tcnt_init_OBJ    8
+#define SZ_BOX           3
+#define SZ_BOX_SB        1
+#define SZ_LBBOX_W       15
+#define SZ_LBBOX_H       9
+#define SZ_MBBOX_W       30
+#define SZ_MBBOX_H       18
+#define SZ_SBBOX_W       60
+#define SZ_SBBOX_H       36
+#define SZ_CONV_LB_BOX   (SZ_LBBOX_W * SZ_LBBOX_H * SZ_BOX * 4)
+#define SZ_CONV_LB_CONF  (SZ_LBBOX_W * SZ_LBBOX_H * SZ_BOX * (1 + OBD_RESULT_NUM))
+#define SZ_CONV_MB_BOX   (SZ_MBBOX_W * SZ_MBBOX_H * SZ_BOX * 4)
+#define SZ_CONV_MB_CONF  (SZ_MBBOX_W * SZ_MBBOX_H * SZ_BOX * (1 + OBD_RESULT_NUM))
+#define SZ_CONV_SB_BOX   (SZ_SBBOX_W * SZ_SBBOX_H * SZ_BOX_SB * 4)
+#define SZ_CONV_SB_CONF  (SZ_SBBOX_W * SZ_SBBOX_H * SZ_BOX_SB * (1 + OBD_RESULT_NUM))
+
+#define GET_CLIP(_x,_y)  ((((_x) > (_y)) ? (_y) : (_x)))
+
+namespace aif {
+
+typedef enum
+{
+    eOBD_PERSON     = 0,
+    eOBD_FACE       = 1,
+    eOBD_CAR        = 2,
+    eOBD_BUS        = 3,
+    eOBD_MOTOCYCLE  = 4,
+    eOBD_BICYCLE    = 5,
+    eOBD_TRAIN      = 6,
+    eOBD_CAT        = 7,
+    eOBD_DOG        = 8,
+    eOBD_TV         = 9,
+    eOBD_MAX        = 10,
+} t_obd_class_type;
+
+typedef struct {
+    unsigned int box_show;       //0x0
+    unsigned int all_show_mode;  //0x4
+    int res_cnt;                 //0x8
+    int sel_cls; // 0~9          //0xC
+    int res_val[OBD_RESULT_NUM]; //0x10 ~ 0x34
+    int res_cls[OBD_RESULT_NUM]; //0x38 ~ 0x5C
+    int pos_x0 [OBD_RESULT_NUM]; //0x60 ~ 0x84
+    int pos_x1 [OBD_RESULT_NUM]; //0x88 ~ 0xAC
+    int pos_y0 [OBD_RESULT_NUM]; //0xB0 ~ 0xD4
+    int pos_y1 [OBD_RESULT_NUM]; //0xD8 ~ 0xFC
+    int tpr_cnt[OBD_RESULT_NUM]; //0x100 ~ 0x124
+} t_pqe_obd_result;
+
+
+class Yolov3V2Detector : public PersonDetector
+{
+public:
+    enum class BoxType {
+        LB_BOX = 0,
+        MB_BOX = 1,
+        SB_BOX = 2,
+    };
+
+    Yolov3V2Detector(const std::string& modelPath);
+    virtual ~Yolov3V2Detector();
+
+protected:
+    std::shared_ptr<DetectorParam> createParam() override;
+    void setModelInfo(TfLiteTensor* inputTensor) override;
+    t_aif_status fillInputTensor(const cv::Mat& img) override;
+    t_aif_status preProcessing() override;
+    t_aif_status postProcessing(const cv::Mat& img,
+            std::shared_ptr<Descriptor>& descriptor) override;
+
+private:
+    static inline unsigned int cal_pos(int partial,
+                                       const unsigned int LUT[],
+                                       unsigned short par,
+                                       bool cal_mode,
+                                       unsigned int  box_size)
+    {
+        int tmp_result;
+        if(cal_mode) tmp_result =  partial + (box_size>>1) + LUT[par];
+        else tmp_result =  partial + (box_size>>1) - LUT[par];
+
+        if(tmp_result < 0) return 0;
+        else return tmp_result;
+    }
+
+    static inline int cal_confidence(const unsigned int LUT[],
+                                     unsigned short par,
+                                     int max_pro)
+    {
+        return (LUT[par])*(LUT[max_pro]);
+    }
+
+    void OBD_ComputeResult(std::vector<unsigned short>& obd_lb_box_addr, std::vector<unsigned short>& obd_lb_conf_addr,
+                        std::vector<unsigned short>& obd_mb_box_addr, std::vector<unsigned short>& obd_mb_conf_addr,
+                        std::vector<unsigned short>& obd_sb_box_addr, std::vector<unsigned short>& obd_sb_conf_addr);
+    void transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &result);
+    void CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_addr, std::vector<unsigned short>& obd_conf, std::vector<BBox> &bbox);
+    std::vector<int> fw_nms(std::vector<BBox> &bbox);
+    void Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, std::vector<int> &res_nms);
+    void getPaddedImage(const cv::Mat& src, cv::Mat& dst);
+    void FaceMatching();
+    bool checkUpdate(int index, const BBox &currBbox);
+    void RD_Result_box(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y);
+    void RD_Result_conf(std::vector<unsigned short>& obd_conf,unsigned int* addr,unsigned int size_x, unsigned int size_y);
+    void RD_Result_box_SB(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y);
+    void RD_Result_conf_SB(std::vector<unsigned short>& obd_conf,unsigned int* addr,unsigned int size_x, unsigned int size_y);
+
+private:
+    t_pqe_obd_result    m_obd_result;
+    t_pqe_obd_result    m_bodyResult;
+    t_pqe_obd_result    m_faceResult;
+    float m_ImgResizingScale;
+    cv::Size m_paddedSize;
+    int m_leftBorder;
+    int m_topBorder;
+    bool m_IsBodyDetect; // Body or Face ?
+    std::vector<std::pair<BBox, float>> m_prevBboxList; // for previous frame detection results
+    std::vector<std::pair<std::string, BBox>> m_GTBBoxes; // for debug, ground truth bbox
+    int m_frameId;
+
+    static constexpr int tcnt_init[eOBD_MAX] = {tcnt_init_PERSON, tcnt_init_FACE, tcnt_init_PET, tcnt_init_PET,
+                                      tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ};
+    const unsigned int LUT_CONF[3][256] = {
+        // LUT_LB_CONF[256]
+        {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1,
+            1,    1,    1,    1,    1,    1,    1,    1,    2,    2,    2,    2,    3,    3,    3,    4,
+            4,    5,    6,    6,    7,    8,    9,   10,   12,   13,   15,   17,   19,   21,   24,   27,
+            30,   33,   37,   41,   46,   51,   56,   62,   68,   74,   81,   88,   96,  104,  111,  119,
+            128,  136,  144,  151,  159,  167,  174,  181,  187,  193,  199,  204,  209,  214,  218,  222,
+            225,  228,  231,  234,  236,  238,  240,  242,  243,  245,  246,  247,  248,  249,  249,  250,
+            251,  251,  252,  252,  252,  253,  253,  253,  253,  254,  254,  254,  254,  254,  254,  254
+        },
+        // LUT_MB_CONF[256]
+        {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+            1,    2,    2,    2,    2,    2,    2,    3,    3,    3,    3,    4,    4,    4,    5,    5,
+            5,    6,    6,    7,    8,    8,    9,   10,   10,   11,   12,   13,   14,   16,   17,   18,
+            20,   21,   23,   25,   26,   28,   31,   33,   35,   38,   41,   44,   47,   50,   53,   57,
+            61,   65,   69,   73,   77,   82,   87,   91,   96,  101,  107,  112,  117,  122,  128,  133,
+            138,  143,  148,  154,  159,  164,  168,  173,  178,  182,  186,  190,  194,  198,  202,  205,
+            208,  211,  214,  217,  220,  222,  224,  227,  229,  230,  232,  234,  235,  237,  238,  239,
+            241,  242,  243,  244,  245,  245,  246,  247,  247,  248,  249,  249,  250,  250,  250,  251,
+            251,  251,  252,  252,  252,  252,  253,  253,  253,  253,  253,  253,  254,  254,  254,  254,
+            254,  254,  254,  254,  254,  254,  254,  254,  254,  254,  255,  255,  255,  255,  255,  255
+        },
+        // LUT_SB_CONF[256]
+        {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+            0,    0,    0,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    2,
+            2,    2,    2,    2,    2,    3,    3,    3,    3,    4,    4,    5,    5,    5,    6,    6,
+            7,    8,    8,    9,   10,   11,   12,   13,   14,   16,   17,   18,   20,   22,   24,   26,
+            28,   30,   33,   35,   38,   41,   45,   48,   52,   56,   60,   64,   68,   73,   78,   83,
+            88,   93,   99,  105,  110,  116,  122,  128,  133,  139,  145,  150,  156,  162,  167,  172,
+            177,  182,  187,  191,  195,  199,  203,  207,  210,  214,  217,  220,  222,  225,  227,  229,
+            231,  233,  235,  237,  238,  239,  241,  242,  243,  244,  245,  246,  247,  247,  248,  249,
+            249,  250,  250,  250,  251,  251,  252,  252,  252,  252,  253,  253,  253,  253,  253,  253,
+            254,  254,  254,  254,  254,  254,  254,  254,  254,  254,  254,  254,  255,  255,  255,  255
+        }
+    };
+
+    const unsigned int LUT_EXP[3][256] = {
+        // LUT_LB_EXP
+        {   13,   13,   13,   13,   13,   14,   14,   14,   14,   15,   15,   15,   15,   16,   16,   16,
+            17,   17,   17,   17,   18,   18,   18,   19,   19,   19,   20,   20,   20,   21,   21,   21,
+            22,   22,   23,   23,   23,   24,   24,   25,   25,   26,   26,   26,   27,   27,   28,   28,
+            29,   29,   30,   30,   31,   31,   32,   33,   33,   34,   34,   35,   36,   36,   37,   37,
+            38,   39,   39,   40,   41,   41,   42,   43,   44,   44,   45,   46,   47,   48,   48,   49,
+            50,   51,   52,   53,   54,   55,   56,   57,   58,   59,   60,   61,   62,   63,   64,   65,
+            66,   67,   69,   70,   71,   72,   73,   75,   76,   77,   79,   80,   82,   83,   84,   86,
+            87,   89,   90,   92,   94,   95,   97,   99,  100,  102,  104,  106,  108,  109,  111,  113,
+            115,  117,  119,  121,  123,  126,  128,  130,  132,  135,  137,  139,  142,  144,  147,  149,
+            152,  155,  157,  160,  163,  166,  169,  172,  175,  178,  181,  184,  187,  190,  194,  197,
+            201,  204,  208,  211,  215,  219,  222,  226,  230,  234,  238,  243,  247,  251,  256,  260,
+            265,  269,  274,  279,  284,  288,  293,  299,  304,  309,  315,  320,  326,  331,  337,  343,
+            349,  355,  361,  368,  374,  381,  387,  394,  401,  408,  415,  422,  430,  437,  445,  452,
+            460,  468,  477,  485,  493,  502,  511,  520,  529,  538,  547,  557,  567,  577,  587,  597,
+            607,  618,  629,  640,  651,  662,  674,  686,  698,  710,  722,  735,  748,  761,  774,  787,
+            801,  815,  829,  844,  859,  874,  889,  904,  920,  936,  953,  969,  986, 1003, 1021, 1039
+        },
+        // LUT_MB_EXP
+        {   5,    5,    5,    5,    5,    5,    6,    6,    6,    6,    6,    6,    6,    6,    6,    6,
+            6,    6,    6,    7,    7,    7,    7,    7,    7,    7,    7,    7,    7,    7,    7,    8,
+            8,    8,    8,    8,    8,    8,    8,    8,    8,    9,    9,    9,    9,    9,    9,    9,
+            9,    9,    9,   10,   10,   10,   10,   10,   10,   10,   10,   11,   11,   11,   11,   11,
+            11,   11,   12,   12,   12,   12,   12,   12,   12,   13,   13,   13,   13,   13,   13,   13,
+            14,   14,   14,   14,   14,   15,   15,   15,   15,   15,   15,   16,   16,   16,   16,   16,
+            17,   17,   17,   17,   17,   18,   18,   18,   18,   19,   19,   19,   19,   19,   20,   20,
+            20,   20,   21,   21,   21,   21,   22,   22,   22,   22,   23,   23,   23,   24,   24,   24,
+            24,   25,   25,   25,   26,   26,   26,   27,   27,   27,   28,   28,   28,   29,   29,   29,
+            30,   30,   30,   31,   31,   32,   32,   32,   33,   33,   34,   34,   34,   35,   35,   36,
+            36,   37,   37,   37,   38,   38,   39,   39,   40,   40,   41,   41,   42,   42,   43,   43,
+            44,   44,   45,   46,   46,   47,   47,   48,   48,   49,   50,   50,   51,   51,   52,   53,
+            53,   54,   55,   55,   56,   57,   57,   58,   59,   59,   60,   61,   62,   62,   63,   64,
+            65,   66,   66,   67,   68,   69,   70,   70,   71,   72,   73,   74,   75,   76,   77,   78,
+            79,   80,   81,   82,   83,   84,   85,   86,   87,   88,   89,   90,   91,   92,   93,   94,
+            96,   97,   98,   99,  100,  101,  103,  104,  105,  107,  108,  109,  111,  112,  113,  115
+        },
+        // LUT_SB_EXP
+        {    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+            1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+            1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    2,    2,    2,    2,    2,
+            2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,
+            2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    2,    3,
+            3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,
+            3,    3,    3,    3,    3,    3,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,
+            4,    4,    4,    4,    4,    4,    4,    4,    5,    5,    5,    5,    5,    5,    5,    5,
+            5,    5,    5,    5,    5,    5,    6,    6,    6,    6,    6,    6,    6,    6,    6,    6,
+            6,    6,    7,    7,    7,    7,    7,    7,    7,    7,    7,    7,    8,    8,    8,    8,
+            8,    8,    8,    8,    8,    9,    9,    9,    9,    9,    9,    9,    9,   10,   10,   10,
+            10,   10,   10,   10,   11,   11,   11,   11,   11,   11,   12,   12,   12,   12,   12,   12,
+            13,   13,   13,   13,   13,   14,   14,   14,   14,   14,   15,   15,   15,   15,   15,   16,
+            16,   16,   16,   17,   17,   17,   17,   18,   18,   18,   18,   19,   19,   19,   19,   20,
+            20,   20,   20,   21,   21,   21,   22,   22,   22,   23,   23,   23,   24,   24,   24,   25,
+            25,   25,   26,   26,   26,   27,   27,   28,   28,   28,   29,   29,   30,   30,   31,   31
+        }
+    };
+};
+
+} // end of namespace aif
+
+#endif // AIF_YOLOV3_V2_DETECTOR_H

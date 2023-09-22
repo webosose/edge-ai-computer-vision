@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     AIVision::init();
 
     cv::Mat img = cv::imread("/usr/share/aif/images/person.jpg");
-    std::string id = "pose2d_resnet_npu";
+    std::string id = "pose2d_resnet_v1_npu";
 
     auto detector = DetectorFactory::get().getDetector(id, option);
     auto descriptor = DetectorFactory::get().getDescriptor(id);

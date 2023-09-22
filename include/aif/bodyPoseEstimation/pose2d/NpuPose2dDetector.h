@@ -37,7 +37,8 @@ class NpuPose2dDetector : public Pose2dDetector, public std::enable_shared_from_
 };
 
 DetectorFactoryRegistration<NpuPose2dDetector, Pose2dDescriptor>
-    pose2d_resnet_npu("pose2d_resnet_npu");
+    pose2d_resnet_v1_npu("pose2d_resnet_v1_npu");
+
 
 } // end of namespace aif
 

@@ -38,7 +38,7 @@
             "operation" : {
                 "type" : "detector",
                 "config": {
-                    "model": "pose2d_resnet_npu",
+                    "model": "pose2d_resnet_v1_npu",
                     "param": {
                         "delegates": [
                             {

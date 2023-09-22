@@ -39,7 +39,7 @@ protected:
 
     std::string personId{"person_yolov4_npu"};
     std::string cropId{"fittv_person_crop"};
-    std::string pose2dId{"pose2d_resnet_npu"};
+    std::string pose2dId{"pose2d_resnet_v1_npu"};
     std::string pose3dId{"pose3d_videopose3d_npu"};
 
     std::shared_ptr<Yolov4Descriptor> makeYoloDescriptor(int numPerson)

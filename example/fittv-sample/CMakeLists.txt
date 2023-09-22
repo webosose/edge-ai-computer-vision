@@ -43,7 +43,7 @@ link_directories(
 )
 
 add_definitions(
-    -std=c++14
+    -std=c++17
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
     -DLOG_CONTEXT="POSELANDMARK"
@@ -106,7 +106,6 @@ set(LIBS
     edgeai-vision
     example-tools
     pthread
-    -lstdc++fs
 )
 
 IF(WITH_EDGETPU)

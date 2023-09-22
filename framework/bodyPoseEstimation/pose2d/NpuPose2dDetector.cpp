@@ -19,7 +19,7 @@ namespace aif {
 NpuPose2dDetector::NpuPose2dDetector()
     : mScaleIn(0.0f)
     , mZeropointIn(0)
-    , Pose2dDetector("FitTV_Pose2D_Division.tflite")
+    , Pose2dDetector("FitTV_Pose2D_V1.tflite")
 {
 }
 
