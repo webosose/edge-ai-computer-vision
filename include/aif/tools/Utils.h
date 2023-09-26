@@ -178,9 +178,9 @@ T sigmoid(T value) {
 }
 
 std::string jsonObjectToString(const rj::Value& object);
-
-
 bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
+struct t_aif_padding_info getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst);
+bool isRoiValid( const int imgWidth, const int imgHeight, const cv::Rect &roiRect );
 
 template <typename T>
 void memoryDump(T* outTensor, std::string path, size_t outTotalSize)

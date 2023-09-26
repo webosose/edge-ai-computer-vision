@@ -242,7 +242,8 @@ ENDIF(WITH_EXTRA_MODELS)
 IF(WITH_FITTV)
     file(GLOB FITTV_MODELS
         "${CMAKE_SOURCE_DIR}/extra_models/FitTV*.tflite"
-        "${CMAKE_SOURCE_DIR}/extra_models/pose2d*.tflite")
+        "${CMAKE_SOURCE_DIR}/extra_models/pose2d*.tflite"
+        "${CMAKE_SOURCE_DIR}/extra_models/O24_SIC_SEG_*.tflite")
     install(FILES ${FITTV_MODELS} DESTINATION ${AIF_INSTALL_DIR}/model)
 ENDIF(WITH_FITTV)
 
@@ -265,3 +266,4 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/text")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/pipe")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/bodyPoseEstimation")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/rppg")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/bgSegment")

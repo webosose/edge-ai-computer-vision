@@ -331,4 +331,58 @@ bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
     return ((A_and_B / A_or_B) > threshold);
 }
 
+struct t_aif_padding_info
+getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)
+{
+    float srcW = src.size().width;
+    float srcH = src.size().height;
+    int modelW = modelSize.width;
+    int modelH = modelSize.height;
+    int dstW = 0;
+    int dstH = 0;
+
+    float scaleW = static_cast<float>(modelSize.width) / srcW;
+    float scaleH = static_cast<float>(modelSize.height) / srcH;
+    float scale = std::min(scaleW, scaleH);
+
+    struct t_aif_padding_info padInfo = {0,};
+    padInfo.imgResizingScale = scale;
+    TRACE(__func__, " imgResizingScale = " , padInfo.imgResizingScale);
+
+    int width = srcW * scale;
+    int height = srcH * scale;
+
+    cv::Mat inputImg;
+    cv::resize(src, inputImg, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
+
+    if (modelSize.width != width)
+        padInfo.leftBorder = (modelSize.width - width) / 2;
+    if (modelSize.height != height)
+        padInfo.topBorder = (modelSize.height - height) / 2;
+
+    padInfo.rightBorder = modelSize.width - width - padInfo.leftBorder;
+    padInfo.bottomBorder = modelSize.height - height - padInfo.topBorder;
+
+    cv::copyMakeBorder(inputImg, dst, padInfo.topBorder, padInfo.bottomBorder,
+                                      padInfo.leftBorder, padInfo.rightBorder,
+                                      cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    padInfo.paddedSize = cv::Size(
+            srcW * (static_cast<float>(modelSize.width)/width),
+            srcH * (static_cast<float>(modelSize.height)/height)); // this is upscaled paddedImage to orig img. same ratio with model input ratio.
+
+    //TRACE(__func__, " paddingInfo is (l,t,r,b): ", padInfo.leftBorder, " ", padInfo.topBorder, " ", padInfo.rightBorder, " ", padInfo.bottomBorder);
+    //TRACE(__func__, " paddedSize is (W,H): ", padInfo.paddedSize.width, ", ", padInfo.paddedSize.height);
+
+    return padInfo;
+}
+
+bool isRoiValid( const int imgWidth, const int imgHeight, const cv::Rect &roiRect )
+{
+    return ( ( roiRect.x >= 0 ) && ( roiRect.y >= 0 ) &&
+                    ( roiRect.width > 0 ) && ( roiRect.height > 0 ) &&
+                    ( roiRect.x + roiRect.width <= imgWidth ) &&
+                    ( roiRect.y + roiRect.height <= imgHeight ) );
+}
+
+
 } // end of namespace aif

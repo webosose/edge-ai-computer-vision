@@ -11,6 +11,7 @@
 #include <climits>
 #include <cmath>
 #include <string>
+#include <opencv2/opencv.hpp>
 
 namespace aif {
 
@@ -98,6 +99,16 @@ struct t_aif_event
 {
     t_aif_event_type type;
     std::string data;
+};
+
+struct t_aif_padding_info
+{
+    int leftBorder;
+    int topBorder;
+    int rightBorder;
+    int bottomBorder;
+    float imgResizingScale;
+    cv::Size paddedSize;
 };
 
 } // end of namespace aif
