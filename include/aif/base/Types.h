@@ -134,6 +134,15 @@ inline size_t INT_TO_ULONG(int value) {
     return ulvalue;
 }
 
+inline uint32_t INT_TO_UINT(int value) {
+    uint32_t uvalue = 0;
+    if (value >= 0)
+        uvalue = value;
+    else
+        Loge("value may result in lost or misinterpreted data");
+    return uvalue;
+}
+
 inline int ULONG_TO_INT(size_t value) {
     int intValue = 0;
     if (value <= INT_MAX)

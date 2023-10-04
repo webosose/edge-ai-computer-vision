@@ -325,7 +325,7 @@ t_aif_status Yolov3YCParam::fromJson(const std::string& param)
         if (modelParam.HasMember("stride")) {
             stride.clear();
             for (auto& str : modelParam["stride"].GetArray()) {
-                stride.push_back(str.GetInt());
+                stride.push_back(str.GetUint());
             }
         }
         if (modelParam.HasMember("thresh_score")) {

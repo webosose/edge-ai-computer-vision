@@ -266,7 +266,7 @@ t_aif_status Yolov4Param::fromJson(const std::string& param)
             bbox_conf_threshold = modelParam["bbox_conf_threshold"].GetDouble();
         }
         if (modelParam.HasMember("numClasses")) {
-            numClasses = modelParam["numClasses"].GetInt();
+            numClasses = modelParam["numClasses"].GetUint();
             numOutChannels = numClasses + 5;
         }
         if (modelParam.HasMember("strides")) {

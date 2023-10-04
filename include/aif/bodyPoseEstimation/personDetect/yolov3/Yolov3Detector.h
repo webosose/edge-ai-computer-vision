@@ -116,10 +116,10 @@ private:
     void transform2OriginCoord(const cv::Mat& img, t_pqe_obd_result &result);
     void CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_addr, std::vector<unsigned short>& obd_conf, std::vector<BBox> &bbox);
     std::vector<int> fw_nms(std::vector<BBox> &bbox);
-    void Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, std::vector<int> &res_nms);
+    void Classify_OBD_Result(const std::vector<BBox> &bbox, unsigned int num_nms, std::vector<int> &res_nms);
     void getPaddedImage(const cv::Mat& src, cv::Mat& dst);
     void FaceMatching();
-    bool checkUpdate(int index, const BBox &currBbox);
+    bool checkUpdate(unsigned int index, const BBox &currBbox);
     void RD_Result_box(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y);
     void RD_Result_conf(std::vector<unsigned short>& obd_conf,unsigned int* addr,unsigned int size_x, unsigned int size_y);
     void RD_Result_box_SB(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y);
@@ -136,7 +136,7 @@ private:
     bool m_IsBodyDetect; // Body or Face ?
     std::vector<std::pair<BBox, float>> m_prevBboxList; // for previous frame detection results
     std::vector<std::pair<std::string, BBox>> m_GTBBoxes; // for debug, ground truth bbox
-    int m_frameId;
+    unsigned int m_frameId;
 
     static constexpr int tcnt_init[eOBD_MAX] = {tcnt_init_PERSON, tcnt_init_FACE, tcnt_init_PET, tcnt_init_PET,
                                       tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ, tcnt_init_OBJ};

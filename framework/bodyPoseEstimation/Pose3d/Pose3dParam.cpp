@@ -216,7 +216,7 @@ t_aif_status Pose3dParam::fromJson(const std::string& param)
         if (modelParam.HasMember("flipPoseMap")) {
             flipPoseMap.clear();
             for (auto& flipPose : modelParam["flipPoseMap"].GetArray()) {
-                flipPoseMap.push_back(flipPose.GetInt());
+                flipPoseMap.push_back(flipPose.GetUint());
             }
         }
         if (modelParam.HasMember("preprocessingType")) {
@@ -224,29 +224,45 @@ t_aif_status Pose3dParam::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("focalLength")) {
             focalLength.fill({});
-            int i = 0;
+            unsigned int i = 0;
             for (auto& focalL : modelParam["focalLength"].GetArray()) {
+                if (i >= 2) {
+                    Loge(__func__, " focalLength should be 2");
+                    return kAifError;
+                }
                 focalLength[i++] = focalL.GetDouble();
             }
         }
         if (modelParam.HasMember("center")) {
             center.fill({});
-            int i = 0;
+            unsigned int i = 0;
             for (auto& c : modelParam["center"].GetArray()) {
+                if (i >= 2) {
+                    Loge(__func__, " center should be 2");
+                    return kAifError;
+                }
                 center[i++] = c.GetDouble();
             }
         }
         if (modelParam.HasMember("radialDistortion")) {
             radialDistortion.fill({});
-            int i = 0;
+            unsigned int i = 0;
             for (auto& dist : modelParam["radialDistortion"].GetArray()) {
+                if (i >= 3) {
+                    Loge(__func__, " tanDistortion should be 3");
+                    return kAifError;
+                }
                 radialDistortion[i++] = dist.GetDouble();
             }
         }
         if (modelParam.HasMember("tanDistortion")) {
             tanDistortion.fill({});
-            int i = 0;
+            unsigned int i = 0;
             for (auto& dist : modelParam["tanDistortion"].GetArray()) {
+                if (i >= 2) {
+                    Loge(__func__, " tanDistortion should be 2");
+                    return kAifError;
+                }
                 tanDistortion[i++] = dist.GetDouble();
             }
         }/* TODO */

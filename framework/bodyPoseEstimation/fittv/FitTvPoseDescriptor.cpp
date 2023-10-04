@@ -131,7 +131,12 @@ bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
 
 bool FitTvPoseDescriptor::addCropRect(int trackId, const cv::Rect& rect)
 {
-    int index = trackId - 1;
+    if (trackId < 1) {
+        Loge(__func__, " Wrrong trackId: ", trackId);
+        return false;
+    }
+
+    size_t index = trackId - 1;
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
@@ -163,7 +168,13 @@ bool FitTvPoseDescriptor::addCropRect(int trackId, const cv::Rect& rect)
 
 bool FitTvPoseDescriptor::addPose2d(int trackId, const std::vector<std::vector<float>>& keyPoints)
 {
-    int index = trackId - 1;
+    if (trackId < 1) {
+        Loge(__func__, " Wrrong trackId: ", trackId);
+        return false;
+    }
+
+    size_t index = trackId - 1;
+
     if (m_keyPoints.size() != index) {
         Loge("cannot add keyPoints by trackId: ", trackId);
         return false;
@@ -217,7 +228,13 @@ bool FitTvPoseDescriptor::addPose3d(
 
     const auto& poses = m_root["poseEstimation"].GetArray();
 
-    int index = trackId - 1;
+    if (trackId < 1) {
+        Loge(__func__, " Wrrong trackId: ", trackId);
+        return false;
+    }
+
+    size_t index = trackId - 1;
+
     if (trackId <= 0 ||
         poses.Size() < trackId ||
         !poses[index].HasMember("id")) {

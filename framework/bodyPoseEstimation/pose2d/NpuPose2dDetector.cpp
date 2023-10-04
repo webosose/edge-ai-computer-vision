@@ -41,55 +41,48 @@ void NpuPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
 
 t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
 {
-    try {
-        if (img.rows == 0 || img.cols == 0) {
-            throw std::runtime_error("invalid opencv image!!");
-        }
-
-        if (m_interpreter == nullptr) {
-            throw std::runtime_error("pose2d.tflite interpreter not initialized!!");
-        }
-
-        int height = m_modelInfo.height;
-        int width = m_modelInfo.width;
-        int channels = m_modelInfo.channels;
-
-        cv::Mat inputImg, inputNormImg;
-        if (m_useUDP) {
-            getAffinedImage(img, cv::Size(width, height), inputImg);
-            //cv::imwrite("affined_input_npu.jpg", inputImg);
-            //memoryDump(inputImg.data, "./orig_input.bin", width * height * channels * sizeof(uint8_t));
-        } else {
-            inputImg = img;
-        }
-
-        //cv::imwrite("./padded_npu.jpg", inputImg);
-        //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
-
-
-        inputNormImg = inputImg;
-        inputImg.convertTo(inputImg, CV_32FC3);
-        inputNormImg.convertTo(inputNormImg, CV_8UC3);
-
-        normalizeImageWithQuant(inputImg, inputNormImg);
-        // cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
-
-        //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
-        //memoryDump(inputNormImg.data, "./normQuant_input.bin", width * height * channels * sizeof(uint8_t));
-
-        //cv::imwrite("./normQuant_input.jpg", inputNormImg);
-        uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
-        std::memcpy(inputTensor, inputNormImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
-
-        //memoryDump(inputTensor, "./input.bin", width * height * channels * sizeof(uint8_t));
-        return kAifOk;
-    } catch(const std::exception& e) {
-        Loge(__func__,"Error: ", e.what());
-        return kAifError;
-    } catch(...) {
-        Loge(__func__,"Error: Unknown exception occured!!");
+    if (img.rows == 0 || img.cols == 0) {
+        Loge(__func__, " invalid opencv image!!");
         return kAifError;
     }
+
+    if (m_interpreter == nullptr) {
+        Loge(__func__, " pose2d.tflite interpreter not initialized!!");
+        return kAifError;
+    }
+
+    int height = m_modelInfo.height;
+    int width = m_modelInfo.width;
+    int channels = m_modelInfo.channels;
+
+    cv::Mat inputImg, inputNormImg;
+    if (m_useUDP) {
+        getAffinedImage(img, cv::Size(width, height), inputImg);
+        //cv::imwrite("affined_input_npu.jpg", inputImg);
+        //memoryDump(inputImg.data, "./orig_input.bin", width * height * channels * sizeof(uint8_t));
+    } else {
+        inputImg = img;
+    }
+
+    //cv::imwrite("./padded_npu.jpg", inputImg);
+    //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
+
+
+    inputNormImg = inputImg;
+    inputImg.convertTo(inputImg, CV_32FC3);
+    inputNormImg.convertTo(inputNormImg, CV_8UC3);
+
+    normalizeImageWithQuant(inputImg, inputNormImg);
+    // cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
+
+    //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
+    //memoryDump(inputNormImg.data, "./normQuant_input.bin", width * height * channels * sizeof(uint8_t));
+
+    //cv::imwrite("./normQuant_input.jpg", inputNormImg);
+    uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
+    std::memcpy(inputTensor, inputNormImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
+
+    //memoryDump(inputTensor, "./input.bin", width * height * channels * sizeof(uint8_t));
     return kAifOk;
 }
 
@@ -97,9 +90,9 @@ t_aif_status NpuPose2dDetector::preProcessing()
 {
     const std::vector<int> &inputs = m_interpreter->inputs();
     TfLiteTensor *input = m_interpreter->tensor(inputs[0]);
-    getInputTensorInfo(input);
+    t_aif_status res = getInputTensorInfo(input);
 
-    return kAifOk;
+    return res;
 }
 
 t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor)
@@ -110,15 +103,18 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
     if (output == nullptr) {
-        throw std::runtime_error("can't get tflite tensor_output!!");
+        Loge(__func__, " can't get tflite tensor_output!!");
+        return kAifError;
     }
     TfLiteAffineQuantization* q_params = reinterpret_cast<TfLiteAffineQuantization*>(output->quantization.params);
     if (!q_params) {
-        throw std::runtime_error("output tensor doesn't have q_params...");
+        Loge(__func__, " output tensor doesn't have q_params...");
+        return kAifError;
     }
 
     if (q_params->scale->size != 1) {
-        throw std::runtime_error("output tensor should not per-axis quant...");
+        Loge(__func__, " output tensor should not per-axis quant...");
+        return kAifError;
     }
     float scale = q_params->scale->data[0];
     int zeroPoint= q_params->zero_point->data[0];
@@ -151,26 +147,30 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     return kAifOk;
 }
 
-void
+t_aif_status
 NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
 {
     if (input == nullptr || input->dims == nullptr) {
-        throw std::runtime_error("input / input->dims is nullptr");
+        Loge(__func__, " input / input->dims is nullptr");
+        return kAifError;
     }
 
     TfLiteAffineQuantization* q_params = reinterpret_cast<TfLiteAffineQuantization*>(input->quantization.params);
     if (!q_params) {
-        throw std::runtime_error("input tensor doesn't have q_params...");
+        Loge(__func__, " input tensor doesn't have q_params...");
+        return kAifError;
     }
 
     if (q_params->scale->size != 1) {
-        throw std::runtime_error("input tensor should not per-axis quant...");
+        Loge(__func__, " input tensor should not per-axis quant...");
+        return kAifError;
     }
 
     mScaleIn = q_params->scale->data[0];
     mZeropointIn = q_params->zero_point->data[0];
 
     TRACE( __func__, "[POSE2D!!!!!!!!!!]  mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
+    return kAifOk;
 }
 
 

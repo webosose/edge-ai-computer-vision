@@ -91,16 +91,16 @@ cv::Mat FitTvPersonCropOperation::getCropRect(cv::Mat& originalImg, cv::Size& or
     int targetYmin = static_cast<int>(scaledBbox.ymin);
     int targetXmax = static_cast<int>(scaledBbox.xmax);
     int targetYmax = static_cast<int>(scaledBbox.ymax);
-    int targetWidth = targetXmax - targetXmin;
-    int targetHeight = targetYmax - targetYmin;
+    int targetWidth = CHECK_INT_SUB(targetXmax, targetXmin); // targetXmax - targetXmin
+    int targetHeight = CHECK_INT_SUB(targetYmax, targetYmin); // targetYmax - targetYmin
 
     cv::Mat fullCropImg = cv::Mat::zeros(targetHeight, targetWidth, originalImg.type());
 
     if (targetXmax > originSize.width) {
-        targetWidth = targetWidth - (targetXmax - originSize.width);
+        targetWidth = CHECK_INT_SUB(targetWidth , (targetXmax - originSize.width)); // targetWidth - (targetXmax - originSize.width);
     }
     if (targetYmax > originSize.height) {
-        targetHeight = targetHeight - (targetYmax - originSize.height);
+        targetHeight = CHECK_INT_SUB(targetHeight , (targetYmax - originSize.height)); // targetHeight - (targetYmax - originSize.height);
     }
 
     cv::Rect safeCropArea(0, 0, targetWidth, targetHeight);

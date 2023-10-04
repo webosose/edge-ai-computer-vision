@@ -52,7 +52,7 @@ public:
     int box_size;
     int sb_box_size;
     int class_size;
-    std::vector<int> stride; // lbbox, mbbox
+    std::vector<unsigned int> stride; // lbbox, mbbox
     std::vector<int> thresh_score; // LLL, L, M, H
     int thresh_iou_sc_nms;
     int thresh_iou_sc_sur;

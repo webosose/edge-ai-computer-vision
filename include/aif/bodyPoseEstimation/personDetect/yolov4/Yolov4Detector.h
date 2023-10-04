@@ -30,17 +30,17 @@ protected:
 
 private:
     cv::Mat staticResize(const cv::Mat& img, const int targetWidth, const int targetHeight);
-    void getOutputTensorInfo(uint8_t **outTensorDataArr,
+    t_aif_status getOutputTensorInfo(uint8_t **outTensorDataArr,
                                      size_t &outConcatDimSize);
 
-    void transformToImageCoordinates(uint8_t **outTensorDataArr, float *target_outTensor_deq,
+    t_aif_status transformToImageCoordinates(uint8_t **outTensorDataArr, float *target_outTensor_deq,
                                                  std::shared_ptr<Yolov4Param> &param);
     void generateYolov4Proposals( std::vector<Object>& objects,
                                   std::shared_ptr<Yolov4Param> &param,
                                   float *outData, size_t outSize);
     void qsortDescentInplace( std::vector<Object>& objects );
     void qsortDescentInplace( std::vector<Object>& objects, int left, int right );
-    void nmsSortedBboxes( std::shared_ptr<Yolov4Param> &param, const std::vector<Object>& objects, std::vector<int>& picked );
+    void nmsSortedBboxes( std::shared_ptr<Yolov4Param> &param, const std::vector<Object>& objects, std::vector<unsigned int>& picked );
     static inline float intersectionArea( const Object& a, const Object& b )
     {
         cv::Rect_<float> inter = a.rect & b.rect;

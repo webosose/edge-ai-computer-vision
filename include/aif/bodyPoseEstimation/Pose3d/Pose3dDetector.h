@@ -40,22 +40,22 @@ protected:
 
 private:
     Joint2D normalizeJoints( const float x, const float y, const int width, const int height );
-    void initializeParam();
+    t_aif_status initializeParam();
     void getCameraIntrinsics();
-    void getInputTensorInfo(TfLiteTensor *input);
-    int getOutputTensorInfo(TfLiteTensor *output);
+    t_aif_status getInputTensorInfo(TfLiteTensor *input);
+    t_aif_status getOutputTensorInfo(TfLiteTensor *output, int &outputIdx);
     void fillJoints( uint8_t* inputTensorBuff );
-    void fillFlippedJoints( uint8_t* inputTensorBuff );
+    t_aif_status fillFlippedJoints( uint8_t* inputTensorBuff );
     void postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output);
-    void postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output);
-    void averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, int numJoints);
+    t_aif_status postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output);
+    void averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, size_t numJoints);
 
 private:
     int mMaxInputs;
-    int mBatchSize;
-    int mNumElems;
-    int mNumJointsIn;
-    int mNumJointsOut[RESULT_3D_IDX_MAX];
+    size_t mBatchSize;
+    size_t mNumElems;
+    size_t mNumJointsIn;
+    size_t mNumJointsOut[RESULT_3D_IDX_MAX];
     bool mIsSecondDetect;
     JointQueue mJoints_Q;
     cv::Mat mCameraMatrix;

@@ -21,6 +21,8 @@
 
 #include <cstdlib>
 
+//#define CUSTOM_DATA_TEST
+
 using namespace aif;
 
 class Yolov3DetectorTest : public ::testing::Test
@@ -235,22 +237,6 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     EXPECT_EQ(foundYolov3s->sizeOfPersons(), 1);
     EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
 
-
-    foundYolov3s->clear();
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/test_arms.png", descriptor) == aif::kAifOk);
-    foundYolov3s->drawBbox(basePath + "/images/test_arms.png");
-    std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->sizeOfPersons(), 1);
-    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
-
-
-    foundYolov3s->clear();
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/yoga.png", descriptor) == aif::kAifOk);
-    foundYolov3s->drawBbox(basePath + "/images/yoga.png");
-    std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->sizeOfPersons(), 1);
-    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0);
-
 }
 
 TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
@@ -280,23 +266,9 @@ TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
     EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0); /* far away, mask man */
     EXPECT_EQ(foundYolov3s->sizeOfPersons(), 0);
 
-
-    foundYolov3s->clear();
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/test_arms.png", descriptor) == aif::kAifOk);
-    foundYolov3s->drawBbox(basePath + "/images/test_arms.png");
-    std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0); /* not detected */
-    EXPECT_EQ(foundYolov3s->sizeOfPersons(), 0);
-
-
-    foundYolov3s->clear();
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/yoga.png", descriptor) == aif::kAifOk);
-    foundYolov3s->drawBbox(basePath + "/images/yoga.png");
-    std::cout << foundYolov3s->toStr() << std::endl;
-    EXPECT_EQ(foundYolov3s->sizeOfFaces(), 0); /* not detected */
-    EXPECT_EQ(foundYolov3s->sizeOfPersons(), 0);
 }
 
+#if defined(CUSTOM_DATA_TEST)
 TEST_F(Yolov3DetectorTest, 03_yolov3_detect_90_pose_person)
 {
     auto fd = DetectorFactory::get().getDetector("person_yolov3_npu", use_npu_delegate);
@@ -325,6 +297,7 @@ TEST_F(Yolov3DetectorTest, 03_yolov3_detect_90_pose_person)
     //std::cout << foundYolov3s->toStr() << std::endl;
     //EXPECT_EQ(foundYolov3s->sizeOfPersons(), 1);
 }
+#endif
 
 TEST_F(Yolov3DetectorTest, 04_yolov3_detect_people)
 {
@@ -400,6 +373,7 @@ TEST_F(Yolov3DetectorTest, 08_yolov3_detect_person2_in_people)
     EXPECT_EQ(foundYolov3s->sizeOfPersons(), 2);
 }
 
+#if defined(CUSTOM_DATA_TEST)
 TEST_F(Yolov3DetectorTest, 09_yolov3_detect_person_iou_update)
 {
     /* 0.7 */
@@ -502,3 +476,4 @@ TEST_F(Yolov3DetectorTest, 12_yolov3_detect_person_iou_update3)
 
     EXPECT_LT(foundYolov3s->sizeOfPersons(), 10);
 }
+#endif

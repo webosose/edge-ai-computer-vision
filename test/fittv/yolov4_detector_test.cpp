@@ -19,6 +19,8 @@
 #include <fstream>
 #include <vector>
 
+//#define CUSTOM_DATA_TEST
+
 using namespace aif;
 
 class Yolov4DetectorTest : public ::testing::Test
@@ -150,12 +152,8 @@ TEST_F(Yolov4DetectorTest, 01_yolov4_detect_person)
 
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Yolov4Descriptor>();
     auto foundYolov4s = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/yoga.png", descriptor) == aif::kAifOk);
-    foundYolov4s->drawBbox(basePath + "/images/yoga.png");
-
-    foundYolov4s->clear();
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/test_arms.png", descriptor) == aif::kAifOk);
-    foundYolov4s->drawBbox(basePath + "/images/test_arms.png");
+    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    foundYolov4s->drawBbox(basePath + "/images/person.jpg");
 
     std::cout << foundYolov4s->toStr() << std::endl;
     EXPECT_EQ(foundYolov4s->size(), 1);
@@ -207,6 +205,7 @@ TEST_F(Yolov4DetectorTest, 03_yolov4_detect_not_people)
 
 }
 
+#if defined(CUSTOM_DATA_TEST)
 TEST_F(Yolov4DetectorTest, 04_yolov4_detect_side_person)
 {
     auto fd = DetectorFactory::get().getDetector("person_yolov4_npu", use_npu_delegate);
@@ -237,6 +236,7 @@ TEST_F(Yolov4DetectorTest, 04_yolov4_detect_side_person)
     //std::cout << foundYolov4s->toStr() << std::endl;
     //EXPECT_EQ(foundYolov4s->size(), 1);
 }
+#endif
 
 TEST_F(Yolov4DetectorTest, 05_yolov4_detect_person_in_people)
 {

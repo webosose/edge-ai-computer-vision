@@ -104,6 +104,8 @@ void Yolov3Descriptor::drawBbox(std::string imgPath)
 
 void Yolov3Descriptor::clear()
 {
+    FaceDescriptor::clear();
+
     m_personCount = 0;
 
     m_scores.clear();

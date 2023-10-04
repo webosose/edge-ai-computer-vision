@@ -44,8 +44,8 @@ public:
     bool useFp16;
     double nms_threshold;
     double bbox_conf_threshold;
-    int numClasses;
-    int numOutChannels;
+    unsigned int numClasses;
+    unsigned int numOutChannels;
     std::vector<int> strides;
     std::vector<int> numAnchors; // 3, 3
     std::vector<std::vector<std::pair<int, int>>> anchors;

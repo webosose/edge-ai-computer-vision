@@ -46,9 +46,9 @@ protected:
     cv::Size m_paddedSize;
     int m_leftBorder;
     int m_topBorder;
-    int m_numKeyPoints;
-    int m_heatMapWidth;
-    int m_heatMapHeight;
+    unsigned int m_numKeyPoints;
+    unsigned int m_heatMapWidth;
+    unsigned int m_heatMapHeight;
     cv::Mat mTransMat;
 public:
    friend class PostProcess;

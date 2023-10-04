@@ -18,7 +18,7 @@ RegularPostProcess::~RegularPostProcess()
 bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float* data)
 {
     Logd("Regular Post Process!!!");
-    int outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
+    auto outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
     float* buffer = new float[outputSize];
     std::memcpy(buffer, data, (outputSize * sizeof(float)));
 
@@ -26,7 +26,7 @@ bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
         delete [] buffer;
         return false;
     }
-    
+
     delete [] buffer;
     return true;
 }
