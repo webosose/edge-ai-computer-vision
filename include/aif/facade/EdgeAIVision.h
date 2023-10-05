@@ -12,13 +12,13 @@
 namespace aif {
 
 class Pipe;
+class ExtraOutput;
 /**
  *  API Facade class for Edge AI Computer Vision
  */
-
 class EdgeAIVision {
  public:
-    /// Detector Type enum class
+    /// Detector type enum class
     enum class DetectorType {
         FACE = 0,     ///< Face Detector (Default Model: face short range)
         POSE,         ///< Pose Detector (Default Model: posenet)
@@ -99,8 +99,18 @@ class EdgeAIVision {
                           std::string& output);
 
     /**
+     * @brief detect the result from input image
+     * @param type detector type
+     * @param input input image data
+     * @param output output result (json string)
+     * @param extraOutput extra output result
+     * @return return true if success to detect the result
+     */
+    bool detect(DetectorType type, const cv::Mat& input, std::string& output, ExtraOutput& extraOutput);
+
+    /**
      * @brief create pipe with pipeline config
-     * @param id pipe identifier 
+     * @param id pipe identifier
      * @param option pipe configuration
      * @return return true if success to create pipe
      */
@@ -115,7 +125,7 @@ class EdgeAIVision {
 
     /**
      * @brief detect the result from input image
-     * @param id pipe identifier 
+     * @param id pipe identifier
      * @param input input image data
      * @param output output result (json string)
      * @return return true if success to detect the result
@@ -127,7 +137,7 @@ class EdgeAIVision {
 
     /**
      * @brief detect the result from input image file
-     * @param id pipe identifier 
+     * @param id pipe identifier
      * @param inputPath input image file path
      * @param output output result (json string)
      * @return return true if success to detect the result from input image file
@@ -139,7 +149,7 @@ class EdgeAIVision {
 
     /**
      * @brief detect the result from base64 input image
-     * @param id pipe identifier 
+     * @param id pipe identifier
      * @param input base64 input image
      * @param output output result (json string)
      * @return return true if success to detect the result from input image data
@@ -159,6 +169,37 @@ class EdgeAIVision {
     EdgeAIVision() = default;
     std::string getDefaultModel(DetectorType type) const;
 };
+
+/// Extra output type enum class
+enum class ExtraOutputType {
+    UNKNOWN = 0,
+    FLOAT_ARRAY = 1,
+    UINT8_ARRAY = 2,
+    INT8_ARRAY = 3,
+};
+
+/// ExtraOutput class
+class ExtraOutput {
+    public:
+        ExtraOutput()
+            : m_type(ExtraOutputType::UNKNOWN)
+              , m_buffer(nullptr)
+              , m_bytes(0) {}
+        ExtraOutput(ExtraOutputType type, void* buffer, uint32_t bytes)
+            : m_type(type)
+              , m_buffer(buffer)
+              , m_bytes(bytes) {}
+
+        ExtraOutputType type() const { return m_type; }
+        void* buffer() const { return m_buffer; }
+        size_t bytes() const { return m_bytes; }
+
+    private:
+        ExtraOutputType m_type;
+        void* m_buffer;
+        size_t m_bytes;
+};
+
 
 } // end of namespace aif
 

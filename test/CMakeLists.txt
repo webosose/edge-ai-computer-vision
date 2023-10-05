@@ -125,6 +125,7 @@ set(SRC_FILES
     ${SRC_DIR}/text_descriptor_test.cpp
     ${SRC_DIR}/text_detector_test.cpp
     ${SRC_DIR}/text_api_test.cpp
+    ${SRC_DIR}/extra_output_test.cpp
 )
 
 IF(WITH_EXTRA_MODELS)

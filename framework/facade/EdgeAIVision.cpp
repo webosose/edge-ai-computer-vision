@@ -220,6 +220,41 @@ bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
     return (kAifOk == res);
 }
 
+bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
+                          std::string &output, ExtraOutput& extraOutput) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+    if (m_selectedModels.find(type) == m_selectedModels.end()) {
+        Loge("Detector is not created : ", static_cast<int>(type));
+        return false;
+    }
+
+    std::string model = m_selectedModels[type];
+    auto detector = DetectorFactory::get().getDetector(model);
+    auto descriptor = DetectorFactory::get().getDescriptor(model);
+
+    if (detector == nullptr) {
+        Loge("Detector get failed: ", model);
+        return false;
+    }
+
+    if (descriptor == nullptr) {
+        Loge("Descriptor get failed: ", model);
+        return false;
+    }
+
+    descriptor->initExtraOutput(extraOutput);
+    auto res = detector->detect(input, descriptor);
+    descriptor->addReturnCode(res);
+    output = descriptor->toStr();
+
+    return (kAifOk == res);
+}
+
 bool EdgeAIVision::pipeCreate(const std::string& id, const std::string& option)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
