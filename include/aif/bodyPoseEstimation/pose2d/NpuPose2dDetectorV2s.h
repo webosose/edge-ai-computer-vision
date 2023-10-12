@@ -24,6 +24,17 @@ class NpuPose2dDetector_V2_Low : public NpuPose2dDetectorV2 {
 DetectorFactoryRegistration<NpuPose2dDetector_V2_Low, Pose2dDescriptor>
     pose2d_resnet_v2_low_npu("pose2d_resnet_v2_low_npu");
 
+class NpuPose2dDetector_V2_Mid : public NpuPose2dDetectorV2 {
+    private:
+        NpuPose2dDetector_V2_Mid();
+    public:
+        template <typename T1, typename T2>
+            friend class DetectorFactoryRegistration;
+        virtual ~NpuPose2dDetector_V2_Mid() {}
+};
+DetectorFactoryRegistration<NpuPose2dDetector_V2_Mid, Pose2dDescriptor>
+    pose2d_resnet_v2_mid_npu("pose2d_resnet_v2_mid_npu");
+
 } // end of namespace aif
 
 #endif // AIF_NPU_POSE2D_DETECTORV2S_H

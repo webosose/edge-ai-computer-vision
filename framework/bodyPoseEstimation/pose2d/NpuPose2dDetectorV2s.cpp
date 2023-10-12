@@ -11,4 +11,7 @@ namespace aif {
 NpuPose2dDetector_V2_Low::NpuPose2dDetector_V2_Low()
 : NpuPose2dDetectorV2("FitTV_Pose2D_V2_Low.tflite") {}
 
+NpuPose2dDetector_V2_Mid::NpuPose2dDetector_V2_Mid()
+: NpuPose2dDetectorV2("FitTV_Pose2D_V2_Mid.tflite") {}
+
 } // namespace aif
