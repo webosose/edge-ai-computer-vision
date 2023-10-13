@@ -477,10 +477,14 @@ std::vector<int> Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
         res_area.push_back(std::max(box.xmax - box.xmin, 0.f) * std::max(box.ymax - box.ymin, 0.f));
     }
 
-    std::vector<int> keep_flag(bbox.size(), 1); // need to check
+    std::vector<int> keep_flag(bbox.size(), 1);
 
     for (unsigned int idx_sort = 0; idx_sort < num_sort; idx_sort++) {
         unsigned int c_idx        = res_sort[idx_sort];
+        if (bbox.size() <= c_idx) {
+            Loge("fw_nms() c_idx error");
+            return res_nms;
+        }
         long int c_area  = res_area[c_idx];
         int c_score      = bbox[c_idx].c0;
         int c_class      = bbox[c_idx].c1;
@@ -490,6 +494,10 @@ std::vector<int> Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
 
         for (unsigned int idx_nms = idx_sort + 1; idx_nms < num_sort; idx_nms++) {
             unsigned int t_idx       = res_sort[idx_nms];
+            if (bbox.size() <= t_idx) {
+                Loge("fw_nms() t_idx error");
+                return res_nms;
+            }
             long int t_area = res_area[t_idx];
             int t_score     = bbox[t_idx].c0;
             int t_class     = bbox[t_idx].c1;
@@ -512,7 +520,7 @@ std::vector<int> Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
             }
         }
         if (c_keep) {
-            res_nms.push_back(c_idx);
+            res_nms.push_back(UINT_TO_INT(c_idx));
         }
     }
     TRACE(__FUNCTION__, ": " , res_nms.size());

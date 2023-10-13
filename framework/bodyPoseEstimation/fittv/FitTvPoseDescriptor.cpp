@@ -77,7 +77,7 @@ bool FitTvPoseDescriptor::addPersonDetectorResult(
 {
     Logi("addPersonDectectorResult: ", descriptor->toStr());
     m_type.addType(NodeType::INFERENCE);
-    for (int i = 0; i < descriptor->getNumBbox(); i++) {
+    for (unsigned int i = 0; i < descriptor->getNumBbox(); i++) {
         if (!addBBox(descriptor->getScore(i), descriptor->getBbox(i))) {
             return false;
         }

@@ -132,7 +132,7 @@ t_aif_status BodyPoseEstimationParam::fromJson(const std::string& param)
             orgImgHeight = commonParam["orgImgHeight"].GetInt();
         }
         if (commonParam.HasMember("numMaxPerson")) {
-            numMaxPerson = commonParam["numMaxPerson"].GetInt();
+            numMaxPerson = commonParam["numMaxPerson"].GetUint();
         }
         if (commonParam.HasMember("hasIntrinsics")) {
             hasIntrinsics = commonParam["hasIntrinsics"].GetBool();

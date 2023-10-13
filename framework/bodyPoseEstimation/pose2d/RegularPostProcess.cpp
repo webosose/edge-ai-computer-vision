@@ -19,7 +19,7 @@ bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
 {
     Logd("Regular Post Process!!!");
     auto outputSize = m_heatMapWidth * m_heatMapHeight * m_numKeyPoints;
-    float* buffer = new float[outputSize];
+    float* buffer = new float[INT_TO_ULONG(outputSize)];
     std::memcpy(buffer, data, (outputSize * sizeof(float)));
 
     if(!processHeatMap(descriptor, buffer)) {

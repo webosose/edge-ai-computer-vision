@@ -37,7 +37,7 @@ public:
     // common for BodyPoseEstimation
     int32_t orgImgWidth;
     int32_t orgImgHeight;
-    int32_t numMaxPerson = 1;
+    uint32_t numMaxPerson = 1;
     bool hasIntrinsics = 1;
     int32_t timeLogIntervalMs; /* TODO: NEEDED?? */
 

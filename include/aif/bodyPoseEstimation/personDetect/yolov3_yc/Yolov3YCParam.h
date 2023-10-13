@@ -51,7 +51,7 @@ public:
     int sbbox_w;
     int box_size;
     int sb_box_size;
-    int class_size;
+    unsigned int class_size;
     std::vector<unsigned int> stride; // lbbox, mbbox
     std::vector<int> thresh_score; // LLL, L, M, H
     int thresh_iou_sc_nms;

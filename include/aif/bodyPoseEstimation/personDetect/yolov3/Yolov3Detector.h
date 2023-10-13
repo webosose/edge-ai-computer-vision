@@ -9,6 +9,7 @@
 #include <aif/bodyPoseEstimation/personDetect/PersonDetectDetector.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Param.h>
+#include <aif/base/Types.h>
 
 #define OBD_SCORE_MAX    65535 // 0xFF
 #define OBD_RESULT_NUM   10
@@ -96,8 +97,8 @@ private:
                                        unsigned int  box_size)
     {
         int tmp_result;
-        if(cal_mode) tmp_result =  partial + (box_size >> 1) + LUT[par];
-        else tmp_result =  partial + (box_size >> 1) - LUT[par];
+        if(cal_mode) tmp_result =  partial + (box_size >> 1) + LUT[par] ;
+        else tmp_result = partial + (box_size >> 1) - LUT[par];
 
         if(tmp_result < 0) return 0;
         else return tmp_result;

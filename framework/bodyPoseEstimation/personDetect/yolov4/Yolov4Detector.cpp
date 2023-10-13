@@ -144,7 +144,7 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
     std::vector<unsigned int> picked;
     nmsSortedBboxes( param, proposals, picked );
 
-    int count = picked.size();
+    size_t count = picked.size();
     auto img_width = static_cast<float>(img.cols);
     auto img_height = static_cast<float>(img.rows);
     auto off_x = 0.0f;
@@ -210,7 +210,7 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
                } );
 
     // limit the maximum detections
-    for ( auto i = 0UL;
+    for ( unsigned int i = 0;
                     ( i < after_filtered.size() ) && ( i < param->numMaxPerson ); i++ )
     {
         // TODO: implement to add result into descriptor

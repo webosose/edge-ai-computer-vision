@@ -95,8 +95,8 @@ private:
                                        unsigned int  box_size)
     {
         int tmp_result;
-        if(cal_mode) tmp_result =  partial + (box_size>>1) + LUT[par];
-        else tmp_result =  partial + (box_size>>1) - LUT[par];
+        if(cal_mode) tmp_result = partial + (box_size>>1) + LUT[par];
+        else tmp_result = partial + (box_size>>1) - LUT[par];
 
         if(tmp_result < 0) return 0;
         else return tmp_result;

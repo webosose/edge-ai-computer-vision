@@ -54,7 +54,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
                 m_keyPoints.swap(updatedKeyPoints); // update pose2d keypoints
 
                 int index = m_trackId - 2;
-                if (m_keyPoints.size() != (index+1)) {
+                if (m_keyPoints.size() != INT_TO_ULONG(index+1)) {
                     Loge("cannot update keyPoints by trackId: ", m_trackId-1);
                     return false;
                 }

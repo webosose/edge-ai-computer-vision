@@ -25,9 +25,9 @@ public:
 
     size_t size() const { return m_personCount; }
 
-    int getNumBbox() const { return m_boxes.size(); }
-    float getScore(int index) const { return m_scores[index]; }
-    const BBox& getBbox(int index) const { return m_boxes[index]; }
+    unsigned long getNumBbox() const { return m_boxes.size(); }
+    float getScore(unsigned int index) const { return (index < m_scores.size()) ? m_scores[index] : -1.0; }
+    const BBox& getBbox(unsigned int index) const { return (index < m_boxes.size()) ? m_boxes[index] : m_boxes[0]; } // Error Handling?
     bool isBodyDetect() { return m_IsBodyDetect; }
 
 protected:

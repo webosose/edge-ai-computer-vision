@@ -320,7 +320,7 @@ t_aif_status Yolov3YCParam::fromJson(const std::string& param)
             sb_box_size = modelParam["sb_box_size"].GetInt();
         }
         if (modelParam.HasMember("class_size")) {
-            class_size = modelParam["class_size"].GetInt();
+            class_size = modelParam["class_size"].GetUint();
         }
         if (modelParam.HasMember("stride")) {
             stride.clear();

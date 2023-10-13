@@ -143,6 +143,15 @@ inline uint32_t INT_TO_UINT(int value) {
     return uvalue;
 }
 
+inline int UINT_TO_INT(uint32_t value) {
+    int intValue = 0;
+    if (value <= INT_MAX)
+        intValue = value;
+    else
+        Loge("value may result in lost or misinterpreted data");
+    return intValue;
+}
+
 inline int ULONG_TO_INT(size_t value) {
     int intValue = 0;
     if (value <= INT_MAX)
