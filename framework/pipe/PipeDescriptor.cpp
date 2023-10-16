@@ -83,8 +83,8 @@ bool PipeDescriptor::addBridgeOperationResult(
         const std::string& operationType,
         const std::string& result)
 {
-    Logi(nodeId, ": add bridge operation result");
-    Logi(operationType, " : ",  result);
+    Logd(nodeId, ": add bridge operation result");
+    Logd(operationType, " : ",  result);
 
     return addStringResult(nodeId, result);
 }
@@ -95,8 +95,8 @@ bool PipeDescriptor::addDetectorOperationResult(
         const std::shared_ptr<Descriptor>& descriptor)
 {
     std::string result = descriptor->toStr();
-    Logi(nodeId, ": add detector operation result - ", result);
-    Logi(model, " : ",  result);
+    Logd(nodeId, ": add detector operation result - ", result);
+    Logd(model, " : ",  result);
 
     return addStringResult(nodeId, result);
 }

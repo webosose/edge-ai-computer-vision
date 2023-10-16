@@ -1,0 +1,19 @@
+{
+    "name": "rppg_pipe_inference",
+    "nodes": [
+        {
+            "id": "detect_rppg",
+            "input": ["image"],
+            "output": ["image", "inference"],
+            "operation": {
+                "type": "detector",
+                "config": {
+                    "model": "rppg_cpu",
+                    "param": {
+                        "autoDelegate": {"policy": "CPU_ONLY"}
+                    }
+                }
+            }
+        }
+    ]
+}

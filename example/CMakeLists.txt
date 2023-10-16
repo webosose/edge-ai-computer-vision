@@ -21,6 +21,7 @@ IF(WITH_EXTRA_MODELS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/handlandmark-sample)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/palm-sample)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/facemesh-sample)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/rppg-sample)
 ENDIF(WITH_EXTRA_MODELS)
 
 IF(WITH_FITTV)

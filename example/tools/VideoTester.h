@@ -24,7 +24,11 @@ class VideoTester
     using OnFrameCallback = std::function<cv::Mat(const cv::Mat&)>;
     bool test(const std::string& inputPath, const std::string& outputPath,
               OnFrameCallback onFrame);
+    bool testWithFrameCount(const std::string& inputPath, const std::string& outputPath,
+           OnFrameCallback onFrame, size_t frameCount);
 
+    size_t getFrameCount() const { return m_frameCount; }
+    double getFps() const { return m_fps; }
   private:
     bool open(const std::string& inputPath, const std::string& outputPath);
     bool close();
@@ -32,7 +36,8 @@ class VideoTester
   private:
     cv::VideoCapture m_capture;
     cv::VideoWriter m_writer;
-    int m_frameCount;
+    size_t m_frameCount;
+    double m_fps;
 };
 
 } // end of namespace aif
