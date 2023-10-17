@@ -124,4 +124,23 @@ bool PipeDescriptor::addStringResult(
     return true;
 }
 
+const ExtraOutputs& PipeDescriptor::getExtraOutputs() const
+{
+    return m_extraOutputs;
+}
+
+bool PipeDescriptor::getExtraOutput(const std::string& nodeId, ExtraOutput& extraOutput)
+{
+    if (m_extraOutputs.find(nodeId) == m_extraOutputs.end()) {
+        return false;
+    }
+    extraOutput = m_extraOutputs[nodeId];
+    return true;
+}
+
+void PipeDescriptor::initExtraOutputs(const ExtraOutputs& extraOutputs)
+{
+    m_extraOutputs = extraOutputs;
+}
+
 } // end of namespace aif

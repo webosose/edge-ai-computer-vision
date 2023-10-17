@@ -7,6 +7,7 @@
 #include <aif/base/Detector.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DetectorFactoryRegistrations.h>
+#include <aif/pipe/Pipe.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 #include <gtest/gtest.h>
@@ -99,7 +100,71 @@ class ExtraOutputTest : public ::testing::Test {
            "param": {}
        })"
     };
+    std::string pipeConfig = R"(
+        {
+            "name" : "pipe_face",
+            "nodes": [
+                {
+                    "id" : "detect_face",
+                    "input" : ["image"],
+                    "output" : ["image", "inference"],
+                    "operation" : {
+                        "type" : "detector",
+                        "config": {
+                            "model": "extra_output_test_detector",
+                            "param": {}
+                        }
+                    }
+                }
+            ]
+        }
+    )";
+    std::string pipeId = "pipe_face";
+    std::string nodeId = "detect_face";
+
     ExtraOutputTestData d;
+
+
+    void testPipe(const ExtraOutputs& extraOutputs) {
+        cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
+
+        AIVision::init();
+        Pipe pipe;
+        EXPECT_TRUE(pipe.build(pipeConfig));
+        EXPECT_TRUE(pipe.detect(input, extraOutputs));
+
+        auto descriptor = pipe.getDescriptor();
+        EXPECT_TRUE(descriptor != nullptr);
+
+        std::string output = descriptor->getResult(nodeId);
+        AIVision::deinit();
+
+        rj::Document d;
+        d.Parse(output.c_str());
+        EXPECT_TRUE(d.IsObject());
+        EXPECT_TRUE(d.HasMember("useExtraOutput"));
+        EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
+    }
+
+    void testPipeApi(const ExtraOutputs& extraOutputs) {
+        cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
+        std::string output;
+
+        EdgeAIVision& ai = EdgeAIVision::getInstance();
+        ai.startup();
+        EXPECT_TRUE(ai.isStarted());
+        EXPECT_TRUE(ai.pipeCreate(pipeId, pipeConfig));
+        EXPECT_TRUE(ai.pipeDetect(pipeId, input, output, extraOutputs));
+        EXPECT_TRUE(ai.pipeDelete(pipeId));
+        ai.shutdown();
+
+        rj::Document d;
+        d.Parse(output.c_str());
+        EXPECT_TRUE(d.IsObject());
+        EXPECT_TRUE(d["results"].GetArray()[0][nodeId.c_str()].HasMember("useExtraOutput"));
+        EXPECT_EQ(d["results"].GetArray()[0][nodeId.c_str()]["useExtraOutput"].GetBool(), true);
+    }
+
 };
 
 TEST_F(ExtraOutputTest, floatDataTest)
@@ -274,3 +339,110 @@ TEST_F(ExtraOutputTest, int8DataTestUsingFacadeAPI)
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 
+TEST_F(ExtraOutputTest, floatDataTestPipe)
+{
+    std::unique_ptr<float[]> data{ new float[d.data_float.size()]};
+    ExtraOutput extraOutput(
+            ExtraOutputType::FLOAT_ARRAY,
+            static_cast<void*>(data.get()),
+            sizeof(float) * d.data_float.size());
+    ExtraOutputs extraOutputs;
+    extraOutputs[nodeId] = extraOutput;
+
+    testPipe(extraOutputs);
+
+    float* outputData = static_cast<float*>(extraOutput.buffer());
+    for (int i = 0; i < d.data_float.size(); i++) {
+        EXPECT_TRUE(floatEquals(d.data_float[i], outputData[i]));
+    }
+}
+
+TEST_F(ExtraOutputTest, uint8DataTestPipe)
+{
+    std::unique_ptr<uint8_t[]> data{ new uint8_t[d.data_uint8.size()]};
+    ExtraOutput extraOutput(
+            ExtraOutputType::UINT8_ARRAY,
+            static_cast<void*>(data.get()),
+            sizeof(float) * d.data_uint8.size());
+    ExtraOutputs extraOutputs;
+    extraOutputs[nodeId] = extraOutput;
+
+    testPipe(extraOutputs);
+
+    uint8_t* outputData = static_cast<uint8_t*>(extraOutput.buffer());
+    for (int i = 0; i < d.data_uint8.size(); i++) {
+        EXPECT_EQ(d.data_uint8[i], outputData[i]);
+    }
+}
+
+TEST_F(ExtraOutputTest, int8DataTestPipe)
+{
+    std::unique_ptr<int8_t[]> data{ new int8_t[d.data_int8.size()]};
+    ExtraOutput extraOutput(
+            ExtraOutputType::INT8_ARRAY,
+            static_cast<void*>(data.get()),
+            sizeof(float) * d.data_int8.size());
+    ExtraOutputs extraOutputs;
+    extraOutputs[nodeId] = extraOutput;
+
+    testPipe(extraOutputs);
+
+    int8_t* outputData = static_cast<int8_t*>(extraOutput.buffer());
+    for (int i = 0; i < d.data_int8.size(); i++) {
+        EXPECT_EQ(d.data_int8[i], outputData[i]);
+    }
+}
+
+TEST_F(ExtraOutputTest, floatDataTestPipeApi)
+{
+    std::unique_ptr<float[]> data{ new float[d.data_float.size()]};
+    ExtraOutput extraOutput(
+            ExtraOutputType::FLOAT_ARRAY,
+            static_cast<void*>(data.get()),
+            sizeof(float) * d.data_float.size());
+    ExtraOutputs extraOutputs;
+    extraOutputs[nodeId] = extraOutput;
+
+    testPipeApi(extraOutputs);
+
+    float* outputData = static_cast<float*>(extraOutput.buffer());
+    for (int i = 0; i < d.data_float.size(); i++) {
+        EXPECT_TRUE(floatEquals(d.data_float[i], outputData[i]));
+    }
+}
+
+TEST_F(ExtraOutputTest, uint8DataTestPipeApi)
+{
+    std::unique_ptr<uint8_t[]> data{ new uint8_t[d.data_uint8.size()]};
+    ExtraOutput extraOutput(
+            ExtraOutputType::UINT8_ARRAY,
+            static_cast<void*>(data.get()),
+            sizeof(float) * d.data_uint8.size());
+    ExtraOutputs extraOutputs;
+    extraOutputs[nodeId] = extraOutput;
+
+    testPipeApi(extraOutputs);
+
+    uint8_t* outputData = static_cast<uint8_t*>(extraOutput.buffer());
+    for (int i = 0; i < d.data_uint8.size(); i++) {
+        EXPECT_EQ(d.data_uint8[i], outputData[i]);
+    }
+}
+
+TEST_F(ExtraOutputTest, int8DataTestPipeApi)
+{
+    std::unique_ptr<int8_t[]> data{ new int8_t[d.data_int8.size()]};
+    ExtraOutput extraOutput(
+            ExtraOutputType::INT8_ARRAY,
+            static_cast<void*>(data.get()),
+            sizeof(float) * d.data_int8.size());
+    ExtraOutputs extraOutputs;
+    extraOutputs[nodeId] = extraOutput;
+
+    testPipeApi(extraOutputs);
+
+    int8_t* outputData = static_cast<int8_t*>(extraOutput.buffer());
+    for (int i = 0; i < d.data_int8.size(); i++) {
+        EXPECT_EQ(d.data_int8[i], outputData[i]);
+    }
+}

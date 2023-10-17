@@ -8,11 +8,14 @@
 
 #include <opencv2/opencv.hpp>
 #include <mutex>
+#include <map>
 
 namespace aif {
 
 class Pipe;
 class ExtraOutput;
+using ExtraOutputs = std::map<std::string, ExtraOutput>;
+
 /**
  *  API Facade class for Edge AI Computer Vision
  */
@@ -136,6 +139,20 @@ class EdgeAIVision {
             std::string& output);
 
     /**
+     * @brief detect the result from input image
+     * @param id pipe identifier
+     * @param input input image data
+     * @param output output result (json string)
+     * @param extraOutputs extra outputs result
+     * @return return true if success to detect the result
+     */
+    bool pipeDetect(
+            const std::string& id,
+            const cv::Mat& input,
+            std::string& output,
+            const ExtraOutputs& extraOutputs);
+
+    /**
      * @brief detect the result from input image file
      * @param id pipe identifier
      * @param inputPath input image file path
@@ -199,7 +216,6 @@ class ExtraOutput {
         void* m_buffer;
         size_t m_bytes;
 };
-
 
 } // end of namespace aif
 

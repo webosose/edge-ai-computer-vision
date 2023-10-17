@@ -61,6 +61,11 @@ bool DetectorOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     std::shared_ptr<Descriptor> descriptor =
         DetectorFactory::get().getDescriptor(m_model);
 
+    ExtraOutput extraOutput;
+    if (pipeDescriptor->getExtraOutput(m_id, extraOutput)) {
+        descriptor->initExtraOutput(extraOutput);
+    }
+
     t_aif_status res = m_detector->detect(image, descriptor);
     if (res != kAifOk) {
         Loge(m_id, ": failed to detect ", m_model);

@@ -129,13 +129,11 @@ bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
-    // CID9333381, CID9333367, CID9333405
     if (detector == nullptr) {
         Loge("Detector get failed: ", model);
         return false;
     }
 
-    // CID9333381, CID9333367, CID9333405
     if (descriptor == nullptr) {
         Loge("Descriptor get failed: ", model);
         return false;
@@ -166,13 +164,11 @@ bool EdgeAIVision::detectFromFile(DetectorType type,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
-    // CID9333376, CID9333361
     if (detector == nullptr) {
         Loge("Detector get failed: ", model);
         return false;
     }
 
-    // CID9333376, CID9333361
     if (descriptor == nullptr) {
         Loge("Descriptor get failed: ", model);
         return false;
@@ -202,13 +198,11 @@ bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
-    // CID9333376, CID9333399
     if (detector == nullptr) {
         Loge("Detector get failed: ", model);
         return false;
     }
 
-    // CID9333376, CID9333399
     if (descriptor == nullptr) {
         Loge("Descriptor get failed: ", model);
         return false;
@@ -312,6 +306,38 @@ bool EdgeAIVision::pipeDetect(
         return false;
     }
     auto res = pipe->detect(image);
+    auto descriptor = pipe->getDescriptor();
+    if (!descriptor) {
+        Loge(id, ": pipe descriptor is null");
+        return false;
+    }
+    descriptor->addReturnCode(res);
+    output = descriptor->getResult();
+    return true;
+}
+
+bool EdgeAIVision::pipeDetect(
+            const std::string& id,
+            const cv::Mat& input,
+            std::string& output,
+            const ExtraOutputs& extraOutputs)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+   if (m_pipeMap.find(id) == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+    std::shared_ptr<Pipe> pipe = m_pipeMap[id];
+    if (!pipe) {
+        Loge(id, ": pipe is null");
+        return false;
+    }
+    auto res = pipe->detect(input, extraOutputs);
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
