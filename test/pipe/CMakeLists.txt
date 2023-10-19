@@ -11,6 +11,7 @@ set(PIPE_SRC
     ${PIPE_SRC_DIR}/pipe_config_test.cpp
     ${PIPE_SRC_DIR}/pipe_node_test.cpp
     ${PIPE_SRC_DIR}/pipe_test.cpp
+    ${PIPE_SRC_DIR}/pipe_api_test.cpp
 )
 
 IF(WITH_EXTRA_MODELS)

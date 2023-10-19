@@ -305,7 +305,7 @@ bool EdgeAIVision::pipeDetect(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res = pipe->detect(image);
+    auto res = pipe->detect(image) ? kAifOk : kAifError;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
@@ -337,7 +337,7 @@ bool EdgeAIVision::pipeDetect(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res = pipe->detect(input, extraOutputs);
+    auto res = pipe->detect(input, extraOutputs) ? kAifOk : kAifError;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
@@ -366,7 +366,7 @@ bool EdgeAIVision::pipeDetectFromFile(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res = pipe->detectFromFile(imagePath);
+    auto res = pipe->detectFromFile(imagePath) ? kAifOk : kAifError;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
@@ -395,7 +395,8 @@ bool EdgeAIVision::pipeDetectFromBase64(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res =  pipe->detectFromBase64(base64Image);
+    auto res =  pipe->detectFromBase64(base64Image) ? kAifOk : kAifError;
+;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
