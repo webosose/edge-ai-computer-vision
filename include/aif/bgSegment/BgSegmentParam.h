@@ -37,6 +37,7 @@ class BgSegmentParam : public DetectorParam {
     int origImgRoiY;
     int origImgRoiWidth;
     int origImgRoiHeight;
+    bool outScaleUp;
 };
 
 } // end of namespace aif

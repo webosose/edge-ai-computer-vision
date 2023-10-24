@@ -13,12 +13,16 @@
 using namespace aif;
 namespace rj = rapidjson;
 
-cv::Mat drawMask(int width, int height, uint8_t* mask)
+cv::Mat drawMask(int width, int height, int maskW, int maskH, uint8_t* mask)
 {
     //just draw!
-    cv::Mat maskImage = cv::Mat(height, width, CV_8UC1, mask);
-    maskImage.convertTo(maskImage, CV_32FC1, 1.0/255);
-    return maskImage;
+    cv::Mat maskImage = cv::Mat(maskH, maskW, CV_8UC1, mask); // smaller than 240 x 135 (maximum)
+
+    cv::Mat scaledImage;
+    cv::resize(maskImage, scaledImage, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
+    scaledImage.convertTo(scaledImage, CV_32FC1, 1.0/255);
+
+    return scaledImage;
 }
 
 cv::Mat alphaBlending(cv::Mat &bgImage, cv::Mat fgImage, cv::Mat &alpha)
@@ -58,13 +62,20 @@ cv::Mat drawResults(const std::string &output, const ExtraOutput &extraOutput, c
     cv::Mat masking;
     const rj::Value &segments = d["segments"];
     for (rj::SizeType i = 0; i < segments.Size(); i++) { // maybe always 1
-        int x = segments[i]["x"].GetInt();
-        int y = segments[i]["y"].GetInt();
-        int width = segments[i]["width"].GetInt();
-        int height = segments[i]["height"].GetInt();
-        std::cout << "x: " << x << " y : " << y << " w: " << width << " h : " << height << std::endl;
+        const auto &inputRect = segments[i]["inputRect"].GetArray();
+        int x = inputRect[0].GetInt();
+        int y = inputRect[1].GetInt();
+        int width = inputRect[2].GetInt();
+        int height = inputRect[3].GetInt();
 
-        masking = drawMask(width, height, static_cast<uint8_t*>(extraOutput.buffer()));
+        const auto &maskRect = segments[i]["maskRect"].GetArray();
+        int maskW = maskRect[0].GetInt();
+        int maskH = maskRect[1].GetInt();
+
+        std::cout << "inputRect x: " << x << " y : " << y << " w: " << width << " h : " << height << std::endl;
+        std::cout << "maskRect maskW: " << maskW << " maskH : " << maskH << std::endl;
+
+        masking = drawMask(width, height, maskW, maskH, static_cast<uint8_t*>(extraOutput.buffer()));
         res = alphaBlending(bgImage, fgImage( cv::Rect(x, y, width, height) ), masking);
     }
 

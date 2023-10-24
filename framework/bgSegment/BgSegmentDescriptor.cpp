@@ -29,7 +29,7 @@ BgSegmentDescriptor::~BgSegmentDescriptor()
 {
 }
 
-void BgSegmentDescriptor::addMaskInfo(int x, int y, int width, int height)
+void BgSegmentDescriptor::addMaskInfo(int x, int y, int width, int height, int tensorW, int tensorH)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("segments")) {
@@ -39,11 +39,26 @@ void BgSegmentDescriptor::addMaskInfo(int x, int y, int width, int height)
 
     rj::Value segment(rj::kObjectType);
 
+    rj::Value inputRect(rj::kArrayType);
+    inputRect.PushBack(x, allocator);
+    inputRect.PushBack(y, allocator);
+    inputRect.PushBack(width, allocator);
+    inputRect.PushBack(height, allocator);
+    segment.AddMember("inputRect", inputRect, allocator);
+
+    rj::Value maskRect(rj::kArrayType);
+    maskRect.PushBack(tensorW, allocator);
+    maskRect.PushBack(tensorH, allocator);
+    segment.AddMember("maskRect", maskRect, allocator);
+
+    m_root["segments"].PushBack(segment, allocator);
+
+/*
     segment.AddMember("x", x, allocator);
     segment.AddMember("y", y, allocator);
     segment.AddMember("width", width, allocator);
     segment.AddMember("height", height, allocator);
-    m_root["segments"].PushBack(segment, allocator);
+    m_root["segments"].PushBack(segment, allocator);*/
 }
 
 }

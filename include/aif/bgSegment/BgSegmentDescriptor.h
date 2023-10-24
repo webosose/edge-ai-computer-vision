@@ -20,7 +20,7 @@ public:
     BgSegmentDescriptor();
     virtual ~BgSegmentDescriptor();
 
-    void addMaskInfo(int x, int y, int width, int height);
+    void addMaskInfo(int x, int y, int width, int height, int tensorW, int tensorH);
 
 private:
     std::vector<uint8_t> m_mask;

@@ -22,6 +22,7 @@ BgSegmentParam::BgSegmentParam()
     , origImgRoiY(0)
     , origImgRoiWidth(0)
     , origImgRoiHeight(0)
+    , outScaleUp(false)
 {
 }
 
@@ -32,6 +33,7 @@ BgSegmentParam::BgSegmentParam(const BgSegmentParam &other)
     , origImgRoiY(other.origImgRoiY)
     , origImgRoiWidth(other.origImgRoiWidth)
     , origImgRoiHeight(other.origImgRoiHeight)
+    , outScaleUp(other.outScaleUp)
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -41,6 +43,7 @@ BgSegmentParam::BgSegmentParam(BgSegmentParam &&other) noexcept
     , origImgRoiY(std::move(other.origImgRoiY))
     , origImgRoiWidth(std::move(other.origImgRoiWidth))
     , origImgRoiHeight(std::move(other.origImgRoiHeight))
+    , outScaleUp(std::move(other.outScaleUp))
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -56,6 +59,7 @@ BgSegmentParam& BgSegmentParam::operator=(const BgSegmentParam& other)
     origImgRoiY = other.origImgRoiY;
     origImgRoiWidth = other.origImgRoiWidth;
     origImgRoiHeight = other.origImgRoiHeight;
+    outScaleUp = other.outScaleUp;
     return *this;
 }
 
@@ -70,6 +74,7 @@ BgSegmentParam& BgSegmentParam::operator=(BgSegmentParam&& other) noexcept
     origImgRoiY = std::move(other.origImgRoiY);
     origImgRoiWidth = std::move(other.origImgRoiWidth);
     origImgRoiHeight = std::move(other.origImgRoiHeight);
+    outScaleUp = std::move(other.outScaleUp);
     return *this;
 }
 
@@ -78,7 +83,8 @@ bool BgSegmentParam::operator==(const BgSegmentParam &other) const {
         (origImgRoiX == other.origImgRoiX) &&
         (origImgRoiY == other.origImgRoiY) &&
         (origImgRoiWidth == other.origImgRoiWidth) &&
-        (origImgRoiHeight == other.origImgRoiHeight));
+        (origImgRoiHeight == other.origImgRoiHeight) &&
+        (outScaleUp == other.outScaleUp));
 }
 
 bool BgSegmentParam::operator!=(const BgSegmentParam &other) const {
@@ -92,6 +98,7 @@ std::ostream &operator<<(std::ostream &os, const BgSegmentParam &fp) {
     os << "\torigImgRoiY: " << fp.origImgRoiY << ",\n";
     os << "\torigImgRoiWidth: " << fp.origImgRoiWidth << ",\n";
     os << "\torigImgRoiHeight: " << fp.origImgRoiHeight << ",\n";
+    os << "\toutScaleUp: " << fp.outScaleUp << ",\n";
 
     os << "}";
     return os;
@@ -121,6 +128,9 @@ t_aif_status BgSegmentParam::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("origImgRoiHeight")) {
             origImgRoiHeight = modelParam["origImgRoiHeight"].GetInt();
+        }
+        if (modelParam.HasMember("outScaleUp")) {
+            outScaleUp = modelParam["outScaleUp"].GetBool();
         }
     }
 

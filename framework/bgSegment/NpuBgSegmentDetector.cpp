@@ -18,6 +18,7 @@ namespace aif {
 NpuBgSegmentDetector::NpuBgSegmentDetector()
     : m_paddingInfo{0,}
     , m_useRoi(false)
+    , m_outScaleUp(false)
     , BgSegmentDetector("O24_SIC_SEG_v1.0_230906.tflite") {} // TODO: change the name, and initialize....!!!
 
 NpuBgSegmentDetector::~NpuBgSegmentDetector() {}
@@ -67,7 +68,7 @@ t_aif_status NpuBgSegmentDetector::fillInputTensor(const cv::Mat& img)/* overrid
             m_paddingInfo = getPaddedImage(img, cv::Size(width, height), img_resized);
         }
 
-        TRACE("resized size: ", img_resized.size());
+        //TRACE("resized size: ", img_resized.size());
         if (img_resized.rows != height || img_resized.cols != width) {
             throw std::runtime_error("image resize failed!!");
         }
@@ -95,13 +96,10 @@ t_aif_status NpuBgSegmentDetector::preProcessing()
             throw std::runtime_error("failed to convert DetectorParam to BgSegmentParam");
         }
 
+        m_outScaleUp = param->outScaleUp;
         m_roiRect = {param->origImgRoiX, param->origImgRoiY, param->origImgRoiWidth, param->origImgRoiHeight};
-        /*m_roiRect.x = param->origImgRoiX;
-        m_roiRect.y = param->origImgRoiY;
-        m_roiRect.width = param->origImgRoiWidth;
-        m_roiRect.height = param->origImgRoiHeight;*/
 
-        TRACE(" m_roiRect isss ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
+        //TRACE(" m_roiRect isss ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
         return kAifOk;
     } catch (const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -121,18 +119,26 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
     int height = output->dims->data[0];
     int width = output->dims->data[1];
 
-    TRACE("size : ", height, " x ", width);
+    //TRACE("size : ", height, " x ", width);
 
     std::shared_ptr<BgSegmentDescriptor> bgSegmentDescriptor = std::dynamic_pointer_cast<BgSegmentDescriptor>(descriptor);
 
-    scaleUpMask(width, height, output->data.uint8, img);
+    std::pair<int, int> maskSize;
+    if (m_outScaleUp) {
+        maskSize = scaleUpMask(width, height, output->data.uint8, img);
+    } else {
+        maskSize = getMask(width, height, output->data.uint8);
+    }
+
     if (bgSegmentDescriptor != nullptr) {
         if (m_useRoi) {
-            bgSegmentDescriptor->addMaskInfo(m_roiRect.x, m_roiRect.y, m_roiRect.width, m_roiRect.height);
+            bgSegmentDescriptor->addMaskInfo(m_roiRect.x, m_roiRect.y, m_roiRect.width, m_roiRect.height,
+                                             maskSize.first, maskSize.second);
         } else {
-            bgSegmentDescriptor->addMaskInfo(0, 0, img.cols, img.rows);
+            bgSegmentDescriptor->addMaskInfo(0, 0, img.cols, img.rows,
+                                             maskSize.first, maskSize.second);
         }
-        // TRACE(__func__, " m_scaledUpMask size is : ", m_scaledUpMask.total() * m_scaledUpMask.elemSize()); 640 x 720
+        //TRACE(__func__, " m_scaledUpMask size is : ", m_scaledUpMask.total() * m_scaledUpMask.elemSize());
         bgSegmentDescriptor->addExtraOutput( ExtraOutputType::UINT8_ARRAY, static_cast<void*>(m_scaledUpMask.data),
                                              m_scaledUpMask.total() * m_scaledUpMask.elemSize());
     }
@@ -140,7 +146,8 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
     return kAifOk;
 }
 
-void NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg)
+std::pair<int, int>
+NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg)
 {
     // temporary
     // 1. => 135 x 240. remove SIC row padding
@@ -159,18 +166,52 @@ void NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, 
     cv::Mat results = resizedData(bound);
     //cv::imwrite("./results.jpg", results);
 
+    std::pair<int, int> maskSize;
     if (m_useRoi) {
     // 4. => roi rect. scale up to roi size.
     // TODO: ?? release memory ??
         cv::resize(results, m_scaledUpMask, cv::Size(m_roiRect.width, m_roiRect.height), 0, 0, cv::INTER_LINEAR);
+        maskSize = std::make_pair(m_roiRect.width, m_roiRect.height);
     } else {
     // 4. => original img rect. scale up to original img size.
         cv::resize(results, m_scaledUpMask, cv::Size(origImg.cols, origImg.rows), 0, 0, cv::INTER_LINEAR);
+        maskSize = std::make_pair(origImg.cols, origImg.rows);
     }
     //cv::imwrite("./m_scaledUpMask.jpg", m_scaledUpMask);
 
     // 5. flatten it.
     m_scaledUpMask = m_scaledUpMask.reshape(1, 1);
+
+    return maskSize;
 }
+
+std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t* srcData)
+{
+    // temporary
+    // 1. => 135 x 240. remove SIC row padding
+    cv::Mat padOffData(135, width, CV_8UC1, srcData);
+    //cv::imwrite("./padOffData.jpg", padOffData);
+
+    float scaleW = static_cast<float>(width) / m_modelInfo.width; // out/in ratio 135/270 = 0.5
+    float scaleH = 135.0 / m_modelInfo.height; // out/in ratio 240/480 = 0.5
+    //TRACE(__func__, " scaleW: ", scaleW, " scaleH: " , scaleH);
+
+    // 2. => l/r/t/b padding off in 135 x 240. remove SWP padding.
+    cv::Rect bound(m_paddingInfo.leftBorder*scaleW, m_paddingInfo.topBorder*scaleH,
+                   (m_modelInfo.width - (m_paddingInfo.rightBorder + m_paddingInfo.leftBorder)) * scaleW, // w
+                   (m_modelInfo.height - (m_paddingInfo.bottomBorder - m_paddingInfo.topBorder)) * scaleH); // h
+
+    //TRACE(__func__, " ", bound.x, " ", bound.y, " ", bound.width, " ", bound.height);
+    cv::Mat results = padOffData(bound);
+    //cv::imwrite("./results.jpg", results);
+
+    results.copyTo(m_scaledUpMask);
+    // 3. flatten it.
+    m_scaledUpMask = m_scaledUpMask.reshape(1, 1);
+
+    return std::make_pair(bound.width, bound.height);
+}
+
+
 
 } // namespace aif
