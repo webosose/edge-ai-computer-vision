@@ -29,6 +29,12 @@ class NpuDelegateTest : public ::testing::Test {
 
     void TearDown() override {}
 
+    std::string options {
+            "{"
+            "  \"min_freq\": \"30\""
+            "}"
+    };
+
 };
 
 TEST_F(NpuDelegateTest, 01_constructor) {
@@ -44,6 +50,19 @@ TEST_F(NpuDelegateTest, 02_getTfLiteDelegate) {
     EXPECT_TRUE(delegate.get() != nullptr);
     auto ptr = delegate->getTfLiteDelegate();
     EXPECT_TRUE(ptr.get() != nullptr);
+    DelegateFactory::get().clear();
+}
+
+TEST_F(NpuDelegateTest, 03_getTfLiteDelegateWithOptions) {
+    std::shared_ptr<Delegate> delegate =
+        DelegateFactory::get().getDelegate("npu_delegate", options);
+    EXPECT_TRUE(delegate.get() != nullptr);
+
+    std::shared_ptr<NpuDelegate> npuDelegate =
+        std::dynamic_pointer_cast<NpuDelegate>(delegate);
+    auto option = npuDelegate->getDelegateOptions();
+    EXPECT_EQ(option.getMinRequestedFreq(), 30);
+
     DelegateFactory::get().clear();
 }
 
