@@ -57,7 +57,7 @@ public:
 
     std::pair<int, cv::Mat> getMatData() {
         std::unique_lock<std::mutex> ulock(m_mutex);
-        m_cv.wait(ulock, [this] {return (!m_queue.empty() || !m_isRunning); });
+        m_cv.wait(ulock, [this] {return (m_queue.size() >= m_aggregationSize || !m_isRunning); });
 
         int id = -1;
         if (!m_isRunning) { return std::make_pair(id, cv::Mat()); }
@@ -105,10 +105,10 @@ public:
     void push(const DATA& data) {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            std::cout <<  "queue push : " << m_queue.size() << " " << m_aggregationSize << std::endl;
+            //std::cout <<  "queue push : " << m_queue.size() << " " << m_aggregationSize << std::endl;
             if (m_queue.size() == m_aggregationSize) {
                 m_queue.pop();
-                std::cout <<  "queue pop : " << m_queue.size() << std::endl;
+                //std::cout <<  "queue pop : " << m_queue.size() << std::endl;
             }
 
             m_queue.push(data);

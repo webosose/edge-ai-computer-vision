@@ -13,32 +13,32 @@ void RppgInferenceThread::operator()() {
         return;
     }
 
+    bool isFirstInference = true;
     while (m_queue.isRunning()) {
         std::string output;
-        if (m_queue.size() >= m_config.dataAggregationSize) {
-            auto start = std::chrono::high_resolution_clock::now();
-            auto data = m_queue.getMatData();
-            if (!m_ai.pipeDetect(m_config.inferencePipeId, data.second, output)) {
-                std::cout << "failed to detect: " << m_config.inferencePipeId << std::endl;
-            } else {
-                std::cout << "detect: " << m_config.inferencePipeId << std::endl;
-                if (m_config.onResultFunc) {
-                    m_config.onResultFunc(data.first, output);
-                } else {
-                    std::cout << "Error: empty result func" << std::endl;
-                }
-            }
-            auto inferenceDuration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
-            if (m_config.inferenceInterval > inferenceDuration) {
-                auto sleepDuration = m_config.inferenceInterval - inferenceDuration;
-                std::cout << "Sleep for : " << sleepDuration.count() << " ms" << std::endl;
-                std::this_thread::sleep_for(m_config.inferenceInterval - inferenceDuration);
-            }
-        } else {
-            std::cout << "Sleep for : 100 ms" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
+        auto start = std::chrono::high_resolution_clock::now();
+        auto data = m_queue.getMatData();
 
+        if (isFirstInference) {
+            isFirstInference = false;
+            start = std::chrono::high_resolution_clock::now();
+        }
+        if (!m_ai.pipeDetect(m_config.inferencePipeId, data.second, output)) {
+            std::cout << "failed to detect: " << m_config.inferencePipeId << std::endl;
+        } else {
+            std::cout << "detect: " << m_config.inferencePipeId << std::endl;
+            if (m_config.onResultFunc) {
+                m_config.onResultFunc(data.first, output);
+            } else {
+                std::cout << "Error: empty result func" << std::endl;
+            }
+        }
+        auto inferenceDuration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+        if (m_config.inferenceInterval > inferenceDuration) {
+            auto sleepDuration = m_config.inferenceInterval - inferenceDuration;
+            std::cout << "Sleep for : " << sleepDuration.count() << " ms" << std::endl;
+            std::this_thread::sleep_for(m_config.inferenceInterval - inferenceDuration);
+        }
     }
 }
 
@@ -120,8 +120,8 @@ bool RppgPipe::detect(int id, double frameTimeInterval, const cv::Mat& image)
             data.meshR = result[nodeId.c_str()]["meshData"][0].GetFloat();
             data.meshG = result[nodeId.c_str()]["meshData"][1].GetFloat();
             data.meshB = result[nodeId.c_str()]["meshData"][2].GetFloat();
-            std::cout << "push data: " << data.id << " " << data.frameTime << " "
-                << data.meshR << " " << data.meshG << " " << data.meshB << std::endl;
+            //std::cout << "push data: " << data.id << " " << data.frameTime << " "
+            //    << data.meshR << " " << data.meshG << " " << data.meshB << std::endl;
 
             m_queue.push(data);
             break;
