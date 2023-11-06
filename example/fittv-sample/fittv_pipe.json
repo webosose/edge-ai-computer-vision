@@ -39,7 +39,7 @@
             "operation" : {
                 "type" : "fittv_pose2d_detector",
                 "config": {
-                    "model": "pose2d_resnet_cpu",
+                    "model": "pose2d_resnet_low_cpu",
                     "param": {
                         "autoDelegate": {
                             "policy": "MIN_LATENCY"

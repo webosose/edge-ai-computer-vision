@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,8 +16,8 @@
 
 namespace aif {
 
-CpuPose2dDetector::CpuPose2dDetector()
-    : Pose2dDetector("pose2d_mobilenet_float32.tflite") {}
+CpuPose2dDetector::CpuPose2dDetector(const std::string& modelName)
+    : Pose2dDetector(modelName) {}
 
 CpuPose2dDetector::~CpuPose2dDetector() {}
 

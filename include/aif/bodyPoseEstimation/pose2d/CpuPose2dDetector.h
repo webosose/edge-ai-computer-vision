@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -7,8 +7,8 @@
 #define AIF_CPU_POSE2D_DETECTOR_H
 
 #include <aif/base/DetectorFactory.h>
-#include <aif/base/DetectorFactoryRegistrations.h>
-#include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
+// #include <aif/base/DetectorFactoryRegistrations.h>
+// #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDetector.h>
 #include <aif/bodyPoseEstimation/pose2d/PostProcess.h>
 
@@ -17,9 +17,8 @@ namespace aif {
 
 class CpuPose2dDetector : public Pose2dDetector, public std::enable_shared_from_this<CpuPose2dDetector>
 {
-    private:
-        CpuPose2dDetector();
-
+    protected:
+        CpuPose2dDetector(const std::string& modelName);
     public:
         template <typename T1, typename T2>
             friend class DetectorFactoryRegistration;
@@ -33,9 +32,6 @@ class CpuPose2dDetector : public Pose2dDetector, public std::enable_shared_from_
                 std::shared_ptr<Descriptor>& descriptor) override;
         void normalizeImage(cv::Mat& img) const;
 };
-
-DetectorFactoryRegistration<CpuPose2dDetector, Pose2dDescriptor>
-    pose2d_resnet_cpu("pose2d_resnet_cpu");
 
 } // end of namespace aif
 

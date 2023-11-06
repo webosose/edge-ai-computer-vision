@@ -1,5 +1,5 @@
 {
-    "name" : "fittv_pipe_npu_all_v2",
+    "name" : "fittv_pipe_low",
     "descriptor": "fittv_pose",
     "nodes": [
         {
