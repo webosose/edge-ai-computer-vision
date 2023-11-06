@@ -22,7 +22,7 @@ BgSegmentParam::BgSegmentParam()
     , origImgRoiY(0)
     , origImgRoiWidth(0)
     , origImgRoiHeight(0)
-    , outScaleUp(false)
+    , outScaleUp(true) // default : AI Framework scale up the out image.
 {
 }
 

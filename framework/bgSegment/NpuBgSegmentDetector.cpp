@@ -18,7 +18,7 @@ namespace aif {
 NpuBgSegmentDetector::NpuBgSegmentDetector()
     : m_paddingInfo{0,}
     , m_useRoi(false)
-    , m_outScaleUp(false)
+    , m_outScaleUp(true) // default : AI Framework scale up the out image.
     , BgSegmentDetector("O24_SIC_SEG_v1.0_230906.tflite") {} // TODO: change the name, and initialize....!!!
 
 NpuBgSegmentDetector::~NpuBgSegmentDetector() {}
