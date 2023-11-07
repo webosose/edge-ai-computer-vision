@@ -16,6 +16,9 @@ namespace aif {
 
 RppgDescriptor::RppgDescriptor()
 : Descriptor()
+, m_rppgOut()
+, m_batchSize(0)
+, m_channelSize(0)
 {
 }
 
@@ -23,18 +26,19 @@ RppgDescriptor::~RppgDescriptor()
 {
 }
 
-void RppgDescriptor::addRppgOutput(float bpm, std::string signalCondition)
+void RppgDescriptor::addRppgOutput(std::vector<float> outputs)
 {
     rj::Document::AllocatorType &allocator = m_root.GetAllocator();
-    if (!m_root.HasMember("rPPG"))
-    {
+    if (!m_root.HasMember("rPPG")) {
         rj::Value rPPG(rj::kArrayType);
         m_root.AddMember("rPPG", rPPG, allocator);
     }
+
     rj::Value data(rj::kObjectType);
-    // add signal condition and bpm
-    data.AddMember("signalCondition", signalCondition, allocator);
-    data.AddMember("bpm", bpm, allocator);
+    for (int i = 0; i < outputs.size(); i++) {
+        data.PushBack(outputs[i], allocator);
+    }
+    data.AddMember("outputTensors", data, allocator);
     m_root["rPPG"].PushBack(data, allocator);
 }
 

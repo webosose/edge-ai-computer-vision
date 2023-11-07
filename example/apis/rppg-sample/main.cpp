@@ -7,7 +7,7 @@
 #include <rapidjson/document.h>
 #include <fstream>
 
-#include "RppgPipe.h"
+#include "rppg_pipe.h"
 
 using namespace aif;
 namespace rj = rapidjson;
@@ -23,22 +23,18 @@ cv::Mat drawResult(cv::Mat src, std::string& output_value, bool realTime_output)
 
         rj::Document d;
         d.Parse(output_value.c_str());
-        if (d.IsObject() && d.HasMember("results")) {
-            for (auto& result : d["results"].GetArray()) {
-                for (auto& values : result["detect_rppg"]["rPPG"].GetArray()) {
-                    result_signalCondition = values["signalCondition"].GetString();
-                    int int_bpm = static_cast<int>(std::round(values["bpm"].GetFloat()));
-                    result_bpm = std::to_string(int_bpm);
-                }
+        for (auto& values : d["rPPG"].GetArray()) {
+            result_signalCondition = values["signalCondition"].GetString();
+            int int_bpm = static_cast<int>(std::round(values["bpm"].GetFloat()));
+            result_bpm = std::to_string(int_bpm);
+        }
 
-                if (result_signalCondition == "Bad") {
-                    str_1 = "Signal unstable";
-                    str_2 = "rPPG HR = --";
-                } else if (result_signalCondition == "Normal") {
-                    str_1 = "HR Calculation";
-                    str_2 = "rPPG HR = " + result_bpm + " bpm";
-                }
-            }
+        if (result_signalCondition == "Bad") {
+            str_1 = "Signal unstable";
+            str_2 = "rPPG HR = --";
+        } else if (result_signalCondition == "Normal") {
+            str_1 = "HR Calculation";
+            str_2 = "rPPG HR = " + result_bpm + " bpm";
         }
     }
 
@@ -125,9 +121,19 @@ int main(int argc, char* argv[])
 
     config.inferencePipeId = "rppg_pipe_inference";
     config.inferencePipeConfig = R"(
-         {
+        {
             "name": "rppg_pipe_inference",
+            "descriptor" : "rppg_inference_pipe",
             "nodes": [
+                {
+                    "id": "rppg_pre_process",
+                    "input": ["image"],
+                    "output": ["image"],
+                    "operation": {
+                        "type": "rppg_pre_process",
+                        "config": {}
+                    }
+                },
                 {
                     "id": "detect_rppg",
                     "input": ["image"],
@@ -140,6 +146,38 @@ int main(int argc, char* argv[])
                                 "autoDelegate": {"policy": "CPU_ONLY"}
                             }
                         }
+                    }
+                },
+                {
+                    "id": "change_input",
+                    "input": ["image","inference"],
+                    "output": ["image","inference"],
+                    "operation": {
+                        "type": "change_input",
+                        "config": {"changeRect": [200, 0, 200, 1]}
+                    }
+                },
+                {
+                    "id": "detect_rppg2",
+                    "input": ["image", "inference"],
+                    "output": ["image", "inference"],
+                    "operation": {
+                        "type": "detector",
+                        "config": {
+                            "model": "rppg_cpu",
+                            "param": {
+                                "autoDelegate": {"policy": "CPU_ONLY"}
+                            }
+                        }
+                    }
+                },
+                {
+                    "id": "rppg_post_process",
+                    "input": ["image","inference"],
+                    "output": ["image","inference"],
+                    "operation": {
+                        "type": "rppg_post_process",
+                        "config": {}
                     }
                 }
             ]

@@ -8,6 +8,9 @@ set(RPPG_SRC
     ${RPPG_SRC_DIR}/RppgDescriptor.cpp
     ${RPPG_SRC_DIR}/CubicSpline.cpp
     ${RPPG_SRC_DIR}/FftLib.cpp
+    ${RPPG_SRC_DIR}/RppgInferencePipeDescriptor.cpp
+    ${RPPG_SRC_DIR}/RppgPostProcessOperation.cpp
+    ${RPPG_SRC_DIR}/RppgPreProcessOperation.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${RPPG_SRC_DIR})

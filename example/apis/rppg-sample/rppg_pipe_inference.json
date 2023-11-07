@@ -1,9 +1,19 @@
 {
     "name": "rppg_pipe_inference",
+    "descriptor" : "rppg_inference_pipe",
     "nodes": [
         {
-            "id": "detect_rppg",
+            "id": "rppg_pre_process",
             "input": ["image"],
+            "output": ["image","inference"],
+            "operation": {
+                "type": "rppg_pre_process",
+                "config": {}
+            }
+        },
+        {
+            "id": "detect_rppg",
+            "input": ["image", "inference"],
             "output": ["image", "inference"],
             "operation": {
                 "type": "detector",
@@ -13,6 +23,38 @@
                         "autoDelegate": {"policy": "CPU_ONLY"}
                     }
                 }
+            }
+        },
+        {
+            "id": "change_input",
+            "input": ["image","inference"],
+            "output": ["image","inference"],
+            "operation": {
+                "type": "change_input",
+                "config": {"changeRect": [0, 60, 4, 60]}
+            }
+        },
+        {
+            "id": "detect_rppg2",
+            "input": ["image", "inference"],
+            "output": ["image", "inference"],
+            "operation": {
+                "type": "detector",
+                "config": {
+                    "model": "rppg_cpu",
+                    "param": {
+                        "autoDelegate": {"policy": "CPU_ONLY"}
+                    }
+                }
+            }
+        },
+        {
+            "id": "rppg_post_processing",
+            "input": ["image","inference"],
+            "output": ["image","inference"],
+            "operation": {
+                "type": "rppg_post_processing",
+                "config": {}
             }
         }
     ]

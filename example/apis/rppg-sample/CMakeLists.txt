@@ -95,7 +95,7 @@ link_directories(
 # Source Files
 
 set(SRC_FILES
-    ${SRC_DIR}/RppgPipe.cpp
+    ${SRC_DIR}/rppg_pipe.cpp
     ${SRC_DIR}/main.cpp
 )
 

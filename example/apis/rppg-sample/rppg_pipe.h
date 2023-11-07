@@ -1,3 +1,14 @@
+// @@@LICENSE
+//
+// Copyright (C) 2023, LG Electronics, All Right Reserved.
+//
+// No part of this source code may be communicated, distributed, reproduced
+// or transmitted in any form or by any means, electronic or mechanical or
+// otherwise, for any purpose, without the prior written permission of
+// LG Electronics.
+//
+// LICENSE@@@
+
 #ifndef AIF_RPPG_PIPE_H
 #define AIF_RPPG_PIPE_H
 
@@ -36,7 +47,7 @@ typedef struct {
 template<typename DATA>
 class DataQueue {
 public:
-    DataQueue() : m_expandTargetNum(0), m_isRunning(true) {};
+    DataQueue() : m_isRunning(true) {};
     virtual ~DataQueue() {};
 
     bool empty() const {
@@ -52,7 +63,6 @@ public:
     void setAggregationSize(size_t num) {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_aggregationSize = num;
-        m_expandTargetNum = m_aggregationSize / 2;
     }
 
     std::pair<int, cv::Mat> getMatData() {
@@ -83,8 +93,6 @@ public:
                 mat.at<double>(i, j) = temp[i][j];
         }
 
-        //std::cout << "mat rows : " << mat.rows << std::endl;
-        //std::cout << "mat cols : " << mat.cols<< std::endl;
         return std::make_pair<int, cv::Mat>(std::move(id), std::move(mat));
     }
 
@@ -105,16 +113,11 @@ public:
     void push(const DATA& data) {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            //std::cout <<  "queue push : " << m_queue.size() << " " << m_aggregationSize << std::endl;
             if (m_queue.size() == m_aggregationSize) {
                 m_queue.pop();
-                //std::cout <<  "queue pop : " << m_queue.size() << std::endl;
             }
 
             m_queue.push(data);
-            if (m_expandTargetNum != 0 && m_queue.size() == m_expandTargetNum) {
-                expandDouble();
-            }
         }
         m_cv.notify_one();
     }
@@ -130,27 +133,10 @@ public:
     }
 
 private:
-    void expandDouble() {
-        std::queue<DATA> temp;
-        for (size_t i = 0; i < m_queue.size(); i++) {
-            auto data = std::move(m_queue.front());
-            m_queue.pop();
-            temp.push(data);
-            m_queue.push(std::move(data));
-        }
-
-        while (!temp.empty()) {
-            m_queue.push(std::move(temp.front()));
-            temp.pop();
-        }
-    }
-
-private:
     std::queue<DATA> m_queue;
     std::condition_variable_any m_cv;
     mutable std::mutex m_mutex;
     size_t m_aggregationSize;
-    size_t m_expandTargetNum;
     bool m_isRunning;
 };
 

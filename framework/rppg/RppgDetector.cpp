@@ -7,8 +7,9 @@
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 #include <aif/rppg/CubicSpline.h>
-#include <aif/rppg/FiltFilt.h>
-#include <aif/rppg/FftLib.h>
+#include <aif/rppg/RppgInferencePipeDescriptor.h>
+// #include <aif/rppg/FiltFilt.h>
+// #include <aif/rppg/FftLib.h>
 
 #include <cmath>
 #include <iostream>
@@ -31,13 +32,6 @@ namespace aif {
 
 RppgDetector::RppgDetector(const std::string& modelPath)
 : Detector(modelPath)
-, m_fsRe(50)
-, m_targetTime(8)
-, m_winSec(1.6f)
-, m_hr(0.0)
-, m_alpha(0.5)
-, m_beta(0.5)
-, m_signalCondition("Bad")
 {
 }
 
@@ -75,13 +69,13 @@ t_aif_status RppgDetector::fillInputTensor(const cv::Mat& img)/* override*/
         }
 
         int batchSize = m_modelInfo.batchSize; // 1
-        int height = m_modelInfo.height; // 400
+        int height = m_modelInfo.height; // 400 -> 200
         int width = m_modelInfo.width; // 2
 
         if (m_interpreter == nullptr) {
             throw std::runtime_error("tflite interpreter not initialized!!");
         }
-
+        /*
         // Pre-Processing - Using XTENSOR
         std::vector<int> shape = {img.rows, img.cols}; // rows=120, cols=4
         xt::xarray<double> mesh_dataset = xt::adapt((double*)img.data, img.total() * img.channels(), xt::no_ownership(), shape); // total=480, channels=1
@@ -163,12 +157,14 @@ t_aif_status RppgDetector::fillInputTensor(const cv::Mat& img)/* override*/
         xt::xarray<double> reshapeData = inputDat.reshape({1, inputDat.shape()[0], 2 }); // [1, 400, 2]
         xt::xarray<float> double_reshapeData = xt::cast<float>(reshapeData);
 
+
         // OPTION 1) convert xarray -> cv::mat
         // cv::Mat cv_reshapeData3(double_reshapeData.shape()[0], double_reshapeData.shape()[1], CV_32FC2, double_reshapeData.data());
+        */
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
-        // std::memcpy(inputTensor, cv_reshapeData3.ptr<float>(0), batchSize * height  * width * sizeof(float)); // Option1) memcpy cvMat -> input tensor
-        std::memcpy(inputTensor, double_reshapeData.data(), batchSize * height  * width * sizeof(float)); // Option2) memcpy xarray -> input tensor
+        std::memcpy(inputTensor, img.ptr<float>(0), batchSize * height  * width * sizeof(float)); // Option1) memcpy cvMat -> input tensor
+        // std::memcpy(inputTensor, double_reshapeData.data(), batchSize * height  * width * sizeof(float)); // Option2) memcpy xarray -> input tensor
 
         return kAifOk;
     } catch(const std::exception& e) {
@@ -195,9 +191,21 @@ t_aif_status RppgDetector::postProcessing(const cv::Mat &img, std::shared_ptr<De
         }
 
         int out_batch = output->dims->data[0]; // 1
-        int out_channel = output->dims->data[1]; //400
+        int out_channel = output->dims->data[1]; // 200
 
         float* data= reinterpret_cast<float*>(output->data.data);
+        // send data, out_batch, out_channel
+        std::shared_ptr<RppgDescriptor> rppgDescriptor = std::dynamic_pointer_cast<RppgDescriptor>(descriptor);
+        if (rppgDescriptor == nullptr) {
+            throw std::runtime_error("failed to convert Descriptor to RppgDescriptor");
+        }
+        std::vector<float> outputs;
+        for(int i = 0; i < out_channel; i ++) outputs.push_back(data[i]);
+        rppgDescriptor->addBatchSize(out_batch);
+        rppgDescriptor->addChannelSize(out_channel);
+        rppgDescriptor->addRppg(outputs);
+
+        /*
         // convert to xtensor array
         std::vector<int> output_shape = {out_batch, out_channel};
         xt::xarray<float> gg = xt::adapt(data, out_batch * out_channel, xt::no_ownership(), output_shape); // [400]
@@ -208,9 +216,11 @@ t_aif_status RppgDetector::postProcessing(const cv::Mat &img, std::shared_ptr<De
         bpfFiltFilt(double_gg, yy); // [400]
 
         auto HR_info = aeRealtimeHRCal(yy); // Final BPM
+        */
 
-        std::shared_ptr<RppgDescriptor> rppgDescriptor = std::dynamic_pointer_cast<RppgDescriptor>(descriptor);
-        if (rppgDescriptor != nullptr) rppgDescriptor->addRppgOutput(HR_info, m_signalCondition);
+        // std::shared_ptr<RppgDescriptor> rppgDescriptor = std::dynamic_pointer_cast<RppgDescriptor>(descriptor);
+        if (rppgDescriptor != nullptr) rppgDescriptor->addRppgOutput(outputs);
+
 
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -222,7 +232,7 @@ t_aif_status RppgDetector::postProcessing(const cv::Mat &img, std::shared_ptr<De
 
     return kAifOk;
 }
-
+/*
 xt::xarray<double> RppgDetector::dotProduct(xt::xarray<double>& p, xt::xarray<double>& cn)
 {
     xt::xarray<double> xt_output = xt::zeros<double>({p.shape()[0], cn.shape()[1]}); // [2, 79] | zero initialization
@@ -237,6 +247,7 @@ xt::xarray<double> RppgDetector::dotProduct(xt::xarray<double>& p, xt::xarray<do
 
     return xt_output;
 }
+
 
 int RppgDetector::getButterBPFParam(xt::xarray<double>& b, xt::xarray<double>& a, uint8_t nOption)
 {
@@ -362,5 +373,6 @@ int RppgDetector::rfft1024(xt::xarray<double>& pInput_buff, xt::xarray<std::comp
 
     return 0;
 }
+*/
 
 } // end of namespace aif
