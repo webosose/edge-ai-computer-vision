@@ -75,6 +75,7 @@ t_aif_status NpuBgSegmentDetector::fillInputTensor(const cv::Mat& img)/* overrid
 
         uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
         std::memcpy(inputTensor, img_resized.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
+        //memoryDump(inputTensor, "./inputBinary.bin", width * height * channels * sizeof(uint8_t));
 
         return kAifOk;
     } catch(const std::exception& e) {
@@ -123,6 +124,7 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
 
     std::shared_ptr<BgSegmentDescriptor> bgSegmentDescriptor = std::dynamic_pointer_cast<BgSegmentDescriptor>(descriptor);
 
+    //memoryDump(output->data.uint8, "./outputBinary.bin", width * height);
     std::pair<int, int> maskSize;
     if (m_outScaleUp) {
         maskSize = scaleUpMask(width, height, output->data.uint8, img);

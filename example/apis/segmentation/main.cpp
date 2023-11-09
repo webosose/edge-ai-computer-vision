@@ -83,6 +83,84 @@ cv::Mat drawResults(const std::string &output, const ExtraOutput &extraOutput, c
     return res;
 }
 
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <ctime>
+#include <sys/time.h>
+
+
+cv::Mat input_g;
+// Timer
+timer_t timerID_g;
+
+static void timer_handler( int sig, siginfo_t *si, void *uc );
+
+#include <condition_variable>
+int detectNum = 0;
+int totalNum = 0;
+std::condition_variable cv_;
+std::mutex cv_m;
+
+static int setupTimer(timer_t *timerID, void* maskingData, int num, int sec, int msec )
+{
+    struct sigevent         te;
+    struct itimerspec       its;
+    struct sigaction        sa;
+    int                     sigNo = SIGRTMIN;
+
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = timer_handler;
+    sigemptyset(&sa.sa_mask);
+
+    totalNum = num;
+    std::cout << " msec: " << msec << " totalNum: " << totalNum << std::endl;
+
+    if (sigaction(sigNo, &sa, NULL) == -1)
+    {
+        printf("sigaction error\n");
+        return -1;
+    }
+
+    te.sigev_notify = SIGEV_SIGNAL;
+    te.sigev_signo = sigNo;
+    te.sigev_value.sival_ptr = maskingData;
+    timer_create(CLOCK_REALTIME, &te, timerID);
+    std::cout << " timerID: " << *timerID << std::endl;
+
+    its.it_interval.tv_sec = sec;
+    its.it_interval.tv_nsec = msec * 1000000;
+    its.it_value.tv_sec = sec;
+
+    its.it_value.tv_nsec = msec * 1000000;
+    timer_settime(*timerID, 0, &its, NULL);
+
+    return 0;
+}
+
+static void timer_handler( int sig, siginfo_t *si, void *uc )
+{
+    //printf("timerID_g\n");
+    EdgeAIVision& ai = EdgeAIVision::getInstance();
+
+    std::string output;
+    void *maskingData = si->si_value.sival_ptr;
+    ExtraOutput extraOutput(
+            ExtraOutputType::UINT8_ARRAY,
+            maskingData,
+            sizeof(uint8_t) * 1280 * 720);
+
+    ai.detect(EdgeAIVision::DetectorType::SEGMENTATION, input_g, output, extraOutput);
+    ++detectNum;
+
+    if (detectNum >= totalNum) {
+        cv_.notify_one();
+        timer_delete(timerID_g);
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     std::cout << "Usage: ./segmentation-sample <input-file-path> <#iternum> <config-file-path> <#imageDup_1_or_0>" << std::endl;
@@ -105,8 +183,15 @@ int main(int argc, char** argv)
     if (argc >= 3) {
         num = std::stoi(argv[2]);
     }
+    int fpsNum = 0;
     if (argc >= 4) {
         configPath = argv[3];
+        for(int i=0; i<strlen(configPath.c_str()); i++) {
+            if(configPath[i] > 47 && configPath[i] < 58)  // assume that, config file name is roi_60.json, roi_30.json, roi.json ...
+                fpsNum = fpsNum*10 + configPath[i]-48;
+        }
+        if (fpsNum == 0) fpsNum = 5;
+        std::cout << "fpsNum: " << fpsNum << std::endl;
         config = fileToStr(configPath);
     }
     if (argc >= 5) {
@@ -122,14 +207,25 @@ int main(int argc, char** argv)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::SEGMENTATION;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
 
+    ai.startup();
+    ai.createDetector(type, config);
+
     std::unique_ptr<uint8_t[]> maskingData{ new uint8_t[1280 * 720]}; /* ROI or full camera size ...*/
+
+#if 0 /* for multi process test */
+    input_g = cv::imread(inputPath, cv::IMREAD_COLOR);
+    setupTimer(&timerID_g, static_cast<void*>(maskingData.get()), num, 0, 1000/fpsNum);
+
+    std::unique_lock<std::mutex> lk(cv_m);
+    cv_.wait(lk, [&]{ return (detectNum >= num); });
+
+#else
+
     ExtraOutput extraOutput(
             ExtraOutputType::UINT8_ARRAY,
             static_cast<void*>(maskingData.get()),
             sizeof(uint8_t) * 1280 * 720);
 
-    ai.startup();
-    ai.createDetector(type, config);
 
     if (!isVideoInput) {
         cv::Mat input = cv::imread(inputPath, cv::IMREAD_COLOR);
@@ -161,10 +257,13 @@ int main(int argc, char** argv)
 
 #endif
     }
+#endif
+
     PerformanceReporter::get().showReport();
 
     ai.deleteDetector(type);
     ai.shutdown();
+
 
     return 0;
 }
