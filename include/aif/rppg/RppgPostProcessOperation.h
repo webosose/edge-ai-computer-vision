@@ -32,10 +32,18 @@ class RppgPostProcessOperation : public BridgeOperation {
         xt::xarray<double> hannCal(int len);
         xt::xarray<double> rfftFreqCal(int n, float d);
         int rfft1024(xt::xarray<double>& pInput_buff, xt::xarray<std::complex<double>>& pOutput_buff);
+        float median(std::vector<float> &v);
     private:
         std::vector<float> rppgOutputs;
         int m_fsRe;
         double m_hr;
+        int m_countHr;
+        int m_countHr2;
+        float m_avgHeartrate;
+        int m_heartrateArraySize;
+        std::deque<float> m_heartrateArray;
+        int m_heartrateArraySize2;
+        std::deque<float> m_heartrateArray2;
         std::string m_signalCondition;
 };
 

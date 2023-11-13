@@ -53,11 +53,19 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         return false;
     }
 
+    // std::cout << "Try this" << std::endl;
+    // memoryRestore(image.data, "/usr/share/aif/example/face_irgb_3m.bin");
+    // std::vector<int> shape = {120, 4}; // rows=120, cols=4
+    // xt::xarray<double> mesh_dataset = xt::adapt(image.data, 480, xt::no_ownership(), shape); // total=480, channels=1
+    // std::cout << "END" << std::endl;
+
     // Pre-Processing - Using XTENSOR
     std::vector<int> shape = {image.rows, image.cols}; // rows=120, cols=4
     xt::xarray<double> mesh_dataset = xt::adapt((double*)image.data, image.total() * image.channels(), xt::no_ownership(), shape); // total=480, channels=1
     xt::xarray<double> timeInfo = xt::cumsum(xt::view(mesh_dataset, xt::all(), 0)); // [120]
+    // std::cout << "PASS " << timeInfo.size() << std::endl;
     xt::xarray<double> intrTime = xt::arange(timeInfo[0], timeInfo[timeInfo.size() - 1], (1.0f / m_fsRe)); // [397]
+    // std::cout << "PASS" << std::endl;
 
     // CubicSpline Interpolation - AI Reseach Center
     xt::xarray<double> R_yNew, G_yNew, B_yNew;
@@ -72,16 +80,19 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     }
     auto xt_rbgInter = xt::vstack(xt::xtuple(R_yNew, G_yNew, B_yNew)); // [3, 397]
     auto rgbInter = xt::transpose(xt_rbgInter); // [397, 3]
+    // std::cout << "PASS" << std::endl;
 
     int st_idx = -(m_targetTime * m_fsRe); // -400
     auto p_rgbInter = xt::view(rgbInter, xt::range(st_idx, xt::placeholders::_), xt::all()); // [397, 3]
     auto p_intrTime = xt::view(intrTime, xt::range(st_idx, xt::placeholders::_)); // [397]
+    // std::cout << "PASS" << std::endl;
 
     int N = static_cast<int>(p_intrTime.shape()[0]); // [397]
     xt::xarray<double> rPPGmDat = xt::zeros<double>({N}); // [397] == H
     int l = (int)std::ceil(m_winSec * m_fsRe); // 80
     // auto C = xt::zeros<double>({l, 3}); // [80, 3]
     xt::xarray<double> P = {{0.0, 1.0, -1.0}, {-2.0, 1.0, 1.0}}; // [2, 3]
+    // std::cout << "PASS" << std::endl;
 
     for (int n = 1; n < N; n++) {
         int m = n - l + 1;
@@ -107,9 +118,9 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
                 double h_update = h_.at(count++) - h_mean;
                 rPPGmDat.at(i) = rPPGmDat.at(i) + h_update;
             }
-
         }
     }
+    // std::cout << "PASS" << std::endl;
 
     xt::xarray<double> greenDat = xt::view(p_rgbInter, xt::all(), 1); // [397]
     // Normalization
@@ -130,35 +141,26 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         else fillList = xt::concatenate(xt::xtuple(fillList, inputt)); // append 0.5
     }
 
-    for (auto i : data11.shape()) {
-        Logi( "data : ", i);
-
-    }
-    for (auto i : fillList.shape()) {
-        Logi( "fill: ", i);
-
-    }
-
-    Logi("pre data11 : " , data11.size(), " / fillList : ", fillList.size());
     xt::xarray<double> data_1_1;
-    if (data11.size() >= 400) {
-        data_1_1 = data11;
-    } else {
-        data_1_1 = xt::concatenate(xt::xtuple(data11, fillList), 0); // [400]
-    }
-    xt::xarray<double> data_2_1;
-    if (data21.size() >= 400) {
-        data_2_1 = data21;
-    } else {
-        data_2_1 = xt::concatenate(xt::xtuple(data21, fillList), 0); // [400]
-    }
+    if (data11.size() >= 400) data_1_1 = data11; // lower than 15 fps
+    else data_1_1 = xt::concatenate(xt::xtuple(data11, fillList), 0); // [400]
 
+    xt::xarray<double> data_2_1;
+    if (data21.size() >= 400) data_2_1 = data21;
+    else data_2_1 = xt::concatenate(xt::xtuple(data21, fillList), 0); // [400]
 
     xt::xarray<double> inputDat = xt::stack(xt::xtuple(data_1_1, data_2_1), 1); // [400, 2]
+    // std::cout << "Try this" << std::endl;
+    // memoryDump(inputDat.data(), "./face_rgb_3m.bin", 400 * 2 * sizeof(double));
+    // std::cout << "END" << std::endl;
+
     xt::xarray<double> reshapeData = inputDat.reshape({1, inputDat.shape()[0], 2 }); // [1, 400, 2]
     xt::xarray<float> double_reshapeData = xt::cast<float>(reshapeData);
 
     cv::Mat cv_reshapeData(double_reshapeData.shape()[0], double_reshapeData.shape()[1], CV_32FC2, double_reshapeData.data());
+    // std::cout << "Try this" << std::endl;
+    // memoryRestore(cv_reshapeData.data, "/usr/share/aif/example/face_rgb_scale_3m.bin");
+    // std::cout << "END" << std::endl;
     descriptor->setImage(cv_reshapeData);
 
     return true;

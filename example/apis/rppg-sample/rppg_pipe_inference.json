@@ -5,7 +5,7 @@
         {
             "id": "rppg_pre_process",
             "input": ["image"],
-            "output": ["image","inference"],
+            "output": ["image"],
             "operation": {
                 "type": "rppg_pre_process",
                 "config": {}
@@ -13,7 +13,7 @@
         },
         {
             "id": "detect_rppg",
-            "input": ["image", "inference"],
+            "input": ["image"],
             "output": ["image", "inference"],
             "operation": {
                 "type": "detector",
@@ -31,7 +31,7 @@
             "output": ["image","inference"],
             "operation": {
                 "type": "change_input",
-                "config": {"changeRect": [0, 60, 4, 60]}
+                "config": {"changeRect": [200, 0, 200, 1]}
             }
         },
         {
@@ -49,11 +49,11 @@
             }
         },
         {
-            "id": "rppg_post_processing",
+            "id": "rppg_post_process",
             "input": ["image","inference"],
             "output": ["image","inference"],
             "operation": {
-                "type": "rppg_post_processing",
+                "type": "rppg_post_process",
                 "config": {}
             }
         }
