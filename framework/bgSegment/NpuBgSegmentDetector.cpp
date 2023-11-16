@@ -19,7 +19,9 @@ NpuBgSegmentDetector::NpuBgSegmentDetector()
     : m_paddingInfo{0,}
     , m_useRoi(false)
     , m_outScaleUp(true) // default : AI Framework scale up the out image.
-    , BgSegmentDetector("O24_SIC_SEG_v1.0_230906.tflite") {} // TODO: change the name, and initialize....!!!
+    , m_smoothing(true)
+    , BgSegmentDetector("O24_SIC_SEG_v3.0_231025.tflite") {}
+
 
 NpuBgSegmentDetector::~NpuBgSegmentDetector() {}
 
@@ -98,9 +100,11 @@ t_aif_status NpuBgSegmentDetector::preProcessing()
         }
 
         m_outScaleUp = param->outScaleUp;
+        m_smoothing = param->smoothing;
         m_roiRect = {param->origImgRoiX, param->origImgRoiY, param->origImgRoiWidth, param->origImgRoiHeight};
 
-        //TRACE(" m_roiRect isss ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
+        TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp);
+        TRACE(" m_roiRect isss ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
         return kAifOk;
     } catch (const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -120,16 +124,32 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
     int height = output->dims->data[0];
     int width = output->dims->data[1];
 
-    //TRACE("size : ", height, " x ", width);
-
     std::shared_ptr<BgSegmentDescriptor> bgSegmentDescriptor = std::dynamic_pointer_cast<BgSegmentDescriptor>(descriptor);
 
     //memoryDump(output->data.uint8, "./outputBinary.bin", width * height);
     std::pair<int, int> maskSize;
+    ExtraOutputType type = ExtraOutputType::UINT8_ARRAY;
     if (m_outScaleUp) {
-        maskSize = scaleUpMask(width, height, output->data.uint8, img);
+        if (m_smoothing) {
+            maskSize = getMask(width, height, output->data.uint8);
+            //TRACE(__func__, " getMask size: ", maskSize.first, maskSize.second);
+            cv::Mat sm_Mask;
+            if (m_useRoi) {
+                maskSize = smoothingMask(img( m_roiRect ), sm_Mask);
+            } else {
+                maskSize = smoothingMask(img, sm_Mask);
+            }
+            // TRACE(__func__, " smoothingMask size: ", maskSize.first, "x", maskSize.second);
+            m_scaledUpMask = sm_Mask.reshape(1, 1);
+            /////// type = ExtraOutputType::FLOAT_ARRAY;
+        } else {
+            maskSize = scaleUpMask(width, height, output->data.uint8, img);
+            //TRACE(__func__, " scaleUpMask size: ", maskSize.first, "x", maskSize.second);
+        }
     } else {
         maskSize = getMask(width, height, output->data.uint8);
+        //TRACE(__func__, " getMask size: ", maskSize.first, "x", maskSize.second);
+        m_scaledUpMask = m_Mask.reshape(1, 1);
     }
 
     if (bgSegmentDescriptor != nullptr) {
@@ -141,7 +161,7 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
                                              maskSize.first, maskSize.second);
         }
         //TRACE(__func__, " m_scaledUpMask size is : ", m_scaledUpMask.total() * m_scaledUpMask.elemSize());
-        bgSegmentDescriptor->addExtraOutput( ExtraOutputType::UINT8_ARRAY, static_cast<void*>(m_scaledUpMask.data),
+        bgSegmentDescriptor->addExtraOutput( type, static_cast<void*>(m_scaledUpMask.data),
                                              m_scaledUpMask.total() * m_scaledUpMask.elemSize());
     }
 
@@ -205,15 +225,77 @@ std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t
 
     //TRACE(__func__, " ", bound.x, " ", bound.y, " ", bound.width, " ", bound.height);
     cv::Mat results = padOffData(bound);
-    //cv::imwrite("./results.jpg", results);
-
-    results.copyTo(m_scaledUpMask);
-    // 3. flatten it.
-    m_scaledUpMask = m_scaledUpMask.reshape(1, 1);
+    results.copyTo(m_Mask);
+    //cv::imwrite("./m_Mask.jpg", m_Mask);
 
     return std::make_pair(bound.width, bound.height);
 }
 
+std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::Mat &transformed_map)
+{
+    const float th_mad[4] = {0.2, 0.5, 1.0, 8};
+    const float alpha_lut[5] = {0.95, 0.9, 0.8, 0.5, 0.0};
 
+    const float scale = 4.0; // controls sharpness of the boundary
+    const float bias = -384; // -256: thick | -384: thin
+
+    const cv::Size diff_size(240, 270);
+    //cv::Mat transformed_map;
+    cv::Mat resized_map;
+
+    cv::Mat resized_image;
+
+    // 640 x 720 fg image > 240 x 720 fg_image
+    cv::resize(img, resized_image, diff_size);
+    // cv::imwrite("./resized_image.jpg", resized_image);
+
+    // segmap : 120 x 135.
+    cv::Mat segmap = m_Mask;
+
+    // compute the mean of absolute differences
+    float mad;
+    if (m_prevImg.empty()) {
+        mad = 255.0;
+    } else {
+        cv::Mat diff;
+        cv::absdiff(resized_image, m_prevImg, diff);
+        mad = cv::mean(diff)[0];
+    }
+    int idx_alpha = (mad < th_mad[0]) ? 0 : (mad < th_mad[1]) ? 1
+                                        : (mad < th_mad[2])   ? 2
+                                        : (mad < th_mad[3])   ? 3
+                                                              : 4;
+    float alpha = alpha_lut[idx_alpha];
+    float beta = 1.0 - alpha;
+
+    // prev_img = resizeD_img = 240 x 720
+    m_prevImg = resized_image.clone();
+
+    // Convert the segmentation map to float for accurate accumulation
+    segmap.convertTo(segmap, CV_32F);
+
+    // If this is the first image, initialize the accumulated image
+    if (m_accumulatedMap.empty()) {
+        m_accumulatedMap = segmap.clone();
+    } else {
+        // Apply the moving average
+        cv::addWeighted(m_accumulatedMap, alpha, segmap, beta, 0.0, m_accumulatedMap);
+    }
+
+    // Resize the segmentation map
+    // accum_map (120 x 135) >> 640 x 720(resized_map)
+    cv::resize(m_accumulatedMap, resized_map, cv::Size(img.cols, img.rows));
+    //cv::imwrite("./resized_map_640_720.jpg", resized_map);
+
+    resized_map.convertTo(transformed_map, -1, scale, bias);
+    cv::threshold(transformed_map, transformed_map, 255, 255, cv::THRESH_TRUNC);
+    cv::threshold(transformed_map, transformed_map, 0, 0, cv::THRESH_TOZERO);
+
+    //cv::imwrite("./transformed_map_640_720.jpg", transformed_map);
+    //memoryDump(transformed_map.data, "./transformed_map.bin", 640*720*4);
+
+    transformed_map.convertTo(transformed_map, CV_8U);
+    return std::make_pair(transformed_map.cols, transformed_map.rows);
+}
 
 } // namespace aif

@@ -23,6 +23,7 @@ BgSegmentParam::BgSegmentParam()
     , origImgRoiWidth(0)
     , origImgRoiHeight(0)
     , outScaleUp(true) // default : AI Framework scale up the out image.
+    , smoothing(true)
 {
 }
 
@@ -34,6 +35,7 @@ BgSegmentParam::BgSegmentParam(const BgSegmentParam &other)
     , origImgRoiWidth(other.origImgRoiWidth)
     , origImgRoiHeight(other.origImgRoiHeight)
     , outScaleUp(other.outScaleUp)
+    , smoothing(other.smoothing)
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -44,6 +46,7 @@ BgSegmentParam::BgSegmentParam(BgSegmentParam &&other) noexcept
     , origImgRoiWidth(std::move(other.origImgRoiWidth))
     , origImgRoiHeight(std::move(other.origImgRoiHeight))
     , outScaleUp(std::move(other.outScaleUp))
+    , smoothing(std::move(other.smoothing))
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -60,6 +63,8 @@ BgSegmentParam& BgSegmentParam::operator=(const BgSegmentParam& other)
     origImgRoiWidth = other.origImgRoiWidth;
     origImgRoiHeight = other.origImgRoiHeight;
     outScaleUp = other.outScaleUp;
+    smoothing = other.smoothing;
+
     return *this;
 }
 
@@ -75,6 +80,8 @@ BgSegmentParam& BgSegmentParam::operator=(BgSegmentParam&& other) noexcept
     origImgRoiWidth = std::move(other.origImgRoiWidth);
     origImgRoiHeight = std::move(other.origImgRoiHeight);
     outScaleUp = std::move(other.outScaleUp);
+    smoothing = std::move(other.smoothing);
+
     return *this;
 }
 
@@ -84,7 +91,8 @@ bool BgSegmentParam::operator==(const BgSegmentParam &other) const {
         (origImgRoiY == other.origImgRoiY) &&
         (origImgRoiWidth == other.origImgRoiWidth) &&
         (origImgRoiHeight == other.origImgRoiHeight) &&
-        (outScaleUp == other.outScaleUp));
+        (outScaleUp == other.outScaleUp) &&
+        (smoothing == other.smoothing));
 }
 
 bool BgSegmentParam::operator!=(const BgSegmentParam &other) const {
@@ -99,6 +107,7 @@ std::ostream &operator<<(std::ostream &os, const BgSegmentParam &fp) {
     os << "\torigImgRoiWidth: " << fp.origImgRoiWidth << ",\n";
     os << "\torigImgRoiHeight: " << fp.origImgRoiHeight << ",\n";
     os << "\toutScaleUp: " << fp.outScaleUp << ",\n";
+    os << "\tsmoothing: " << fp.smoothing << ",\n";
 
     os << "}";
     return os;
@@ -131,6 +140,9 @@ t_aif_status BgSegmentParam::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("outScaleUp")) {
             outScaleUp = modelParam["outScaleUp"].GetBool();
+        }
+        if (modelParam.HasMember("smoothing")) {
+            smoothing = modelParam["smoothing"].GetBool();
         }
     }
 
