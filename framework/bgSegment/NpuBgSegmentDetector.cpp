@@ -64,10 +64,10 @@ t_aif_status NpuBgSegmentDetector::fillInputTensor(const cv::Mat& img)/* overrid
         if ( isRoiValid(img.cols, img.rows, m_roiRect) ) {
             m_useRoi = true;
             cv::Mat roi_img = img( m_roiRect );
-            m_paddingInfo = getPaddedImage(roi_img, cv::Size(width, height), img_resized);
+            m_paddingInfo = getPaddedImage(roi_img, cv::Size(width, height), img_resized, cv::INTER_AREA);
         } else {
             m_useRoi = false;
-            m_paddingInfo = getPaddedImage(img, cv::Size(width, height), img_resized);
+            m_paddingInfo = getPaddedImage(img, cv::Size(width, height), img_resized, cv::INTER_AREA);
         }
 
         //TRACE("resized size: ", img_resized.size());

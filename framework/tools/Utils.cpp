@@ -332,7 +332,7 @@ bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
 }
 
 struct t_aif_padding_info
-getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)
+getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst, enum cv::InterpolationFlags flag)
 {
     float srcW = src.size().width;
     float srcH = src.size().height;
@@ -353,7 +353,7 @@ getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)
     int height = srcH * scale;
 
     cv::Mat inputImg;
-    cv::resize(src, inputImg, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
+    cv::resize(src, inputImg, cv::Size(width, height), 0, 0, flag); // default cv::INTER_LINEAR
 
     if (modelSize.width != width)
         padInfo.leftBorder = (modelSize.width - width) / 2;
