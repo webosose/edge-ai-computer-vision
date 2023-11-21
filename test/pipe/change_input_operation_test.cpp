@@ -44,7 +44,14 @@ public:
                 "changeRect" : [0, 60, 4, 60]
             }
         })";
-    std::string testConfigInvalid1 = R"(
+    std::string testConfig2 = R"(
+        {
+            "type" : "change_input",
+            "config": {
+                "changeRect" : [200, 0, 200, 1]
+            }
+        })";
+     std::string testConfigInvalid1 = R"(
         {
             "type" : "change_input",
             "config": {
@@ -164,3 +171,42 @@ TEST_F(ChangeInputOperationTest, change_input_invalid3_test)
     auto operation = NodeOperationFactory::get().create(id, noConfig);
     EXPECT_FALSE(operation->run(input, output));
 }
+
+TEST_F(ChangeInputOperationTest, change_input_test_config2)
+{
+    auto config = std::make_shared<ChangeInputOperationConfig>();
+    config->parse(ConfigUtil::stringToJson(testConfig2));
+    auto noConfig = std::dynamic_pointer_cast<NodeOperationConfig>(config);
+
+    NodeType inputType(NodeType::IMAGE);
+    NodeType outputType(NodeType::IMAGE);
+
+    const auto& descriptor = make_shared<PipeDescriptor>();
+    const auto& input = make_shared<NodeInput>(id, inputType);
+    const auto& output = make_shared<NodeOutput>(id, outputType);
+
+    float data[1][400][2];
+    for(auto i = 0; i < 1; i++){
+        for(auto j = 0; j < 400; j++) {
+            for(auto k = 0; k < 2; k++) {
+                data[i][j][k] = (j < 200) ? 1.1f : 2.2f;
+            }
+        }
+    }
+    cv::Mat mat(1, 400, CV_32FC2, data);
+    descriptor->setImage(mat);
+    input->setDescriptor(descriptor);
+
+    auto operation = NodeOperationFactory::get().create(id, noConfig);
+    EXPECT_TRUE(operation->run(input, output));
+
+    const cv::Mat& result = output->getDescriptor()->getImage();
+    EXPECT_EQ(result.size(), cv::Size(200, 1));
+    for(auto i = 0; i < 1; i++) {
+        for(auto j = 0; j < 200; j++) {
+            EXPECT_TRUE(floatEquals(result.at<cv::Vec2f>(i, j)[0], 2.2f));
+            EXPECT_TRUE(floatEquals(result.at<cv::Vec2f>(i, j)[1], 2.2f));
+        }
+    }
+}
+
