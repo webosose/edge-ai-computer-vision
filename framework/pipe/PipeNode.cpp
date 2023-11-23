@@ -61,7 +61,7 @@ bool PipeNode::run()
         Loge(m_id, ": failed to set node descriptor into NodeOutput");
         return false;
     }
-    Logi(m_id, ": node detect time : ", sw.getMs(), "ms");
+    Logd(m_id, ": node detect time : ", sw.getMs(), "ms");
     sw.stop();
  
     return true;
@@ -85,7 +85,7 @@ bool PipeNode::moveDescriptor(std::shared_ptr<PipeNode>& node)
     if (!m_output->getDescriptor()) {
         return false;
     }
-    Logi(m_id, ": move descriptor ", getId(), " -> ", node->getId());
+    Logd(m_id, ": move descriptor ", getId(), " -> ", node->getId());
     return node->setDescriptor(m_output->getDescriptor());
 }
 
