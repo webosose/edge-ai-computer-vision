@@ -313,7 +313,7 @@ bool EdgeAIVision::pipeDetect(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
 }
 
 bool EdgeAIVision::pipeDetect(
@@ -345,7 +345,7 @@ bool EdgeAIVision::pipeDetect(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
 }
 
 bool EdgeAIVision::pipeDetectFromFile(
@@ -374,7 +374,7 @@ bool EdgeAIVision::pipeDetectFromFile(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
 }
 
 bool EdgeAIVision::pipeDetectFromBase64(
@@ -404,7 +404,7 @@ bool EdgeAIVision::pipeDetectFromBase64(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
 }
 
 } // namespace aif

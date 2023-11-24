@@ -14,19 +14,21 @@
 
 #include <aif/facade/EdgeAIVision.h>
 
-#include <string>
-#include <queue>
-#include <mutex>
-#include <thread>
 #include <chrono>
 #include <condition_variable>
+#include <mutex>
 #include <opencv2/opencv.hpp>
+#include <queue>
+#include <string>
+#include <thread>
 
-namespace aif {
+namespace aif
+{
 
-using OnRppgResult = std::function<void(int id, const std::string& json)>;
+using OnRppgResult = std::function<void(int id, const std::string &json)>;
 
-typedef struct {
+typedef struct
+{
     std::string dataPipeId;
     std::string dataPipeConfig;
     std::string inferencePipeId;
@@ -36,7 +38,8 @@ typedef struct {
     OnRppgResult onResultFunc;
 } RppgConfig;
 
-typedef struct {
+typedef struct
+{
     int id;
     double frameTime;
     double meshR;
@@ -44,35 +47,51 @@ typedef struct {
     double meshB;
 } MeshData;
 
-template<typename DATA>
-class DataQueue {
+template <typename DATA>
+class DataQueue
+{
 public:
-    DataQueue() : m_isRunning(true) {};
-    virtual ~DataQueue() {};
+    DataQueue() : m_isRunning(true){};
+    virtual ~DataQueue(){};
 
-    bool empty() const {
+    bool empty() const
+    {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_queue.empty();
     }
 
-    size_t size() const {
+    void clear()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        std::queue<DATA> empty;
+        m_queue.swap(empty);
+    }
+
+    size_t size() const
+    {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_queue.size();
     }
 
-    void setAggregationSize(size_t num) {
+    void setAggregationSize(size_t num)
+    {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_aggregationSize = num;
     }
 
-    std::pair<int, cv::Mat> getMatData() {
+    std::pair<int, cv::Mat> getMatData()
+    {
         std::unique_lock<std::mutex> ulock(m_mutex);
-        m_cv.wait(ulock, [this] {return (m_queue.size() >= m_aggregationSize || !m_isRunning); });
+        m_cv.wait(ulock, [this] { return (m_queue.size() >= m_aggregationSize || !m_isRunning); });
 
         int id = -1;
-        if (!m_isRunning) { return std::make_pair(id, cv::Mat()); }
+        if (!m_isRunning)
+        {
+            return std::make_pair(id, cv::Mat());
+        }
         std::vector<std::vector<double>> temp;
-        for (size_t i = 0; i < m_queue.size(); i++) {
+        for (size_t i = 0; i < m_queue.size(); i++)
+        {
             std::vector<double> meshData;
             auto data = std::move(m_queue.front());
             m_queue.pop();
@@ -88,21 +107,32 @@ public:
         }
 
         cv::Mat mat(temp.size(), 4, CV_64F);
-        for(auto i = 0; i < temp.size(); i++){
-            for(auto j = 0; j < 4; j++)
+        for (size_t i = 0; i < temp.size(); i++)
+        {
+            for (size_t j = 0; j < 4; j++)
                 mat.at<double>(i, j) = temp[i][j];
+        }
+
+        for (int i = 0; i < 15; i++)
+        {
+            m_queue.pop();
         }
 
         return std::make_pair<int, cv::Mat>(std::move(id), std::move(mat));
     }
 
-    bool pop(DATA& data) {
+    bool pop(DATA &data)
+    {
         std::unique_lock<std::mutex> ulock(m_mutex);
-        m_cv.wait(ulock, [this] {return (!m_queue.empty() || !m_isRunning); });
+        m_cv.wait(ulock, [this] { return (!m_queue.empty() || !m_isRunning); });
 
-        if (!m_isRunning) { return false; }
+        if (!m_isRunning)
+        {
+            return false;
+        }
 
-        if(!m_queue.empty()) {
+        if (!m_queue.empty())
+        {
             data = m_queue.front();
             m_queue.pop();
             return true;
@@ -110,10 +140,12 @@ public:
         return false;
     }
 
-    void push(const DATA& data) {
+    void push(const DATA &data)
+    {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            if (m_queue.size() == m_aggregationSize) {
+            if (m_queue.size() == m_aggregationSize)
+            {
                 m_queue.pop();
             }
 
@@ -122,12 +154,11 @@ public:
         m_cv.notify_one();
     }
 
-    void notifyAll() {
-        m_cv.notify_all();
-    }
+    void notifyAll() { m_cv.notify_all(); }
 
     bool isRunning() const { return m_isRunning; }
-    void setStop() {
+    void setStop()
+    {
         m_isRunning = false;
         notifyAll();
     }
@@ -140,37 +171,43 @@ private:
     bool m_isRunning;
 };
 
-class RppgInferenceThread {
+class RppgInferenceThread
+{
 public:
-    RppgInferenceThread(RppgConfig& config, EdgeAIVision& ai, DataQueue<MeshData>& queue)
-       : m_config(config), m_ai(ai), m_queue(queue) {}
+    RppgInferenceThread(RppgConfig &config, EdgeAIVision &ai, DataQueue<MeshData> &queue,
+                        std::mutex &mutex)
+        : m_config(config), m_ai(ai), m_queue(queue), m_callbackMutex(mutex)
+    {
+    }
     ~RppgInferenceThread() {}
     void operator()();
 
 private:
-    RppgConfig& m_config;
-    EdgeAIVision& m_ai;
-    DataQueue<MeshData>& m_queue;
+    RppgConfig &m_config;
+    EdgeAIVision &m_ai;
+    DataQueue<MeshData> &m_queue;
+    std::mutex &m_callbackMutex;
 };
 
-
-class RppgPipe {
+class RppgPipe
+{
 public:
     RppgPipe();
     ~RppgPipe();
 
     bool isStarted() const { return m_isStarted; }
-    bool startup(const RppgConfig& config);
+    bool startup(const RppgConfig &config);
     bool shutdown();
-    bool detect(int id, double frameTimeInterval, const cv::Mat& image);
+    bool detect(int id, double frameTimeInterval, const cv::Mat &image);
 
 private:
     bool m_isStarted;
     RppgConfig m_config;
     DataQueue<MeshData> m_queue;
     std::thread m_thread;
+    std::mutex m_callbackMutex;
 };
 
-}
+} // namespace aif
 
 #endif // AIF_RPPG_PIPE_H
