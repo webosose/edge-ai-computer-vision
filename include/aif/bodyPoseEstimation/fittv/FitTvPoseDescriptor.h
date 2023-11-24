@@ -9,7 +9,7 @@
 #include <aif/pipe/PipeDescriptor.h>
 #include <aif/bodyPoseEstimation/personDetect/PersonDetectDescriptor.h>
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
 
 #include <aif/bodyPoseEstimation/common.h>
 #include <aif/log/Logger.h>
@@ -103,6 +103,12 @@ class FitTvPoseDescriptor : public PipeDescriptor
         bool addPose3dDetectorResult(
                 const std::string& id,
                 const std::shared_ptr<Pose3dDescriptor> descriptor);
+        bool addPose3dDetectorPosResult(
+                const std::string& id,
+                const std::shared_ptr<Pose3dDescriptor> descriptor);
+        bool addPose3dDetectorTrajResult(
+                const std::string& id,
+                const std::shared_ptr<Pose3dDescriptor> descriptor);
 
         bool addBBox(float scroe, const BBox& box);
         bool addRoi(const cv::Rect& rect);
@@ -112,6 +118,10 @@ class FitTvPoseDescriptor : public PipeDescriptor
                 const std::vector<Joint3D>& keyPoints,
                 const Joint3D& trajectory);
         bool clipKeypointRange(std::vector<float> &pos);
+        bool addPose3dPos(int trackId,
+                const std::vector<Joint3D>& keyPoints);
+        bool addPose3dTraj(int trackId,
+                const Joint3D& trajectory);
 
     private:
         int m_trackId;

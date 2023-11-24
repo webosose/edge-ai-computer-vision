@@ -42,14 +42,11 @@
             "operation" : {
                 "type" : "fittv_pose2d_detector",
                 "config": {
-                    "model": "pose2d_resnet_v2_low_npu",
+                    "model": "pose2d_resnet_mid_cpu",
                     "param": {
-                        "delegates": [
-                            {
-                                "name": "npu_delegate",
-                                "option": {}
-                            }
-                        ]
+                        "autoDelegate": {
+                            "policy": "MIN_LATENCY"
+                        }
                     }
                 }
             }
@@ -72,7 +69,7 @@
             "operation" : {
                 "type" : "fittv_pose3d_detector",
                 "config": {
-                    "model": "pose3d_videopose3d_v2_pos_low",
+                    "model": "pose3d_videopose3d_v2_pos_mid",
                     "param": {
                         "delegates": [
                             {
@@ -91,7 +88,7 @@
             "operation" : {
                 "type" : "fittv_pose3d_detector",
                 "config": {
-                    "model": "pose3d_videopose3d_v2_traj_low",
+                    "model": "pose3d_videopose3d_v2_traj_mid",
                     "param": {
                         "delegates": [
                             {

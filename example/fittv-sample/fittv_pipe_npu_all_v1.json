@@ -69,7 +69,7 @@
             "operation" : {
                 "type" : "fittv_pose3d_detector",
                 "config": {
-                    "model": "pose3d_videopose3d_npu",
+                    "model": "pose3d_videopose3d_v1_npu",
                     "param": {
                         "delegates": [
                             {

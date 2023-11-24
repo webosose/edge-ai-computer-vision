@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
@@ -53,7 +53,7 @@ TEST_F(Pose3dDescriptorTest, 02_addjoints3d_one)
 
     Joint3D joint3dPos = {1.0, 2.0, 3.0};
 
-    jpd.addJoints3D(joints3d, joint3dPos);
+    jpd.addJointsAndTraj3D(joints3d, joint3dPos);
 
     auto json = jpd.toStr();
     Logd(json);
@@ -103,7 +103,7 @@ TEST_F(Pose3dDescriptorTest, 03_add_response_and_returncode)
 
     Joint3D joint3dPos = {1.0, 2.0, 3.0};
 
-    jpd.addJoints3D(joints3d, joint3dPos);
+    jpd.addJointsAndTraj3D(joints3d, joint3dPos);
 
     auto json = jpd.toStr();
     Logd(json);

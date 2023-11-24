@@ -24,6 +24,7 @@ class NpuPose2dDetector_V2_Low : public NpuPose2dDetectorV2 {
 DetectorFactoryRegistration<NpuPose2dDetector_V2_Low, Pose2dDescriptor>
     pose2d_resnet_v2_low_npu("pose2d_resnet_v2_low_npu");
 
+
 class NpuPose2dDetector_V2_Mid : public NpuPose2dDetectorV2 {
     private:
         NpuPose2dDetector_V2_Mid();

@@ -4,7 +4,7 @@
  */
 
 #include <aif/log/Logger.h>
-#include <aif/bodyPoseEstimation/Pose3d/NpuPose3dDetector.h>
+#include <aif/bodyPoseEstimation/pose3d/NpuPose3dDetector.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 
@@ -14,7 +14,7 @@
 namespace aif {
 
 NpuPose3dDetector::NpuPose3dDetector()
-    : Pose3dDetector("FitTV_Pose3D.tflite") {}
+    : Pose3dDetector("FitTV_Pose3D_V1.tflite") {}
 
 NpuPose3dDetector::~NpuPose3dDetector() {}
 

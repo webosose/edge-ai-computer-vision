@@ -1,4 +1,4 @@
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDetector.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDetector.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -30,8 +30,7 @@ Pose3dDetector::~Pose3dDetector()
         }
 }
 
-Joint2D
-Pose3dDetector::normalizeJoints( const float x, const float y, const int width, const int height )
+Joint2D Pose3dDetector::normalizeJoints(const float x, const float y, const int width, const int height )
 {
     Joint2D p;
     p.x = ( ( x / width ) * 2.0f ) - 1.0f;
@@ -40,9 +39,7 @@ Pose3dDetector::normalizeJoints( const float x, const float y, const int width, 
     return p;
 }
 
-t_aif_status
-Pose3dDetector::detect(const cv::Mat &img,
-                       std::shared_ptr<Descriptor> &descriptor)
+t_aif_status Pose3dDetector::detect(const cv::Mat &img, std::shared_ptr<Descriptor> &descriptor)
 {
     try {
         mIsSecondDetect = false;
@@ -83,7 +80,6 @@ Pose3dDetector::detect(const cv::Mat &img,
         return kAifError;
     }
 }
-
 
 std::shared_ptr<DetectorParam> Pose3dDetector::createParam()
 {
@@ -209,9 +205,7 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
 {
     try {
         const std::vector<int> &outputs = m_interpreter->outputs();
-        if (outputs.size() != 2) {
-            throw std::runtime_error("output size should be 2!");
-        }
+        if (outputs.size() != 1) throw std::runtime_error("output size should be 1!");
 
         if (!mIsSecondDetect) {
             for (int i=0; i<outputs.size(); i++) {
@@ -230,7 +224,7 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
             if (pose3dDescriptor == nullptr) {
                 throw std::runtime_error("failed to convert descriptor to Pose3dDescriptor");
             }
-            pose3dDescriptor->addJoints3D(mResults[RESULT_3D_JOINT], mResults[RESULT_3D_TRAJ][0]);
+            pose3dDescriptor->addJointsAndTraj3D(mResults[RESULT_3D_JOINT], mResults[RESULT_3D_TRAJ][0]);
         }
 
         return kAifOk;
@@ -246,8 +240,7 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
     return kAifOk;
 }
 
-void
-Pose3dDetector::initializeParam()
+void Pose3dDetector::initializeParam()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
     if (param == nullptr) {
@@ -270,8 +263,7 @@ Pose3dDetector::initializeParam()
     }
 }
 
-void
-Pose3dDetector::getCameraIntrinsics()
+void Pose3dDetector::getCameraIntrinsics()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
     if (param == nullptr) {
@@ -309,8 +301,7 @@ Pose3dDetector::getCameraIntrinsics()
 
 }
 
-void
-Pose3dDetector::getInputTensorInfo(TfLiteTensor *input)
+void Pose3dDetector::getInputTensorInfo(TfLiteTensor *input)
 {
     if (input == nullptr || input->dims == nullptr) {
         throw std::runtime_error("input / input->dims is nullptr");
@@ -335,8 +326,7 @@ Pose3dDetector::getInputTensorInfo(TfLiteTensor *input)
     TRACE( __func__, " mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
 }
 
-int
-Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
+int Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
 {
     if (output == nullptr || output->dims == nullptr) {
         throw std::runtime_error("output / output->dims is nullptr");
@@ -367,10 +357,7 @@ Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
     return idx;
 }
 
-
-
-void
-Pose3dDetector::fillJoints( uint8_t* inputTensorBuff )
+void Pose3dDetector::fillJoints(uint8_t* inputTensorBuff )
 {
     TRACE(__func__);
 
@@ -418,8 +405,7 @@ Pose3dDetector::fillJoints( uint8_t* inputTensorBuff )
     }
 }
 
-void
-Pose3dDetector::fillFlippedJoints( uint8_t* inputTensorBuff)
+void Pose3dDetector::fillFlippedJoints(uint8_t* inputTensorBuff)
 {
     TRACE(__func__);
 
@@ -475,8 +461,7 @@ Pose3dDetector::fillFlippedJoints( uint8_t* inputTensorBuff)
     }
 }
 
-void
-Pose3dDetector::postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output)
+void Pose3dDetector::postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output)
 {
     // first batch, just only save the value
     // alloc for saving it
@@ -492,9 +477,7 @@ Pose3dDetector::postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output)
     std::memcpy(mResultForFirstBatch[outputIdx], output->data.uint8, output->bytes);
 }
 
-
-void
-Pose3dDetector::postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output)
+void Pose3dDetector::postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output)
 {
     TRACE(__func__, "outputIdx: " , outputIdx, " alloc & memcpy with ", output->bytes, " bytes");
     if (outputIdx < 0 || outputIdx >= RESULT_3D_IDX_MAX) {
@@ -520,8 +503,7 @@ Pose3dDetector::postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output)
                               1 /*mNumInputs*/, mNumJointsOut[outputIdx]);
 }
 
-void
-Pose3dDetector::averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, int numJoints)
+void Pose3dDetector::averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, int numJoints)
 {
     if (idx < 0 || idx >= RESULT_3D_IDX_MAX) {
         Loge(__func__, "idx is out of range: ", idx);
@@ -551,6 +533,5 @@ Pose3dDetector::averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipp
         mResults[idx].push_back(result);
     }
 }
-
 
 } // end of namespace aif

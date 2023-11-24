@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dParam.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dParam.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

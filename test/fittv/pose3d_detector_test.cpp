@@ -7,7 +7,7 @@
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/Detector.h>
 #include <aif/base/Descriptor.h>
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -131,7 +131,7 @@ protected:
 
 TEST_F(Pose3dDetectorTest, 01_pose3d_detect_person)
 {
-    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_npu", use_npu_delegate);
+    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v1_npu", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D.tflite");
     auto modelInfo = fd->getModelInfo();
@@ -180,7 +180,7 @@ TEST_F(Pose3dDetectorTest, 02_pose3d_detect_person_video_test)
 {
     test_arr_init();
 
-    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_npu", use_npu_delegate);
+    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v1_npu", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D.tflite");
     auto modelInfo = fd->getModelInfo();

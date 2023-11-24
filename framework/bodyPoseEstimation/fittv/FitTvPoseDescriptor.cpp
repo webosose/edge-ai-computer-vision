@@ -50,9 +50,17 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
         auto pose2d = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
         return addPose2dDetectorResult(nodeId, pose2d);
     }
-    else if (model.rfind("pose3d", 0) == 0) {
+    else if (model.rfind("pose3d_videopose3d_v1", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
         return addPose3dDetectorResult(nodeId, pose3d);
+    }
+    else if (model.rfind("pose3d_videopose3d_v2_pos", 0) == 0) {
+        auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+        return addPose3dDetectorPosResult(nodeId, pose3d);
+    }
+    else if (model.rfind("pose3d_videopose3d_v2_traj", 0) == 0) {
+        auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+        return addPose3dDetectorTrajResult(nodeId, pose3d);
     }
     return false;
 }
@@ -111,6 +119,26 @@ bool FitTvPoseDescriptor::addPose3dDetectorResult(
     m_type.addType(NodeType::INFERENCE);
     return addPose3d(descriptor->getTrackId(),
             descriptor->getPose3dResult(),
+            descriptor->getTrajectory());
+}
+
+bool FitTvPoseDescriptor::addPose3dDetectorPosResult(
+        const std::string& nodeId,
+        const std::shared_ptr<Pose3dDescriptor> descriptor)
+{
+    Logi("addPose3dDetectorResult: ", descriptor->toStr());
+    m_type.addType(NodeType::INFERENCE);
+    return addPose3dPos(descriptor->getTrackId(),
+            descriptor->getPose3dResult());
+}
+
+bool FitTvPoseDescriptor::addPose3dDetectorTrajResult(
+        const std::string& nodeId,
+        const std::shared_ptr<Pose3dDescriptor> descriptor)
+{
+    Logi("addPose3dDetectorResult: ", descriptor->toStr());
+    m_type.addType(NodeType::INFERENCE);
+    return addPose3dTraj(descriptor->getTrackId(),
             descriptor->getTrajectory());
 }
 
@@ -296,6 +324,69 @@ bool FitTvPoseDescriptor::clipKeypointRange(std::vector<float> &pos)
     }
 
     return clipped;
+}
+
+bool FitTvPoseDescriptor::addPose3dPos(
+        int trackId,
+        const std::vector<Joint3D>& joint3ds)
+{
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
+        Loge("not exist bbox");
+        return false;
+    }
+
+    const auto& poses = m_root["poseEstimation"].GetArray();
+
+    int index = trackId - 1;
+    if (trackId <= 0 ||
+        poses.Size() < trackId ||
+        !poses[index].HasMember("id")) {
+        Loge("cannot find trackId: ", trackId);
+        return false;
+    }
+
+    const auto& pose = poses[index].GetObject();
+    rj::Value pose3d(rj::kArrayType);
+    for(auto& pos: joint3ds) {
+        rj::Value joint3d(rj::kArrayType);
+        joint3d.PushBack(pos.x, allocator); // x
+        joint3d.PushBack(pos.y, allocator); // y
+        joint3d.PushBack(pos.z, allocator); // z
+        pose3d.PushBack(joint3d, allocator);
+    }
+    pose.AddMember("joints3D", pose3d, allocator);
+    return true;
+}
+
+bool FitTvPoseDescriptor::addPose3dTraj(
+        int trackId,
+        const Joint3D& trajectory)
+{
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
+        Loge("not exist bbox");
+        return false;
+    }
+
+    const auto& poses = m_root["poseEstimation"].GetArray();
+
+    int index = trackId - 1;
+    if (trackId <= 0 ||
+        poses.Size() < trackId ||
+        !poses[index].HasMember("id")) {
+        Loge("cannot find trackId: ", trackId);
+        return false;
+    }
+
+    const auto& pose = poses[index].GetObject();
+    rj::Value pose3dPos(rj::kArrayType);
+    pose3dPos.PushBack(trajectory.x, allocator); // x
+    pose3dPos.PushBack(trajectory.y, allocator); // y
+    pose3dPos.PushBack(trajectory.z, allocator); // z
+    pose.AddMember("joints3DPosition", pose3dPos, allocator);
+
+    return true;
 }
 
 } // end of namespace aif

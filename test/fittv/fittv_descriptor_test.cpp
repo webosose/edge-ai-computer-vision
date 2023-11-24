@@ -99,7 +99,7 @@ protected:
             std::shared_ptr<Pose3dDescriptor> pd =
                 std::dynamic_pointer_cast<Pose3dDescriptor>(DetectorFactory::get().getDescriptor(pose3dId));
             pd->setTrackId(i);
-            pd->addJoints3D(joints3d, {0.1f, 0.2f, 0.3f});
+            pd->addJointsAndTraj3D(joints3d, {0.1f, 0.2f, 0.3f});
             pds.emplace_back(pd);
         }
         return pds;

@@ -42,8 +42,10 @@ public:
     virtual ~Pose3dDescriptor();
 
     // TODO: implment add result
-    void addJoints3D(const std::vector<Joint3D> &joints3d,
+    void addJointsAndTraj3D(const std::vector<Joint3D> &joints3d,
                      const Joint3D &joint3dPos);
+    void addJoints3D(const std::vector<Joint3D> &joints3d);
+    void addTraj3D(const Joint3D &joint3dPos);
 //    void addJoint3DPos(const Joint3D &joint3dPos);
 
     int getTrackId() const { return m_trackId; }

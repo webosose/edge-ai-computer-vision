@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
                     "operation" : {
                         "type" : "fittv_pose2d_detector",
                         "config": {
-                            "model": "pose2d_resnet_cpu",
+                            "model": "pose2d_resnet_low_cpu",
                             "param": {
                                 "autoDelegate": {
                                     "policy": "MIN_LATENCY"
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
                     "operation" : {
                         "type" : "fittv_pose3d_detector",
                         "config": {
-                            "model": "pose3d_videopose3d_npu",
+                            "model": "pose3d_videopose3d_v1_npu",
                             "param": {
                                 "delegates": [
                                     {

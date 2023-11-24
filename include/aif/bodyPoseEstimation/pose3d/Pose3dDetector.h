@@ -7,8 +7,8 @@
 #define AIF_POSE3D_DETECTOR_H
 
 #include <aif/base/Detector.h>
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dParam.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dParam.h>
 
 #include <vector>
 #include <memory>
