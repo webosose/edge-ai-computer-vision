@@ -51,9 +51,11 @@ t_aif_status Yolov4Detector::fillInputTensor(const cv::Mat& img)/* override*/
 
         cv::Mat img_resized;
         if ( isRoiValid(img.cols, img.rows) ) {
+            m_roiValid = true;
             cv::Mat roi_img = img( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight) );
             img_resized = staticResize(roi_img, width, height);
         } else {
+            m_roiValid = false;
             img_resized = staticResize(img, width, height);
         }
 
@@ -149,7 +151,7 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
         auto off_y = 0.0f;
         auto roi_img_width = img_width;
         auto roi_img_height = img_height;
-        if (isRoiValid(img_width, img_height)) {
+        if ( m_roiValid ) {
             off_x = static_cast<float>( mOrigImgRoiX );
             off_y = static_cast<float>( mOrigImgRoiY );
             roi_img_width = static_cast<float>( mOrigImgRoiWidth );
@@ -169,10 +171,14 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             float y0 = ( ( obj.rect.y ) / scale ) + off_y;
             float x1 = ( ( obj.rect.x + obj.rect.width ) / scale ) + off_x;
             float y1 = ( ( obj.rect.y + obj.rect.height ) / scale ) + off_y;
-            x0 = std::max( std::min( x0, img_width - 1.0f ), 0.f );
-            y0 = std::max( std::min( y0, img_height - 1.0f ), 0.f );
-            x1 = std::max( std::min( x1, img_width - 1.0f ), 0.f );
-            y1 = std::max( std::min( y1, img_height - 1.0f  ), 0.f );
+
+            float roi_img_x1 = roi_img_width + off_x;
+            float roi_img_y1 = roi_img_height + off_y;
+
+            x0 = std::max( std::min( x0, roi_img_x1 - 1.0f ), 0.f );
+            y0 = std::max( std::min( y0, roi_img_y1 - 1.0f ), 0.f );
+            x1 = std::max( std::min( x1, roi_img_x1 - 1.0f ), 0.f );
+            y1 = std::max( std::min( y1, roi_img_y1 - 1.0f  ), 0.f );
 
             auto score = obj.prob;
             obj.rect.x = x0;
@@ -220,6 +226,12 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             yolov4Descriptor->addPerson(after_filtered[i].second, after_filtered[i].first);
         }
         free(outConcatTensor_deq);
+
+        if (m_roiValid) {
+            yolov4Descriptor->addRoiRect( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight), true );
+        } else {
+            yolov4Descriptor->addRoiRect( cv::Rect(0,0,0,0), false );
+        }
 
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();

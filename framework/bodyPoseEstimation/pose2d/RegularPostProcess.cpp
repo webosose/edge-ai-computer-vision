@@ -26,7 +26,7 @@ bool RegularPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float*
         delete [] buffer;
         return false;
     }
-    
+
     delete [] buffer;
     return true;
 }
@@ -52,7 +52,6 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         float y = ((float)argMaxIndex / (float)m_heatMapWidth);
     //--------------------------------------------
 #if defined(GAUSSIANDARK)
-        Logd("GaussianDark!!!");
         gaussianDark(heatMap, x, y);
 #endif
         if (m_useUDP) {

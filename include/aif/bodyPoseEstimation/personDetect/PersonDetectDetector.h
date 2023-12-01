@@ -13,7 +13,8 @@ public:
                      , mOrigImgRoiX(0)
                      , mOrigImgRoiY(0)
                      , mOrigImgRoiWidth(0)
-                     , mOrigImgRoiHeight(0) {}
+                     , mOrigImgRoiHeight(0)
+                     , m_roiValid(false) {}
     virtual ~PersonDetector() {}
 
 protected:
@@ -30,6 +31,7 @@ protected:
     int mOrigImgRoiY;
     int mOrigImgRoiWidth;
     int mOrigImgRoiHeight;
+    bool m_roiValid;
 };
 
 }; // end of namespace aif

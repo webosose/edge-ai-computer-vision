@@ -44,6 +44,8 @@ class FitTvPoseDescriptor : public PipeDescriptor
         void addPose3dInput(const cv::Mat& input) { m_pose3dInputs.push_back(input); }
 
         const std::vector<BBox>& getBboxes() const { return m_boxes; }
+        const cv::Rect& getRoiRect() const { return m_roiRect; }
+        bool isRoiValid() const { return m_roiValid; }
         const std::vector<BBox>& getCropBbox() const { return m_cropBox; }
         const std::vector<cv::Rect>& getCropRects() const { return m_cropRects; }
         const std::vector<cv::Mat>& getCropImages() const { return m_cropImgs; }
@@ -103,15 +105,19 @@ class FitTvPoseDescriptor : public PipeDescriptor
                 const std::shared_ptr<Pose3dDescriptor> descriptor);
 
         bool addBBox(float scroe, const BBox& box);
+        bool addRoi(const cv::Rect& rect);
         bool addCropRect(int trackId, const cv::Rect& rect);
         bool addPose2d(int trackId, const std::vector<std::vector<float>>& keyPoints);
         bool addPose3d(int trackId,
                 const std::vector<Joint3D>& keyPoints,
                 const Joint3D& trajectory);
+        bool clipKeypointRange(std::vector<float> &pos);
 
     private:
         int m_trackId;
         std::vector<BBox> m_boxes;
+        cv::Rect m_roiRect;
+        bool m_roiValid;
         std::vector<BBox> m_cropBox;
         std::vector<cv::Rect> m_cropRects;
         std::vector<cv::Mat> m_cropImgs;

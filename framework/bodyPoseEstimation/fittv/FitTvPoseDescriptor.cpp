@@ -17,6 +17,7 @@ namespace aif {
 FitTvPoseDescriptor::FitTvPoseDescriptor()
 : PipeDescriptor()
 , m_trackId(1)
+, m_roiValid(false)
 {
 }
 
@@ -82,6 +83,14 @@ bool FitTvPoseDescriptor::addPersonDetectorResult(
             return false;
         }
     }
+    // ROI !
+    if (descriptor->isRoiValid()) {
+        m_roiRect = descriptor->getRoiRect();
+        m_roiValid = true;
+    } else {
+        m_roiValid = false;
+    }
+
     return true;
 }
 
@@ -188,16 +197,29 @@ bool FitTvPoseDescriptor::addPose2d(int trackId, const std::vector<std::vector<f
     const auto& pose = poses[index].GetObject();
     rj::Value pose2d(rj::kArrayType);
 
+    int numClipped = 0;
     for(auto& pos: m_keyPoints[index]) {
         if (index < m_cropRects.size()) {
             pos[1] += m_cropRects[index].x;
             pos[2] += m_cropRects[index].y;
+        }
+        if (m_roiValid && clipKeypointRange(pos)) {
+            numClipped++;
         }
         rj::Value keyPoint(rj::kArrayType);
         keyPoint.PushBack(static_cast<int>(pos[1]), allocator); // x
         keyPoint.PushBack(static_cast<int>(pos[2]), allocator); // y
         keyPoint.PushBack(pos[0], allocator); // score
         pose2d.PushBack(keyPoint, allocator);
+    }
+
+    if (numClipped > 0) {
+        Logi(__func__, " ", numClipped , " keypoint are clipped by ROI");
+    }
+
+    if (numClipped == m_keyPoints[index].size()) {
+        Logi(__func__, " all keypoints are out of ROI range.");
+        return false;
     }
 
     pose.AddMember("joints2D", pose2d, allocator);
@@ -243,6 +265,37 @@ bool FitTvPoseDescriptor::addPose3d(
     pose.AddMember("joints3DPosition", pose3dPos, allocator);
 
     return true;
+}
+
+bool FitTvPoseDescriptor::clipKeypointRange(std::vector<float> &pos)
+{
+    bool clipped = false;
+
+    /* check x */
+    if (pos[1] < m_roiRect.x) {
+        pos[1] = m_roiRect.x;
+        clipped = true;
+    }
+    if (pos[1] >= m_roiRect.x + m_roiRect.width) {
+        pos[1] = m_roiRect.x + m_roiRect.width - 1;
+        clipped = true;
+    }
+
+    /* check y */
+    if (pos[2] < m_roiRect.y) {
+        pos[2] = m_roiRect.y;
+        clipped = true;
+    }
+    if (pos[2] >= m_roiRect.y + m_roiRect.height) {
+        pos[2] = m_roiRect.y + m_roiRect.height - 1;
+        clipped = true;
+    }
+
+    if (clipped) {
+        pos[0] = -1.0; // score -1.0
+    }
+
+    return clipped;
 }
 
 } // end of namespace aif

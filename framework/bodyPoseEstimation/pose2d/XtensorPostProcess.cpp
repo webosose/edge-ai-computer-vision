@@ -48,7 +48,6 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
     xt::xarray<float> coords = xt::stack(xt::xtuple(x, y), 2);
 
 #if defined(GAUSSIANDARK)
-    Logd("GaussianDark!!!");
     gaussianDark(batchHeatmaps, coords); // getFinalPredsNotransform
 #endif
     for (auto i = 0; i < m_numInputs; i++) { // batch = 1

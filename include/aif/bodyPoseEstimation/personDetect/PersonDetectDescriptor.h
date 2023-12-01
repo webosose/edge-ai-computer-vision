@@ -25,15 +25,20 @@ public:
 
     size_t size() const { return m_personCount; }
 
+    void addRoiRect(const cv::Rect &roi, bool valid) { m_roiRect = roi; m_roiValid = valid; }
     int getNumBbox() const { return m_boxes.size(); }
     float getScore(int index) const { return m_scores[index]; }
     const BBox& getBbox(int index) const { return m_boxes[index]; }
+    const cv::Rect& getRoiRect() const { return m_roiRect; }
     bool isBodyDetect() { return m_IsBodyDetect; }
+    bool isRoiValid() { return m_roiValid; }
 
 protected:
     size_t m_personCount;
-	std::vector<BBox> m_boxes;              // boxes in image coordinates
-	std::vector<float> m_scores;            // confidence for each box detection
+    std::vector<BBox> m_boxes;              // boxes in image coordinates
+    std::vector<float> m_scores;            // confidence for each box detection
+    cv::Rect m_roiRect;
+    bool m_roiValid;
     bool m_IsBodyDetect;
 };
 

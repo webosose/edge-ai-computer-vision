@@ -68,9 +68,11 @@ t_aif_status Yolov3V1Detector::fillInputTensor(const cv::Mat& img)/* override*/
 
         cv::Mat img_resized;
         if ( isRoiValid(img.cols, img.rows) ) {
+            m_roiValid = true;
             cv::Mat roi_img = img( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight) );
             getPaddedImage(roi_img, img_resized);
         } else {
+            m_roiValid = false;
             getPaddedImage(img, img_resized);
         }
 
@@ -228,6 +230,13 @@ t_aif_status Yolov3V1Detector::postProcessing(const cv::Mat& img, std::shared_pt
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
         }
+
+        if (m_roiValid) {
+            yolov3V1Descriptor->addRoiRect( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight), true );
+        } else {
+            yolov3V1Descriptor->addRoiRect( cv::Rect(0,0,0,0), false );
+        }
+
         m_frameId++;
         m_prevBboxList = finalBboxList;
         TRACE("postProcessing(): ", sw.getMs(), "ms");
@@ -290,7 +299,7 @@ void Yolov3V1Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_resul
     auto roi_img_width = img_width;
     auto roi_img_height = img_height;
 
-    if (isRoiValid(img_width, img_height)) {
+    if ( m_roiValid ) {
         off_x = static_cast<float>( mOrigImgRoiX );
         off_y = static_cast<float>( mOrigImgRoiY );
         roi_img_width = static_cast<float>( mOrigImgRoiWidth );
@@ -330,10 +339,12 @@ void Yolov3V1Detector::transform2OriginCoord(const cv::Mat& img, t_pqe_obd_resul
         int x1 = ( (result.pos_x1[i] - m_leftBorder) / m_ImgResizingScale ) + off_x;
         int y1 = ( (result.pos_y1[i] - m_topBorder )/ m_ImgResizingScale ) + off_y;
 
-        result.pos_x0[i] = std::max( std::min( x0, img_width - 1 ), 0 );
-        result.pos_y0[i] = std::max( std::min( y0, img_height - 1 ), 0 );
-        result.pos_x1[i] = std::max( std::min( x1, img_width - 1 ), 0 );
-        result.pos_y1[i] = std::max( std::min( y1, img_height - 1 ), 0 );
+        int roi_img_x1 = roi_img_width + off_x;
+        int roi_img_y1 = roi_img_height + off_y;
+        result.pos_x0[i] = std::max(std::min(x0, roi_img_x1 - 1), 0);
+        result.pos_y0[i] = std::max(std::min(y0, roi_img_y1 - 1), 0);
+        result.pos_x1[i] = std::max(std::min(x1, roi_img_x1 - 1), 0);
+        result.pos_y1[i] = std::max(std::min(y1, roi_img_y1 - 1), 0);
     }
 
     TRACE("-------------AFTER--------------");
