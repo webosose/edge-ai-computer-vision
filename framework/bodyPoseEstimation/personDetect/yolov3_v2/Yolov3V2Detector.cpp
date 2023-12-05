@@ -221,7 +221,7 @@ t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat &img, std::shared_pt
                 }
             } else {
                 /* normalize 0~1 */
-                Logi("Faces: ", score, ", ",finalBbox.width, ", ", finalBbox.height, ", ");
+                Logd("Faces: ", score, ", ",finalBbox.width, ", ", finalBbox.height, ", ");
                 yolov3Descriptor->addFace(score,
                                         finalBbox.xmin / img.cols, finalBbox.ymin / img.rows,
                                         finalBbox.width / img.cols, finalBbox.height / img.rows,

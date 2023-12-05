@@ -56,24 +56,20 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         std::dynamic_pointer_cast<RppgInferencePipeDescriptor>(input->getDescriptor());
 
     std::vector<float> outputs = const_cast<std::vector<float>&> (fdescriptor->getRppgOutputs());
-    // const auto& outputs =fdescriptor->getRppgOutputs();
-    int out_batch = fdescriptor->getBatchSize();
-    int out_channel = fdescriptor->getChannelSize();
-    // convert vector to xtensor array
-    std::vector<int> output_shape = {out_batch, out_channel};
-    xt::xarray<float> gg = xt::adapt(outputs.data(), out_batch * out_channel, xt::no_ownership(), output_shape); // [400]
-    xt::xarray<double> double_gg = xt::cast<double>(gg);
-    double_gg = double_gg.reshape({out_channel});
+    // memoryDump(outputs.data(), "./swp_output.bin", 400 * sizeof(float));
+    // memoryRestore(outputs.data(), "./air_output.bin");
+    // std::cout << "OutputTensors: " << std::endl;
+    // for(int i=0; i< 400; i++){
+    //     std::cout <<"Checking output: "<<i <<", " << outputs[i]<< std::endl;
+    // }
 
+    std::vector<int> output_shape = {static_cast<int>(outputs.size())};
+    xt::xarray<float> gg = xt::adapt(outputs.data(), output_shape); // [400]
+    xt::xarray<double> double_gg = xt::cast<double>(gg);
     xt::xarray<double> yy;
     bpfFiltFilt(double_gg, yy); // [400]
 
     auto HR_info = aeRealtimeHRCal(yy);
-    std::cout << "checking Before HR: " << HR_info << std::endl;
-    std::cout << "checking heartrateArray Size: " << m_heartrateArray.size() << std::endl;
-
-    for(int i=0; i<m_heartrateArray.size(); i++) std::cout << m_heartrateArray[i] << std::endl;
-
     if (m_countHr < m_heartrateArraySize) m_countHr += 1;
 
     m_heartrateArray.pop_front();
@@ -87,7 +83,6 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         auto currHR = median(p_m_heartrateArray);
 
         float diffHR = m_avgHeartrate - currHR;
-        std::cout << "checking diffHR: " << diffHR << std::endl;
         if (diffHR > HR_variation_th) {
             std::cout << "limit step to 5 BPM" << std::endl;
             m_avgHeartrate -= HR_variation_th;
@@ -113,9 +108,7 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     m_avgHeartrate = sumHeartrateArray2 / m_countHr2;
 
     HR_info = m_avgHeartrate + 0.5;
-    // std::cout << "Try this" << std::endl;
-    // memoryDump(&HR_info, "./HR_result_3m.bin", sizeof(float));
-    // std::cout << "END" << std::endl;
+    // memoryDump(&HR_info, "./swp_hr_result.bin", sizeof(float));
 
     fdescriptor->addRppgFinalResult(HR_info, m_signalCondition);
     return true;

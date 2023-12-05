@@ -67,7 +67,7 @@ cv::Rect FaceCropOperation::getCropRect(const std::shared_ptr<NodeInput>& input)
     cropRect.width = faceW * 1.5 < imgSize.width ? faceW * 1.5 : imgSize.width;
     cropRect.height = faceH * 1.5 < imgSize.height ? faceH * 1.5 : imgSize.height;
 
-    Logi(m_id, ": rect ", cropRect);
+    Logd(m_id, ": rect ", cropRect);
     return cropRect;
 }
 

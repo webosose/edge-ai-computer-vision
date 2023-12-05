@@ -44,7 +44,7 @@ bool RppgInferencePipeDescriptor::addDetectorOperationResult(
         const std::string& model,
         const std::shared_ptr<Descriptor>& descriptor)
 {
-    if (model.rfind("rppg_cpu", 0) == 0) {
+    if (model.rfind("rppg", 0) == 0) {
         auto rppg = std::dynamic_pointer_cast<RppgDescriptor>(descriptor);
         return appendRppg(nodeId, rppg);
     }
@@ -63,9 +63,7 @@ bool RppgInferencePipeDescriptor::appendRppg(
     }
     else {
         const auto& rppgs = descriptor->getRppg();
-        for (int i = 0; i < descriptor->getRppgSize(); i++) m_rppgOutputs.push_back(rppgs[i]);
-        m_batchSize = descriptor->getBatchSize();
-        m_channelSize = descriptor->getChannelSize();
+        m_rppgOutputs.insert(m_rppgOutputs.end(), rppgs.begin(), rppgs.end());
     }
     return true;
 }
@@ -73,8 +71,7 @@ bool RppgInferencePipeDescriptor::appendRppg(
 bool RppgInferencePipeDescriptor::addRppgFinalResult(float bpm, std::string signalCondition)
 {
     rj::Document::AllocatorType &allocator = m_root.GetAllocator();
-    if (!m_root.HasMember("rPPG"))
-    {
+    if (!m_root.HasMember("rPPG")) {
         rj::Value rPPG(rj::kArrayType);
         m_root.AddMember("rPPG", rPPG, allocator);
     }

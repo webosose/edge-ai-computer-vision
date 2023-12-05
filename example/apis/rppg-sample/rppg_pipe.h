@@ -113,11 +113,6 @@ public:
                 mat.at<double>(i, j) = temp[i][j];
         }
 
-        for (int i = 0; i < 15; i++)
-        {
-            m_queue.pop();
-        }
-
         return std::make_pair<int, cv::Mat>(std::move(id), std::move(mat));
     }
 
