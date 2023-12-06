@@ -24,6 +24,7 @@ BgSegmentParam::BgSegmentParam()
     , origImgRoiHeight(0)
     , outScaleUp(true) // default : AI Framework scale up the out image.
     , smoothing(true)
+    , th_mad4(8.0)
 {
 }
 
@@ -36,6 +37,7 @@ BgSegmentParam::BgSegmentParam(const BgSegmentParam &other)
     , origImgRoiHeight(other.origImgRoiHeight)
     , outScaleUp(other.outScaleUp)
     , smoothing(other.smoothing)
+    , th_mad4(other.th_mad4)
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -47,6 +49,7 @@ BgSegmentParam::BgSegmentParam(BgSegmentParam &&other) noexcept
     , origImgRoiHeight(std::move(other.origImgRoiHeight))
     , outScaleUp(std::move(other.outScaleUp))
     , smoothing(std::move(other.smoothing))
+    , th_mad4(std::move(other.th_mad4))
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -64,6 +67,7 @@ BgSegmentParam& BgSegmentParam::operator=(const BgSegmentParam& other)
     origImgRoiHeight = other.origImgRoiHeight;
     outScaleUp = other.outScaleUp;
     smoothing = other.smoothing;
+    th_mad4 = other.th_mad4;
 
     return *this;
 }
@@ -81,6 +85,7 @@ BgSegmentParam& BgSegmentParam::operator=(BgSegmentParam&& other) noexcept
     origImgRoiHeight = std::move(other.origImgRoiHeight);
     outScaleUp = std::move(other.outScaleUp);
     smoothing = std::move(other.smoothing);
+    th_mad4 = std::move(other.th_mad4);
 
     return *this;
 }
@@ -92,7 +97,8 @@ bool BgSegmentParam::operator==(const BgSegmentParam &other) const {
         (origImgRoiWidth == other.origImgRoiWidth) &&
         (origImgRoiHeight == other.origImgRoiHeight) &&
         (outScaleUp == other.outScaleUp) &&
-        (smoothing == other.smoothing));
+        (smoothing == other.smoothing) &&
+        (th_mad4 == other.th_mad4));
 }
 
 bool BgSegmentParam::operator!=(const BgSegmentParam &other) const {
@@ -108,6 +114,7 @@ std::ostream &operator<<(std::ostream &os, const BgSegmentParam &fp) {
     os << "\torigImgRoiHeight: " << fp.origImgRoiHeight << ",\n";
     os << "\toutScaleUp: " << fp.outScaleUp << ",\n";
     os << "\tsmoothing: " << fp.smoothing << ",\n";
+    os << "\tth_mad4: " << fp.th_mad4 << ",\n";
 
     os << "}";
     return os;
@@ -143,6 +150,9 @@ t_aif_status BgSegmentParam::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("smoothing")) {
             smoothing = modelParam["smoothing"].GetBool();
+        }
+        if (modelParam.HasMember("th_mad4")) {
+            th_mad4 = modelParam["th_mad4"].GetFloat();
         }
     }
 

@@ -39,6 +39,7 @@ class BgSegmentParam : public DetectorParam {
     int origImgRoiHeight;
     bool outScaleUp;
     bool smoothing;
+    float th_mad4;
 };
 
 } // end of namespace aif

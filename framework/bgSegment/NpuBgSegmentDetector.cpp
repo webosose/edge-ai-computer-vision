@@ -20,6 +20,7 @@ NpuBgSegmentDetector::NpuBgSegmentDetector()
     , m_useRoi(false)
     , m_outScaleUp(true) // default : AI Framework scale up the out image.
     , m_smoothing(true)
+    , m_th_mad4(8.0)
     , BgSegmentDetector("O24_SIC_SEG_v3.0_231025.tflite") {}
 
 
@@ -102,8 +103,9 @@ t_aif_status NpuBgSegmentDetector::preProcessing()
         m_outScaleUp = param->outScaleUp;
         m_smoothing = param->smoothing;
         m_roiRect = {param->origImgRoiX, param->origImgRoiY, param->origImgRoiWidth, param->origImgRoiHeight};
+        m_th_mad4 = param->th_mad4;
 
-        TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp);
+        TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp, " th_mad4: ", m_th_mad4);
         TRACE(" m_roiRect isss ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
         return kAifOk;
     } catch (const std::exception& e) {
@@ -233,8 +235,10 @@ std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t
 
 std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::Mat &transformed_map)
 {
-    const float th_mad[4] = {0.2, 0.5, 1.0, 8};
+    float th_mad[4] = {0.2, 0.5, 1.0, 8};
     const float alpha_lut[5] = {0.95, 0.9, 0.8, 0.5, 0.0};
+
+    th_mad[3] = m_th_mad4;
 
     const float scale = 4.0; // controls sharpness of the boundary
     const float bias = -384; // -256: thick | -384: thin

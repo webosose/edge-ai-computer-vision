@@ -40,6 +40,7 @@ class NpuBgSegmentDetector : public BgSegmentDetector {
     bool m_useRoi;
     bool m_outScaleUp;
     bool m_smoothing;
+    float m_th_mad4;
     cv::Mat m_prevImg;
     cv::Mat m_accumulatedMap;
 };
