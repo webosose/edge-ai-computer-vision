@@ -21,7 +21,7 @@ NpuBgSegmentDetector::NpuBgSegmentDetector()
     , m_outScaleUp(true) // default : AI Framework scale up the out image.
     , m_smoothing(true)
     , m_th_mad4(8.0)
-    , BgSegmentDetector("O24_SIC_SEG_v3.0_231025.tflite") {}
+    , BgSegmentDetector("O24_SIC_SEG_veri_v531.tflite") {}
 
 
 NpuBgSegmentDetector::~NpuBgSegmentDetector() {}
@@ -35,8 +35,8 @@ void NpuBgSegmentDetector::setModelInfo(TfLiteTensor* inputTensor)
 
     m_modelInfo.inputSize = inputTensor->dims->size;   // inputSize
     m_modelInfo.batchSize = 1;
-    m_modelInfo.height = inputTensor->dims->data[0]; // 270
-    m_modelInfo.width = inputTensor->dims->data[1];  // 480
+    m_modelInfo.height = inputTensor->dims->data[0]; // 270 > 288 (after v5.0)
+    m_modelInfo.width = inputTensor->dims->data[1];  // 480 > 256 (after v5.0)
     m_modelInfo.channels = inputTensor->dims->data[2]; // 3
 
     TRACE("input_size: ", m_modelInfo.inputSize);
@@ -134,14 +134,14 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
     if (m_outScaleUp) {
         if (m_smoothing) {
             maskSize = getMask(width, height, output->data.uint8);
-            //TRACE(__func__, " getMask size: ", maskSize.first, maskSize.second);
+            //TRACE(__func__, " getMask size: ", maskSize.first, "x", maskSize.second);
             cv::Mat sm_Mask;
             if (m_useRoi) {
                 maskSize = smoothingMask(img( m_roiRect ), sm_Mask);
             } else {
                 maskSize = smoothingMask(img, sm_Mask);
             }
-            // TRACE(__func__, " smoothingMask size: ", maskSize.first, "x", maskSize.second);
+             //TRACE(__func__, " smoothingMask size: ", maskSize.first, "x", maskSize.second);
             m_scaledUpMask = sm_Mask.reshape(1, 1);
             /////// type = ExtraOutputType::FLOAT_ARRAY;
         } else {
@@ -174,14 +174,16 @@ std::pair<int, int>
 NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg)
 {
     // temporary
-    // 1. => 135 x 240. remove SIC row padding
-    cv::Mat padOffData(135, width, CV_8UC1, srcData);
+    // 1. => 288 x 256. (h:w = 9:8)
+    cv::Mat padOffData(height, width, CV_8UC1, srcData);
     //cv::imwrite("./padOffData.jpg", padOffData);
 
-    // 2. => 270 x 480. x 4 scaled up to model input
-    cv::Mat resizedData;
-    cv::resize(padOffData, resizedData, cv::Size(m_modelInfo.width, m_modelInfo.height), 0, 0, cv::INTER_LINEAR);
-    //cv::imwrite("./resizedToInput.jpg", resizedData);
+    cv::Mat resizedData = padOffData;
+    if (height != m_modelInfo.height || width != m_modelInfo.width) { // if input != output tensor size,
+        // 2. => scaled up to model input
+        cv::resize(padOffData, resizedData, cv::Size(m_modelInfo.width, m_modelInfo.height), 0, 0, cv::INTER_LINEAR);
+        //cv::imwrite("./resizedToInput.jpg", resizedData);
+    }
 
     // 3. => (h x 480 or 270 x w). remove padding
     cv::Rect bound(m_paddingInfo.leftBorder, m_paddingInfo.topBorder,
@@ -192,12 +194,12 @@ NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const
 
     std::pair<int, int> maskSize;
     if (m_useRoi) {
-    // 4. => roi rect. scale up to roi size.
-    // TODO: ?? release memory ??
+        // 4. => roi rect. scale up to roi size.
+        // TODO: ?? release memory ??
         cv::resize(results, m_scaledUpMask, cv::Size(m_roiRect.width, m_roiRect.height), 0, 0, cv::INTER_LINEAR);
         maskSize = std::make_pair(m_roiRect.width, m_roiRect.height);
     } else {
-    // 4. => original img rect. scale up to original img size.
+        // 4. => original img rect. scale up to original img size.
         cv::resize(results, m_scaledUpMask, cv::Size(origImg.cols, origImg.rows), 0, 0, cv::INTER_LINEAR);
         maskSize = std::make_pair(origImg.cols, origImg.rows);
     }
@@ -212,12 +214,12 @@ NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const
 std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t* srcData)
 {
     // temporary
-    // 1. => 135 x 240. remove SIC row padding
-    cv::Mat padOffData(135, width, CV_8UC1, srcData);
+    // 1. => 288 x 256 (h:w = 9:8)
+    cv::Mat padOffData(height, width, CV_8UC1, srcData);
     //cv::imwrite("./padOffData.jpg", padOffData);
 
-    float scaleW = static_cast<float>(width) / m_modelInfo.width; // out/in ratio 135/270 = 0.5
-    float scaleH = 135.0 / m_modelInfo.height; // out/in ratio 240/480 = 0.5
+    float scaleW = static_cast<float>(width) / m_modelInfo.width; // out/in ratio 1
+    float scaleH = static_cast<float>(height) / m_modelInfo.height; // out/in ratio 1
     //TRACE(__func__, " scaleW: ", scaleW, " scaleH: " , scaleH);
 
     // 2. => l/r/t/b padding off in 135 x 240. remove SWP padding.
@@ -243,17 +245,18 @@ std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::
     const float scale = 4.0; // controls sharpness of the boundary
     const float bias = -384; // -256: thick | -384: thin
 
-    const cv::Size diff_size(240, 270);
+    //const cv::Size diff_size(240, 270); v3
+    const cv::Size diff_size(256, 288); // v5 w,h
     //cv::Mat transformed_map;
     cv::Mat resized_map;
 
     cv::Mat resized_image;
 
-    // 640 x 720 fg image > 240 x 720 fg_image
+    // 640 x 720 fg image > 256 x 288 fg_image
     cv::resize(img, resized_image, diff_size);
-    // cv::imwrite("./resized_image.jpg", resized_image);
+     //cv::imwrite("./resized_image.jpg", resized_image);
 
-    // segmap : 120 x 135.
+    // segmap : 288 x 256. (h x w)
     cv::Mat segmap = m_Mask;
 
     // compute the mean of absolute differences
@@ -279,15 +282,19 @@ std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::
     segmap.convertTo(segmap, CV_32F);
 
     // If this is the first image, initialize the accumulated image
+#if 1
     if (m_accumulatedMap.empty()) {
         m_accumulatedMap = segmap.clone();
     } else {
         // Apply the moving average
         cv::addWeighted(m_accumulatedMap, alpha, segmap, beta, 0.0, m_accumulatedMap);
     }
+#else
+    m_accumulatedMap = segmap.clone();
+#endif
 
     // Resize the segmentation map
-    // accum_map (120 x 135) >> 640 x 720(resized_map)
+    // accum_map (256 x 288) >> 640 x 720(resized_map)
     cv::resize(m_accumulatedMap, resized_map, cv::Size(img.cols, img.rows));
     //cv::imwrite("./resized_map_640_720.jpg", resized_map);
 
