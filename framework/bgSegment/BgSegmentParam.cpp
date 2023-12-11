@@ -24,7 +24,7 @@ BgSegmentParam::BgSegmentParam()
     , origImgRoiHeight(0)
     , outScaleUp(true) // default : AI Framework scale up the out image.
     , smoothing(true)
-    , th_mad4(8.0)
+    , th_mad4(1.5)
 {
 }
 

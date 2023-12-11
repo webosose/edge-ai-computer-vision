@@ -20,7 +20,7 @@ NpuBgSegmentDetector::NpuBgSegmentDetector()
     , m_useRoi(false)
     , m_outScaleUp(true) // default : AI Framework scale up the out image.
     , m_smoothing(true)
-    , m_th_mad4(8.0)
+    , m_th_mad4(1.5)
     , BgSegmentDetector("O24_SIC_SEG_veri_v531.tflite") {}
 
 
