@@ -35,6 +35,12 @@ void PipeDescriptor::setImage(const cv::Mat& image)
     m_image = image;
 }
 
+void PipeDescriptor::copyImage(const cv::Mat& image)
+{
+    m_type.addType(NodeType::IMAGE);
+    m_image = image.clone();
+}
+
 const NodeType& PipeDescriptor::getType() const
 {
     return m_type;

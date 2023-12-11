@@ -32,6 +32,7 @@ class PipeDescriptor : public Descriptor {
         void setStartTimestamp(int64_t timestamp);
 
         void setImage(const cv::Mat& image);
+        void copyImage(const cv::Mat& image);
         const NodeType& getType() const;
         const cv::Mat& getImage() const;
 

@@ -278,7 +278,7 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
 
     // memoryDump(cv_reshapeData.data, "./swp_input.bin", 1* 400 * 2*sizeof(float));
     // memoryRestore(cv_reshapeData.data, "./face_rgb_3m_231114.bin");
-    descriptor->setImage(cv_reshapeData);
+    descriptor->copyImage(cv_reshapeData);
 
     return true;
 }
