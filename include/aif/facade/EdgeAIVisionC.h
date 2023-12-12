@@ -19,11 +19,13 @@ extern "C"
 
 /// Detector Type enum
 enum DetectorType {
-    FACE = 0,     ///< Face Detector (Default Model: face short range)
-    POSE,         ///< Pose Detector (Default Model: posenet)
-    SEGMENTATION, ///< Segmentation Detector (Default Model: mediapipe
-                  ///< selfie)
-    TEXT,         ///< Text Detector (Default Model: paddleocr)
+    FACE = 0,           ///< Face Detector (Default Model: face short range)
+    POSE,               ///< Pose Detector (Default Model: posenet)
+    SEGMENTATION,       ///< Segmentation Detector (Default Model: mediapipe
+                        ///< selfie)
+    TEXT,               ///< Text Detector (Default Model: paddleocr)
+    SIGNLANGUAGEAREA,   ///< Sign Language Area Detector (Default Model:
+                        ///< yolov5n custom)
 };
 
 /**

@@ -13,6 +13,7 @@
 #define DEFAULT_POSE_MODEL "posenet_mobilenet_cpu"
 #define DEFAULT_SEGMENTATION_MODEL "selfie_mediapipe_cpu"
 #define DEFAULT_TEXT_MODEL "text_paddleocr_320_v2"
+#define DEFAULT_SIGNLANGUAGEAREA_MODEL "signlanguagearea_model_cpu"
 
 namespace aif {
 namespace rj = rapidjson;
@@ -61,6 +62,8 @@ std::string EdgeAIVision::getDefaultModel(DetectorType type) const {
         model = DEFAULT_SEGMENTATION_MODEL;
     } else if (type == DetectorType::TEXT) {
         model = DEFAULT_TEXT_MODEL;
+    } else if (type == DetectorType::SIGNLANGUAGEAREA) {
+        model = DEFAULT_SIGNLANGUAGEAREA_MODEL;
     }
     return model;
 }
