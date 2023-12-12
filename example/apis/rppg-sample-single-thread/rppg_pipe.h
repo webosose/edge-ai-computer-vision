@@ -21,9 +21,15 @@
 #include <queue>
 #include <string>
 #include <thread>
+#include <rapidjson/document.h>
+#include <fstream>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 namespace aif
 {
+namespace rj = rapidjson;
 
 using OnRppgResult = std::function<void(int id, const std::string &json)>;
 
@@ -90,6 +96,70 @@ public:
             return std::make_pair(id, cv::Mat());
         }
         std::vector<std::vector<double>> temp;
+        /*
+        // Get GT RGBI-------------------------------------------------------------------------------------------------
+        int curr_id = (m_queue.back().id - 120) / 15 + 1;
+        rj::Document doc;
+        // Read with gt rgbi
+        std::string gt_rgbi  = "./rgbi.json";
+        std::ifstream ifs(gt_rgbi);
+        if (!ifs.is_open()) {
+            std::cout << "failed to read file : " << gt_rgbi << std::endl;
+        }
+        std::string pyRe;
+        std::string line_py;
+        while (getline(ifs, line_py)){
+            pyRe.append("\n");
+            pyRe.append(line_py);
+        }
+
+        doc.Parse(pyRe.c_str());
+        std::vector<MeshData> input_rbgi;
+        for (auto& values : doc.GetObject())
+        {
+            if(std::stoi(values.name.GetString()) == curr_id)
+            {
+                int count =0;
+                MeshData meshd;
+                for (auto& nums : values.value.GetArray())
+                {
+                    if (count >= 4) count = 0;
+                    if (count == 0) meshd.meshR = nums.GetDouble();
+                    else if(count == 1) meshd.meshG = nums.GetDouble();
+                    else if(count == 2) meshd.meshB = nums.GetDouble();
+                    else {
+                        meshd.frameTime = nums.GetDouble();
+                        input_rbgi.push_back(meshd);
+                    }
+                    count++;
+                }
+            }
+        }
+
+        // for(int i=0; i < input_rbgi.size(); i++){
+        //     std::cout << input_rbgi[i].frameTime <<", "<< input_rbgi[i].meshR <<", "<< input_rbgi[i].meshG <<", "<< input_rbgi[i].meshB <<std::endl;
+        // }
+        for (size_t i = 0; i < m_queue.size(); i++)
+        {
+            std::vector<double> meshData;
+            auto data = std::move(m_queue.front());
+            auto data2 = std::move(input_rbgi[i]);
+            data2.id = data.id;
+            m_queue.pop();
+
+            id = data.id;
+            meshData.push_back(input_rbgi[i].frameTime);
+            meshData.push_back(input_rbgi[i].meshR);
+            meshData.push_back(input_rbgi[i].meshG);
+            meshData.push_back(input_rbgi[i].meshB);
+            temp.push_back(meshData);
+
+            m_queue.push(std::move(data2));
+        }
+        // -------------------------------------------------------------------------------------------------
+        */
+
+        // /*
         for (size_t i = 0; i < m_queue.size(); i++)
         {
             std::vector<double> meshData;
@@ -105,6 +175,7 @@ public:
 
             m_queue.push(std::move(data));
         }
+        // */
 
         cv::Mat mat(temp.size(), 4, CV_64F);
         for (size_t i = 0; i < temp.size(); i++)

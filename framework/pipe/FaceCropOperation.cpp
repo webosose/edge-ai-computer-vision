@@ -64,7 +64,7 @@ cv::Rect FaceCropOperation::getCropRect(const std::shared_ptr<NodeInput>& input)
     // add 25% padding
     cropRect.x = faceX - faceW * 0.25 > 0 ? faceX - faceW * 0.25 : 0;
     cropRect.y = faceY - faceH * 0.25 > 0 ? faceY - faceH * 0.25 : 0;
-    cropRect.width = faceW * 1.5 < imgSize.width ? faceW * 1.5 : imgSize.width;
+    cropRect.width =  faceW * 1.5 < imgSize.width  ? faceW * 1.5 : imgSize.width;
     cropRect.height = faceH * 1.5 < imgSize.height ? faceH * 1.5 : imgSize.height;
 
     Logd(m_id, ": rect ", cropRect);

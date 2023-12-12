@@ -8,6 +8,8 @@
 
 #include <aif/pipe/BridgeOperation.h>
 #include <aif/pipe/NodeOperationFactoryRegistration.h>
+#include <aif/rppg/AeRealtimeHRCalAvg.h>
+
 
 #include <xtensor/xarray.hpp>
 #include <xtensor/xcomplex.hpp>
@@ -27,24 +29,29 @@ class RppgPostProcessOperation : public BridgeOperation {
         bool runImpl(const std::shared_ptr<NodeInput>& input) override;
     protected:
         int getButterBPFParam(xt::xarray<double>& b, xt::xarray<double>& a, uint8_t nOption = 1);
+        double checkHRVarLimit(double curr_HR, double prev_HR, int limit_th);
         int bpfFiltFilt(xt::xarray<double>& data, xt::xarray<double>& filtered_sig);
-        float aeRealtimeHRCal(xt::xarray<double>& sigArray);
-        xt::xarray<double> hannCal(int len);
-        xt::xarray<double> rfftFreqCal(int n, float d);
-        int rfft1024(xt::xarray<double>& pInput_buff, xt::xarray<std::complex<double>>& pOutput_buff);
-        float median(std::vector<float> &v);
+        double fftArrayAvg(double freq);
+        double median(std::vector<double> &v);
     private:
         std::vector<float> rppgOutputs;
         int m_fsRe;
-        double m_hr;
-        int m_countHr;
-        int m_countHr2;
         float m_avgHeartrate;
-        int m_heartrateArraySize;
-        std::deque<float> m_heartrateArray;
-        int m_heartrateArraySize2;
-        std::deque<float> m_heartrateArray2;
         std::string m_signalCondition;
+        int m_HRMedArraySize;
+        std::deque<double> m_HRMedArray;
+        int m_rPPGmHRArraySize;
+        std::deque<double> m_rPPGmHRArray;
+        int m_countMedHr;
+        int m_cntMedmHR;
+        double m_prevHR;
+        double m_rPPGMHr;
+        double m_prevrPPGmHR;
+        double m_prevFilteredHR;
+        double m_avgrPPGmHeartrate;
+        float m_hrInfo;
+        AeRealtimeHRCalAvg aeRealtimeHRCalAvg;
+        AeRealtimeHRCalAvg realtimeHRCal;
 };
 
 NodeOperationFactoryRegistration<RppgPostProcessOperation, BridgeOperationConfig>

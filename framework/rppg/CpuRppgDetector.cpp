@@ -55,6 +55,11 @@ t_aif_status CpuRppgDetector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("tflite interpreter not initialized!!");
         }
 
+        // std::cout << "Checking Fill Input Tensor Input: " << std::endl;
+        // for(int i=0; i< 200; i++){
+        //     std::cout <<"Checking Input: " << img.at<cv::Vec2f>(0, i)[0] << ", "<< img.at<cv::Vec2f>(0, i)[1] << std::endl;
+        // }
+
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
         std::memcpy(inputTensor, img.ptr<float>(0), batchSize * height  * width * sizeof(float));
         return kAifOk;

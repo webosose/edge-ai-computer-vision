@@ -106,6 +106,8 @@ bool FaceMeshRGBExtractOperation::runImpl(const std::shared_ptr<NodeInput> &inpu
         cv::Mat coloredMask = cv::Mat::zeros(cv::Size(boundRect.width, boundRect.height), CV_8UC1);
         cv::bitwise_and(faceMeshCropMat, faceMeshCropMat, coloredMask, mask = mask);
 
+        // imwrite("face_mesh.png", coloredMask);
+
         // Face Mesh RGB Extraction for rPPG
         std::vector<std::vector<unsigned char>> roiAllPixel;
         for (int i=0; i<mask.rows; i++){

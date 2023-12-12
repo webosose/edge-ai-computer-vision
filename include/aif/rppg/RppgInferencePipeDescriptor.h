@@ -10,6 +10,8 @@
 #include <aif/rppg/RppgDescriptor.h>
 #include <aif/log/Logger.h>
 
+#include <xtensor/xarray.hpp>
+
 namespace aif {
 
 class RppgInferencePipeDescriptor : public PipeDescriptor
@@ -37,12 +39,14 @@ class RppgInferencePipeDescriptor : public PipeDescriptor
         void addChannelSize (const int& channelSize) { m_channelSize = channelSize; }
         void addBpm (const float& bpm) { m_bpm = bpm; }
         void addSignalCondition (const std::string& signalCondition) { m_signalCondition = signalCondition; }
+        void addFirstInputXarray (const xt::xarray<double>& data11) { m_data11 = data11; }
 
         const std::vector<float>& getRppgOutputs() { return m_rppgOutputs; }
         const int getBatchSize() const { return m_batchSize; }
         const int getChannelSize() const { return m_channelSize; }
         const size_t getNumRppg() const { return m_rppgOutputs.size(); }
         bool addRppgFinalResult(float bpm, std::string signalCondition);
+        const xt::xarray<double>& getFirstInputXarray() { return m_data11; }
 
    private:
         bool appendRppg(
@@ -55,7 +59,7 @@ class RppgInferencePipeDescriptor : public PipeDescriptor
         int m_channelSize;
         float m_bpm;
         std::string m_signalCondition;
-
+        xt::xarray<double> m_data11;
 };
 
 } // end of namespace aif

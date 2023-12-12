@@ -8,13 +8,13 @@
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 #include <aif/rppg/FiltFilt.h>
-#include <aif/rppg/FftLib.h>
+// #include <aif/rppg/FftLib.h>
 
 #include <cmath>
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <xtensor/xsort.hpp>
+// #include <xtensor/xsort.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xindex_view.hpp>
 #include <xtensor/xbuilder.hpp>
@@ -27,18 +27,23 @@ namespace aif {
 RppgPostProcessOperation::RppgPostProcessOperation(const std::string& id)
 : BridgeOperation(id)
 , m_fsRe(50)
-, m_hr(0.0)
-, m_countHr(0)
-, m_countHr2(0)
 , m_avgHeartrate(0.0)
-, m_heartrateArraySize(7)
-, m_heartrateArray()
-, m_heartrateArraySize2(10)
-, m_heartrateArray2()
 , m_signalCondition("Bad")
+, m_HRMedArraySize(5)
+, m_HRMedArray()
+, m_rPPGmHRArraySize(5)
+, m_rPPGmHRArray()
+, m_countMedHr(0)
+, m_cntMedmHR(0)
+, m_prevHR(0.0)
+, m_rPPGMHr(0.0)
+, m_prevrPPGmHR(0.0)
+, m_prevFilteredHR(0.0)
+, m_avgrPPGmHeartrate(0.0)
+, m_hrInfo(0.0)
 {
-    for(int i = 0; i < m_heartrateArraySize; i++) m_heartrateArray.push_back(0.0f);
-    for(int i = 0; i < m_heartrateArraySize2; i++) m_heartrateArray2.push_back(0.0f);
+    for(int i = 0; i < m_HRMedArraySize; i++) m_HRMedArray.push_back(0.0f);
+    for(int i = 0; i < m_rPPGmHRArraySize; i++) m_rPPGmHRArray.push_back(0.0f);
 }
 
 RppgPostProcessOperation::~RppgPostProcessOperation()
@@ -59,9 +64,16 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     // memoryDump(outputs.data(), "./swp_output.bin", 400 * sizeof(float));
     // memoryRestore(outputs.data(), "./air_output.bin");
     // std::cout << "OutputTensors: " << std::endl;
+    // int cnt=0;
     // for(int i=0; i< 400; i++){
-    //     std::cout <<"Checking output: "<<i <<", " << outputs[i]<< std::endl;
+    //     if (cnt<5) std::cout << outputs[i]<<" ";
+    //     else {
+    //         std::cout << outputs[i] << std::endl;
+    //         cnt=0;
+    //     }
+    //     cnt++;
     // }
+    // std::cout << std::endl;
 
     std::vector<int> output_shape = {static_cast<int>(outputs.size())};
     xt::xarray<float> gg = xt::adapt(outputs.data(), output_shape); // [400]
@@ -69,48 +81,72 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     xt::xarray<double> yy;
     bpfFiltFilt(double_gg, yy); // [400]
 
-    auto HR_info = aeRealtimeHRCal(yy);
-    if (m_countHr < m_heartrateArraySize) m_countHr += 1;
+    std::pair<double, std::string> aeRealtimeHRCalResult = aeRealtimeHRCalAvg.aeRealtimeHRCal(yy, m_fsRe);
+    auto hr_info      = aeRealtimeHRCalResult.first;
+    m_signalCondition = aeRealtimeHRCalResult.second;
+    // std::cout << "checing hr_info: " <<hr_info<< std::endl;
+    auto HR_freq = hr_info;
+    // auto raw_HR = HR_freq;
 
-    m_heartrateArray.pop_front();
-    m_heartrateArray.push_back(HR_info);
+    xt::xarray<double> ggg = const_cast<xt::xarray<double>&> (fdescriptor->getFirstInputXarray());
+    bpfFiltFilt(ggg, yy);
+    std::pair<double, std::string> realtimeHRCalResult = realtimeHRCal.aeRealtimeHRCal(ggg, m_fsRe);
+    m_rPPGMHr = realtimeHRCalResult.first;
+    // std::cout << "checing m_rPPGMHr: " <<m_rPPGMHr<< std::endl;
 
-    if(m_countHr > 1) {
-        int HR_variation_th = 5;
-        int startIdx = m_heartrateArraySize - m_countHr;
-        std::vector<float> p_m_heartrateArray;
-        p_m_heartrateArray.insert(p_m_heartrateArray.end(), m_heartrateArray.begin() + startIdx, m_heartrateArray.end()); // 확인해야함
-        auto currHR = median(p_m_heartrateArray);
+    int HR_limit = 5;
+    if (m_countMedHr < m_HRMedArraySize) m_countMedHr = m_countMedHr + 1;
+    m_HRMedArray.pop_front();
+    m_HRMedArray.push_back(HR_freq);
 
-        float diffHR = m_avgHeartrate - currHR;
-        if (diffHR > HR_variation_th) {
-            std::cout << "limit step to 5 BPM" << std::endl;
-            m_avgHeartrate -= HR_variation_th;
-        }
-        else if (diffHR < -HR_variation_th) {
-            std::cout << "limit step to -5 BPM" << std::endl;
-            m_avgHeartrate += HR_variation_th;
-        }
-        else m_avgHeartrate = currHR;
+    int idx1 = m_HRMedArray.size() - m_countMedHr;
+    std::vector<double> p_m_hrMedArray;
+    p_m_hrMedArray.insert(p_m_hrMedArray.end(), m_HRMedArray.begin() + idx1, m_HRMedArray.end());
+    auto curr_HR = median(p_m_hrMedArray);
+
+    if (m_countMedHr == m_HRMedArraySize) curr_HR = checkHRVarLimit(curr_HR, m_prevHR, HR_limit);
+    else curr_HR = HR_freq;
+
+    m_prevHR = curr_HR;
+
+    if (m_cntMedmHR < m_rPPGmHRArraySize) m_cntMedmHR = m_cntMedmHR + 1;
+    m_rPPGmHRArray.pop_front();
+    m_rPPGmHRArray.push_back(m_rPPGMHr);
+
+    int idx2 = m_rPPGmHRArray.size() - m_cntMedmHR;
+    std::vector<double> p_m_rPPGmHRArray;
+    p_m_rPPGmHRArray.insert(p_m_rPPGmHRArray.end(), m_rPPGmHRArray.begin() + idx2, m_rPPGmHRArray.end());
+    auto curr_rPPG_m_HR = median(p_m_rPPGmHRArray);
+
+    double alpha = 0.0;
+    if(m_cntMedmHR == m_rPPGmHRArraySize) {
+        curr_rPPG_m_HR = checkHRVarLimit(curr_rPPG_m_HR, m_prevrPPGmHR, HR_limit);
+        alpha = 0.3;
     }
-    else m_avgHeartrate = m_heartrateArray.back();
-
-    if (m_countHr2 < m_heartrateArraySize2) m_countHr2 += 1;
-
-    m_heartrateArray2.pop_front();
-    m_heartrateArray2.push_back(m_avgHeartrate);
-
-    float sumHeartrateArray2 = 0.0;
-    int startIdx2 = m_heartrateArraySize2 - m_countHr2;
-    for(auto i = m_heartrateArray2.begin() + startIdx2; i < m_heartrateArray2.end(); ++i){
-        sumHeartrateArray2 += (*i);
+    else {
+        curr_rPPG_m_HR = m_rPPGMHr;
     }
-    m_avgHeartrate = sumHeartrateArray2 / m_countHr2;
 
-    HR_info = m_avgHeartrate + 0.5;
-    // memoryDump(&HR_info, "./swp_hr_result.bin", sizeof(float));
+    double remained_point = 1.0 - alpha;
+    double beta, gamma = 0.0;
+    if (curr_rPPG_m_HR < 110) {
+        beta  = remained_point * 0.3;
+        gamma = remained_point * 0.7;
+    }
+    else {
+        beta  = remained_point;
+        gamma = 0.0;
+    }
 
-    fdescriptor->addRppgFinalResult(HR_info, m_signalCondition);
+    m_prevrPPGmHR = curr_rPPG_m_HR;
+    m_prevFilteredHR = m_prevFilteredHR * alpha + curr_rPPG_m_HR * beta + curr_HR * gamma;
+    curr_HR = m_prevFilteredHR;
+    m_avgHeartrate = curr_HR;
+    m_avgrPPGmHeartrate = curr_rPPG_m_HR;
+    m_hrInfo = m_avgHeartrate;
+    // memoryDump(&m_hrInfo, "./swp_hr_result.bin", sizeof(float));
+
+    fdescriptor->addRppgFinalResult(m_hrInfo, m_signalCondition);
     return true;
 }
 
@@ -143,6 +179,14 @@ int RppgPostProcessOperation::getButterBPFParam(xt::xarray<double>& b, xt::xarra
     return 0;
 }
 
+double RppgPostProcessOperation::checkHRVarLimit(double curr_HR, double prev_HR, int limit_th)
+{
+    double diff_HR = prev_HR - curr_HR;
+    if(diff_HR > limit_th) curr_HR = prev_HR - limit_th;
+    else if(diff_HR < -limit_th) curr_HR = prev_HR + limit_th;
+    return curr_HR;
+}
+
 int RppgPostProcessOperation::bpfFiltFilt(xt::xarray<double>& data, xt::xarray<double>& filtered_sig)
 {
     // Code from AI Research Center
@@ -166,82 +210,9 @@ int RppgPostProcessOperation::bpfFiltFilt(xt::xarray<double>& data, xt::xarray<d
     return 0;
 }
 
-float RppgPostProcessOperation::aeRealtimeHRCal(xt::xarray<double>& sigArray)
+double RppgPostProcessOperation::median(std::vector<double> &v)
 {
-    xt::xarray<double> data_filtered = sigArray;
-    // bpfFiltFilt(sigArray, data_filtered); // [400]
-    int N = 1024;
-    float T = 1.0f / m_fsRe;
-    m_signalCondition = "Bad";
-
-    int sizeOf_dataFiltered = static_cast<int>(data_filtered.size());
-    auto window = hannCal(sizeOf_dataFiltered); // [400]
-
-    data_filtered = data_filtered * window;
-
-    xt::xarray<double> Input_buff =  xt::zeros<double>({1024});
-    for(int i=0; i< data_filtered.size(); i++) {
-        Input_buff.at(i) = data_filtered.at(i);
-    }
-    xt::xarray<std::complex<double>> yf = xt::zeros<std::complex<double>>({513}); // output_buff
-    rfft1024(Input_buff, yf); // [400]
-    auto yf_ab = abs(yf);
-    xt::xarray<double> frequency = rfftFreqCal(N, T); //[513]
-    auto idx = xt::where((frequency > 0.8) && (frequency < 3)); // [1, 45] | Frequency range (0.8~3Hz(48~180bpm))
-
-    auto xf_re = xt::index_view(frequency, idx[0]); // [45]
-    auto y_re = xt::index_view(yf_ab, idx[0]);
-
-    auto freqMaxIdx = xt::argmax(y_re);
-    double freqPk = xt::index_view(xf_re, freqMaxIdx)();
-
-    auto heartRate = freqPk * 60.0;
-
-    if (m_hr == 0.0) m_hr = heartRate;
-    else m_hr = 0.5 * m_hr + 0.5 * heartRate;
-    m_hr = float(m_hr);
-    m_signalCondition = "Normal";
-
-    return m_hr;
-}
-
-xt::xarray<double> RppgPostProcessOperation::hannCal(int len)
-{
-    xt::xarray<double> hannOutput = xt::zeros<double>({len});
-    for (int i = 0; i < len; i++) hannOutput.at(i) = 0.5 - 0.5 * cos((2 * M_PI * i) / (len - 1));
-
-    return hannOutput;
-}
-
-xt::xarray<double> RppgPostProcessOperation::rfftFreqCal(int n, float d)
-{
-    double val = 1.0 / (n * d); // 0.0488281
-    auto N = ((n + (2 - 1)) / 2) + 1; // 513
-    xt::xarray<double> results = xt::arange(0, N);
-    return results * val;
-}
-
-int RppgPostProcessOperation::rfft1024(xt::xarray<double>& pInput_buff, xt::xarray<std::complex<double>>& pOutput_buff)
-{
-    // Code from AI Research Center
-    const int N = 1024;
-    uint8_t u8ifftFlag = 0; //forward transform
-    uint8_t u8bitReverseFlag = 1; // Enables bit reversal of output
-    float32_t buff[N * 2];
-    std::fill(buff, buff + N * 2, 0); //reset buffer
-
-    for (int i = 0; i < N; i++) buff[2 * i] = pInput_buff(i);
-
-    arm_cfft_f32(&arm_cfft_sR_f32_len1024, (float *)buff, u8ifftFlag, u8bitReverseFlag);
-
-    for (int i = 0; i < N / 2 + 1; i++) pOutput_buff(i) = std::complex<double>(buff[2 * i], buff[2 * i + 1]);
-
-    return 0;
-}
-
-float RppgPostProcessOperation::median(std::vector<float> &v)
-{
-    float ans = 0.0;
+    double ans = 0.0;
     std::sort(v.begin(), v.end());
     int n = v.size();
 

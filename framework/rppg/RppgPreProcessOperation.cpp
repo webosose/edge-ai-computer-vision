@@ -52,9 +52,9 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         Loge("failed to get Image");
         return false;
     }
-    // std::cout << "Checking Input: " << std::endl;
+    // std::cout << "At rPPG Pre-Process: " << std::endl;
     // for(int i=0; i< 120; i++){
-    //     std::cout << image.at<double>(i, 0) << ", " << image.at<double>(i, 1) << ", " << image.at<double>(i, 2) << ", " << image.at<double>(i, 3) << std::endl;
+    //     std::cout << "Checking Input: " << image.at<double>(i, 0) << ", " << image.at<double>(i, 1) << ", " << image.at<double>(i, 2) << ", " << image.at<double>(i, 3) << std::endl;
     // }
 
     // std::cout << "Try this" << std::endl;
@@ -187,7 +187,7 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     std::vector<int> shape = {image.rows, image.cols}; // rows=120, cols=4
     xt::xarray<double> mesh_dataset = xt::adapt((double*)image.data, image.total() * image.channels(), xt::no_ownership(), shape); // total=480, channels=1
     xt::xarray<double> timeInfo = xt::cumsum(xt::view(mesh_dataset, xt::all(), 0)); // [120]
-    xt::xarray<double> intrTime = xt::arange(timeInfo[0], timeInfo[timeInfo.size() - 1], (1.0f / m_fsRe)); // [397]
+    xt::xarray<double> intrTime = xt::arange((1.0 / m_fsRe), (m_targetTime + 1.0 / m_fsRe), (1.0f / m_fsRe)); // [400]
 
     // CubicSpline Interpolation - AI Reseach Center
     xt::xarray<double> R_yNew, G_yNew, B_yNew;
@@ -196,19 +196,19 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         xt::xarray<double> RGB = xt::view(mesh_dataset, xt::all(), i+1); // [120]
         cubicSpline.CSpline( timeInfo.reshape({timeInfo.size()}), RGB.reshape({RGB.size()}) );
 
-        if (i == 0) R_yNew = cubicSpline.CalcCSpline(intrTime); // [397]
-        else if (i == 1) G_yNew = cubicSpline.CalcCSpline(intrTime); // [397]
-        else B_yNew = cubicSpline.CalcCSpline(intrTime); // [397]
+        if (i == 0) R_yNew = cubicSpline.CalcCSpline(intrTime); // [400]
+        else if (i == 1) G_yNew = cubicSpline.CalcCSpline(intrTime); // [400]
+        else B_yNew = cubicSpline.CalcCSpline(intrTime); // [400]
     }
-    auto xt_rbgInter = xt::vstack(xt::xtuple(R_yNew, G_yNew, B_yNew)); // [3, 397]
-    auto rgbInter = xt::transpose(xt_rbgInter); // [397, 3]
+    auto xt_rbgInter = xt::vstack(xt::xtuple(R_yNew, G_yNew, B_yNew)); // [3, 400]
+    auto rgbInter = xt::transpose(xt_rbgInter); // [400, 3]
 
     int st_idx = -(m_targetTime * m_fsRe); // -400
-    auto p_rgbInter = xt::view(rgbInter, xt::range(st_idx, xt::placeholders::_), xt::all()); // [397, 3]
-    auto p_intrTime = xt::view(intrTime, xt::range(st_idx, xt::placeholders::_)); // [397]
+    auto p_rgbInter = xt::view(rgbInter, xt::range(st_idx, xt::placeholders::_), xt::all()); // [400, 3]
+    auto p_intrTime = xt::view(intrTime, xt::range(st_idx, xt::placeholders::_)); // [400]
 
-    int N = static_cast<int>(p_intrTime.shape()[0]); // [397]
-    xt::xarray<double> rPPGmDat = xt::zeros<double>({N}); // [397] == H
+    int N = static_cast<int>(p_intrTime.shape()[0]); // [400]
+    xt::xarray<double> rPPGmDat = xt::zeros<double>({N}); // [400] == H
     int l = (int)std::ceil(m_winSec * m_fsRe); // 80
     // auto C = xt::zeros<double>({l, 3}); // [80, 3]
     xt::xarray<double> P = {{0.0, 1.0, -1.0}, {-2.0, 1.0, 1.0}}; // [2, 3]
@@ -241,32 +241,17 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         }
     }
 
-    xt::xarray<double> greenDat = xt::view(p_rgbInter, xt::all(), 1); // [397]
+    xt::xarray<double> greenDat = xt::view(p_rgbInter, xt::all(), 1); // [400]
 
     // Normalization
     double rPPGmDat_min = xt::amin(rPPGmDat)();
     double rPPGmDat_max = xt::amax(rPPGmDat)();
     double greenDat_min = xt::amin(greenDat)();
     double greenDat_max = xt::amax(greenDat)();
-    xt::xarray<double> data11 = (rPPGmDat - rPPGmDat_min) / (rPPGmDat_max - rPPGmDat_min); // [397]
-    xt::xarray<double> data21 = (greenDat - greenDat_min) / (greenDat_max - greenDat_min); // [397]
+    xt::xarray<double> data11 = (rPPGmDat - rPPGmDat_min) / (rPPGmDat_max - rPPGmDat_min); // [400]
+    xt::xarray<double> data21 = (greenDat - greenDat_min) / (greenDat_max - greenDat_min); // [400]
 
-    int lenList = (int)(m_targetTime * m_fsRe - rPPGmDat.size()); // FOR NOW 3
-    xt::xarray<double> fillList;
-
-    xt::xarray<double> inputt = {0.5};
-    for(int i = 0; i < lenList; i++) {
-        if (i == 0) fillList = inputt;
-        else fillList = xt::concatenate(xt::xtuple(fillList, inputt)); // append 0.5
-    }
-
-    xt::xarray<double> data_1_1, data_2_1;
-    if (data11.size() >= 400) data_1_1 = data11; // lower than 15 fps
-    else data_1_1 = xt::concatenate(xt::xtuple(data11, fillList), 0); // [400]
-    if (data21.size() >= 400) data_2_1 = data21;
-    else data_2_1 = xt::concatenate(xt::xtuple(data21, fillList), 0); // [400]
-
-    xt::xarray<double> inputDat = xt::stack(xt::xtuple(data_1_1, data_2_1), 1); // [400, 2]
+    xt::xarray<double> inputDat = xt::stack(xt::xtuple(data11, data21), 1); // [400, 2]
     xt::xarray<double> reshapeData = inputDat.reshape({1, inputDat.shape()[0], 2 }); // [1, 400, 2]
     xt::xarray<float> double_reshapeData = xt::cast<float>(reshapeData);
 
@@ -277,8 +262,9 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     // }
 
     // memoryDump(cv_reshapeData.data, "./swp_input.bin", 1* 400 * 2*sizeof(float));
-    // memoryRestore(cv_reshapeData.data, "./face_rgb_3m_231114.bin");
+    // memoryRestore(cv_reshapeData.data, "./swp_input.bin");
     descriptor->copyImage(cv_reshapeData);
+    fdescriptor->addFirstInputXarray(data11); // for post-process
 
     return true;
 }
