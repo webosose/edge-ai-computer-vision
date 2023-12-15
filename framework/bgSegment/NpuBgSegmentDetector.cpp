@@ -106,7 +106,7 @@ t_aif_status NpuBgSegmentDetector::preProcessing()
         m_th_mad4 = param->th_mad4;
 
         TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp, " th_mad4: ", m_th_mad4);
-        TRACE(" m_roiRect isss ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
+        TRACE(" m_roiRect is ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
         return kAifOk;
     } catch (const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -188,7 +188,7 @@ NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const
     // 3. => (h x 480 or 270 x w). remove padding
     cv::Rect bound(m_paddingInfo.leftBorder, m_paddingInfo.topBorder,
                    m_modelInfo.width - (m_paddingInfo.rightBorder + m_paddingInfo.leftBorder), // w
-                   m_modelInfo.height - (m_paddingInfo.bottomBorder - m_paddingInfo.topBorder)); // h
+                   m_modelInfo.height - (m_paddingInfo.bottomBorder + m_paddingInfo.topBorder)); // h
     cv::Mat results = resizedData(bound);
     //cv::imwrite("./results.jpg", results);
 
@@ -225,7 +225,8 @@ std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t
     // 2. => l/r/t/b padding off in 135 x 240. remove SWP padding.
     cv::Rect bound(m_paddingInfo.leftBorder*scaleW, m_paddingInfo.topBorder*scaleH,
                    (m_modelInfo.width - (m_paddingInfo.rightBorder + m_paddingInfo.leftBorder)) * scaleW, // w
-                   (m_modelInfo.height - (m_paddingInfo.bottomBorder - m_paddingInfo.topBorder)) * scaleH); // h
+                   (m_modelInfo.height - (m_paddingInfo.bottomBorder + m_paddingInfo.topBorder)) * scaleH); // h
+
 
     //TRACE(__func__, " ", bound.x, " ", bound.y, " ", bound.width, " ", bound.height);
     cv::Mat results = padOffData(bound);
