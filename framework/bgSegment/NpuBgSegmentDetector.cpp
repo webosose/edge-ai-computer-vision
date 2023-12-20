@@ -129,49 +129,47 @@ t_aif_status NpuBgSegmentDetector::postProcessing(const cv::Mat& img, std::share
     std::shared_ptr<BgSegmentDescriptor> bgSegmentDescriptor = std::dynamic_pointer_cast<BgSegmentDescriptor>(descriptor);
 
     //memoryDump(output->data.uint8, "./outputBinary.bin", width * height);
-    std::pair<int, int> maskSize;
+    cv::Size maskSize;
     ExtraOutputType type = ExtraOutputType::UINT8_ARRAY;
     if (m_outScaleUp) {
         if (m_smoothing) {
             maskSize = getMask(width, height, output->data.uint8);
-            //TRACE(__func__, " getMask size: ", maskSize.first, "x", maskSize.second);
-            cv::Mat sm_Mask;
+            //TRACE(__func__, " getMask size: ", maskSize.width, "x", maskSize.height);
+            cv::Mat transformedMask;
             if (m_useRoi) {
-                maskSize = smoothingMask(img( m_roiRect ), sm_Mask);
+                maskSize = smoothingMask(img( m_roiRect ), transformedMask);
             } else {
-                maskSize = smoothingMask(img, sm_Mask);
+                maskSize = smoothingMask(img, transformedMask);
             }
-             //TRACE(__func__, " smoothingMask size: ", maskSize.first, "x", maskSize.second);
-            m_scaledUpMask = sm_Mask.reshape(1, 1);
-            /////// type = ExtraOutputType::FLOAT_ARRAY;
+             //TRACE(__func__, " smoothingMask size: ", maskSize.width, "x", maskSize.height);
+            m_finalMask = transformedMask.reshape(1, 1);
         } else {
             maskSize = scaleUpMask(width, height, output->data.uint8, img);
-            //TRACE(__func__, " scaleUpMask size: ", maskSize.first, "x", maskSize.second);
+            //TRACE(__func__, " scaleUpMask size: ", maskSize.width, "x", maskSize.height);
         }
     } else {
         maskSize = getMask(width, height, output->data.uint8);
-        //TRACE(__func__, " getMask size: ", maskSize.first, "x", maskSize.second);
-        m_scaledUpMask = m_Mask.reshape(1, 1);
+        //TRACE(__func__, " getMask size: ", maskSize.width, "x", maskSize.height);
+        m_finalMask = m_Mask.reshape(1, 1);
     }
 
     if (bgSegmentDescriptor != nullptr) {
         if (m_useRoi) {
             bgSegmentDescriptor->addMaskInfo(m_roiRect.x, m_roiRect.y, m_roiRect.width, m_roiRect.height,
-                                             maskSize.first, maskSize.second);
+                                             maskSize.width, maskSize.height);
         } else {
             bgSegmentDescriptor->addMaskInfo(0, 0, img.cols, img.rows,
-                                             maskSize.first, maskSize.second);
+                                             maskSize.width, maskSize.height);
         }
-        //TRACE(__func__, " m_scaledUpMask size is : ", m_scaledUpMask.total() * m_scaledUpMask.elemSize());
-        bgSegmentDescriptor->addExtraOutput( type, static_cast<void*>(m_scaledUpMask.data),
-                                             m_scaledUpMask.total() * m_scaledUpMask.elemSize());
+        //TRACE(__func__, " m_finalMask size is : ", m_finalMask.total() * m_finalMask.elemSize());
+        bgSegmentDescriptor->addExtraOutput( type, static_cast<void*>(m_finalMask.data),
+                                             m_finalMask.total() * m_finalMask.elemSize());
     }
 
     return kAifOk;
 }
 
-std::pair<int, int>
-NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg)
+cv::Size NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg)
 {
     // temporary
     // 1. => 288 x 256. (h:w = 9:8)
@@ -192,26 +190,26 @@ NpuBgSegmentDetector::scaleUpMask(int width, int height, uint8_t* srcData, const
     cv::Mat results = resizedData(bound);
     //cv::imwrite("./results.jpg", results);
 
-    std::pair<int, int> maskSize;
+    cv::Size maskSize;
     if (m_useRoi) {
         // 4. => roi rect. scale up to roi size.
         // TODO: ?? release memory ??
-        cv::resize(results, m_scaledUpMask, cv::Size(m_roiRect.width, m_roiRect.height), 0, 0, cv::INTER_LINEAR);
-        maskSize = std::make_pair(m_roiRect.width, m_roiRect.height);
+        cv::resize(results, m_finalMask, cv::Size(m_roiRect.width, m_roiRect.height), 0, 0, cv::INTER_LINEAR);
+        maskSize = cv::Size(m_roiRect.width, m_roiRect.height);
     } else {
         // 4. => original img rect. scale up to original img size.
-        cv::resize(results, m_scaledUpMask, cv::Size(origImg.cols, origImg.rows), 0, 0, cv::INTER_LINEAR);
-        maskSize = std::make_pair(origImg.cols, origImg.rows);
+        cv::resize(results, m_finalMask, cv::Size(origImg.cols, origImg.rows), 0, 0, cv::INTER_LINEAR);
+        maskSize = cv::Size(origImg.cols, origImg.rows);
     }
-    //cv::imwrite("./m_scaledUpMask.jpg", m_scaledUpMask);
+    //cv::imwrite("./m_finalMask.jpg", m_finalMask);
 
     // 5. flatten it.
-    m_scaledUpMask = m_scaledUpMask.reshape(1, 1);
+    m_finalMask = m_finalMask.reshape(1, 1);
 
     return maskSize;
 }
 
-std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t* srcData)
+cv::Size NpuBgSegmentDetector::getMask(int width, int height, uint8_t* srcData)
 {
     // temporary
     // 1. => 288 x 256 (h:w = 9:8)
@@ -222,7 +220,7 @@ std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t
     float scaleH = static_cast<float>(height) / m_modelInfo.height; // out/in ratio 1
     //TRACE(__func__, " scaleW: ", scaleW, " scaleH: " , scaleH);
 
-    // 2. => l/r/t/b padding off in 135 x 240. remove SWP padding.
+    // 2. => l/r/t/b padding off in 288 x 256. remove SWP padding.
     cv::Rect bound(m_paddingInfo.leftBorder*scaleW, m_paddingInfo.topBorder*scaleH,
                    (m_modelInfo.width - (m_paddingInfo.rightBorder + m_paddingInfo.leftBorder)) * scaleW, // w
                    (m_modelInfo.height - (m_paddingInfo.bottomBorder + m_paddingInfo.topBorder)) * scaleH); // h
@@ -233,10 +231,10 @@ std::pair<int, int> NpuBgSegmentDetector::getMask(int width, int height, uint8_t
     results.copyTo(m_Mask);
     //cv::imwrite("./m_Mask.jpg", m_Mask);
 
-    return std::make_pair(bound.width, bound.height);
+    return cv::Size(bound.width, bound.height);
 }
 
-std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::Mat &transformed_map)
+cv::Size NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::Mat &transformed_map)
 {
     float th_mad[4] = {0.2, 0.5, 1.0, 8};
     const float alpha_lut[5] = {0.95, 0.9, 0.8, 0.5, 0.0};
@@ -248,9 +246,7 @@ std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::
 
     //const cv::Size diff_size(240, 270); v3
     const cv::Size diff_size(256, 288); // v5 w,h
-    //cv::Mat transformed_map;
     cv::Mat resized_map;
-
     cv::Mat resized_image;
 
     // 640 x 720 fg image > 256 x 288 fg_image
@@ -276,8 +272,7 @@ std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::
     float alpha = alpha_lut[idx_alpha];
     float beta = 1.0 - alpha;
 
-    // prev_img = resizeD_img = 240 x 720
-    m_prevImg = resized_image.clone();
+    m_prevImg = resized_image;
 
     // Convert the segmentation map to float for accurate accumulation
     segmap.convertTo(segmap, CV_32F);
@@ -307,7 +302,7 @@ std::pair<int, int> NpuBgSegmentDetector::smoothingMask(const cv::Mat &img, cv::
     //memoryDump(transformed_map.data, "./transformed_map.bin", 640*720*4);
 
     transformed_map.convertTo(transformed_map, CV_8U);
-    return std::make_pair(transformed_map.cols, transformed_map.rows);
+    return cv::Size(transformed_map.cols, transformed_map.rows);
 }
 
 } // namespace aif

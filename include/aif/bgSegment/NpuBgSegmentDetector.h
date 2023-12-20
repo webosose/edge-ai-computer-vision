@@ -28,14 +28,14 @@ class NpuBgSegmentDetector : public BgSegmentDetector {
     t_aif_status fillInputTensor(const cv::Mat& img) override;
     t_aif_status preProcessing() override;
     t_aif_status postProcessing(const cv::Mat& img, std::shared_ptr<Descriptor>& descriptor) override;
-    std::pair<int, int> scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg);
-    std::pair<int, int> getMask(int width, int height, uint8_t* srcData);
-    std::pair<int, int> smoothingMask(const cv::Mat &img, cv::Mat &transformed_map);
+    cv::Size scaleUpMask(int width, int height, uint8_t* srcData, const cv::Mat &origImg);
+    cv::Size getMask(int width, int height, uint8_t* srcData);
+    cv::Size smoothingMask(const cv::Mat &img, cv::Mat &transformed_map);
 
   private:
     struct t_aif_padding_info m_paddingInfo;
     cv::Mat m_Mask;
-    cv::Mat m_scaledUpMask;
+    cv::Mat m_finalMask;
     cv::Rect m_roiRect;
     bool m_useRoi;
     bool m_outScaleUp;
