@@ -14,7 +14,7 @@ namespace aif {
 NpuRppgDetector::NpuRppgDetector()
 : RppgDetector("rPPG_npu.tflite")
 , m_inputQuatScaleIn(0.003921568859368563)
-, m_outputQuatScaleIn(0.004309722688049078)
+, m_outputQuatScaleIn(0.003935758024454117)
 , m_zeropointIn (0.0)
 {}
 

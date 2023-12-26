@@ -460,63 +460,22 @@ int main(int argc, char *argv[])
             std::cout << rppg_results[i] << std::endl;
         }
 
-        // double pyresults[53] = {178.710938 ,125.976562, 75.292969 ,75.292969 ,75.292969
-        //                         ,75.292969 ,75.292969, 75.292969, 73.857422, 73.426758
-        //                         ,73.297559, 73.258799 ,73.247171 ,73.551300 ,75.154990
-        //                         ,75.715404
-        //                         ,75.900351
-        //                         ,75.955835
-        //                         ,75.972481
-        //                         ,75.977474
-        //                         ,73.495327
-        //                         ,71.882582
-        //                         ,71.398759
-        //                         ,71.253612
-        //                         ,70.594834
-        //                         ,71.012434
-        //                         ,71.137715
-        //                         ,71.175299
-        //                         ,70.878957
-        //                         ,70.866959
-        //                         ,70.805681
-        //                         ,70.787298
-        //                         ,70.781783
-        //                         ,70.837806
-        //                         ,72.290160
-        //                         ,72.956579
-        //                         ,73.156505
-        //                         ,73.216483
-        //                         ,73.234476
-        //                         ,73.239874
-        //                         ,73.241493
-        //                         ,72.626745
-        //                         ,72.442320
-        //                         ,72.772540
-        //                         ,72.691137
-        //                         ,72.666716
-        //                         ,71.839077
-        //                         ,71.590786
-        //                         ,70.080751
-        //                         ,69.762324
-        //                         ,69.683618
-        //                         ,69.676829
-        //                         ,69.674793};
-        // double sum_pys = 0.0;
-        // for (int i = 0; i < len_results; i++){
-        //     sum_pys  += pyresults[i];
-        // }
-        // auto avg_ttsum_pys  = sum_pys  / len_results;
-        // double vari_pys  = 0.0;
-        // for (int i = 0; i < len_results; i++){
-        //     vari_pys  += std::pow(pyresults[i] - avg_ttsum_pys , 2);
-        // }
-        // vari_pys  /= len_results;
+        double sum_pys = 0.0;
+        for (int i = 0; i < len_results; i++){
+            sum_pys  += py_results[i];
+        }
+        auto avg_ttsum_pys  = sum_pys  / len_results;
+        double vari_pys  = 0.0;
+        for (int i = 0; i < len_results; i++){
+            vari_pys  += std::pow(py_results[i] - avg_ttsum_pys , 2);
+        }
+        vari_pys  /= len_results;
 
         std::cout << "Mean Absolute Error (Python vs. rppg bpm) : " << (abs_sumPy  / len_results) << std::endl;
         std::cout << "Mean Absolute Error (PPG vs. rppg bpm)    : " << (abs_sumPPG / len_results) <<  std::endl;
         std::cout << "Mean Absolute Error (Python vs. PPG bpm) : " << (abs_gtPPG / len_results) <<  std::endl;
         std::cout << "STDEV : "<< std::sqrt(vari_rppg) << std::endl;
-        // std::cout << "STDEV PYS : "<< std::sqrt(vari_pys) << std::endl;
+        std::cout << "STDEV PYS : "<< std::sqrt(vari_pys) << std::endl;
     }
     // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
