@@ -22,7 +22,7 @@
             }
         },
         {
-            "id": "face_crop",
+            "id": "rppg_face_crop",
             "input": ["image","inference"],
             "output": ["image","inference"],
             "operation": {

@@ -37,7 +37,17 @@ bool CropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         Loge("crop size : ", cropRect);
         return false;
     }
-    descriptor->setImage(image(cropRect));
+
+    if (m_id.rfind("rppg_face_crop", 0) == 0) {
+        auto cropRect_image = image(cropRect);
+        cv::Mat resizedImg;
+        cv::resize(cropRect_image, resizedImg, cv::Size(), 2, 2, cv::INTER_LINEAR);
+        descriptor->setImage(resizedImg);
+        // imwrite("upScale_face.jpg", descriptor->getImage());
+    }
+    else {
+        descriptor->setImage(image(cropRect));
+    }
 
     rj::Document doc;
     doc.SetObject();
