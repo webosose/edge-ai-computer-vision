@@ -7,6 +7,7 @@
 #include <aif/log/Logger.h>
 
 #include <boost/beast/core/detail/base64.hpp>
+#include <boost/algorithm/string.hpp>
 
 // #include <opencv2/opencv.hpp>
 // #include <opencv2/imgproc.hpp>
@@ -382,6 +383,48 @@ bool isRoiValid( const int imgWidth, const int imgHeight, const cv::Rect &roiRec
                     ( roiRect.width > 0 ) && ( roiRect.height > 0 ) &&
                     ( roiRect.x + roiRect.width <= imgWidth ) &&
                     ( roiRect.y + roiRect.height <= imgHeight ) );
+}
+
+cv::InterpolationFlags stringToInterpolationFlags(const std::string &str)
+{
+    if (str.empty()) {
+        Logw(__func__, " input str is empty");
+        return cv::INTER_LINEAR;
+    }
+
+    std::string str_ = boost::algorithm::to_upper_copy(str);
+    if (str_.compare("AREA") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_AREA;
+    }
+    if (str_.compare("LINEAR_EXACT") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_LINEAR_EXACT;
+    }
+    if (str_.compare("LINEAR") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_LINEAR;
+    }
+    if (str_.compare("CUBIC") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_CUBIC;
+    }
+    if (str_.compare("NEAREST_EXACT") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_NEAREST_EXACT;
+    }
+    if (str_.compare("NEAREST") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_NEAREST;
+    }
+    if (str_.compare("LANCZOS4") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_LANCZOS4;
+    }
+    // ANOTHER OPTION TBD //
+
+    Logw(__func__, " wrong string for interpolation flags ", str_);
+    return cv::INTER_LINEAR;
 }
 
 

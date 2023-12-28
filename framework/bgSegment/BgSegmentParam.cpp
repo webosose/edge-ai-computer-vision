@@ -25,6 +25,7 @@ BgSegmentParam::BgSegmentParam()
     , outScaleUp(true) // default : AI Framework scale up the out image.
     , smoothing(true)
     , th_mad4(1.5)
+    , decimation("")
 {
 }
 
@@ -38,6 +39,7 @@ BgSegmentParam::BgSegmentParam(const BgSegmentParam &other)
     , outScaleUp(other.outScaleUp)
     , smoothing(other.smoothing)
     , th_mad4(other.th_mad4)
+    , decimation(other.decimation)
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -50,6 +52,7 @@ BgSegmentParam::BgSegmentParam(BgSegmentParam &&other) noexcept
     , outScaleUp(std::move(other.outScaleUp))
     , smoothing(std::move(other.smoothing))
     , th_mad4(std::move(other.th_mad4))
+    , decimation(std::move(other.decimation))
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -68,6 +71,7 @@ BgSegmentParam& BgSegmentParam::operator=(const BgSegmentParam& other)
     outScaleUp = other.outScaleUp;
     smoothing = other.smoothing;
     th_mad4 = other.th_mad4;
+    decimation = other.decimation;
 
     return *this;
 }
@@ -86,6 +90,7 @@ BgSegmentParam& BgSegmentParam::operator=(BgSegmentParam&& other) noexcept
     outScaleUp = std::move(other.outScaleUp);
     smoothing = std::move(other.smoothing);
     th_mad4 = std::move(other.th_mad4);
+    decimation = std::move(other.decimation);
 
     return *this;
 }
@@ -98,7 +103,8 @@ bool BgSegmentParam::operator==(const BgSegmentParam &other) const {
         (origImgRoiHeight == other.origImgRoiHeight) &&
         (outScaleUp == other.outScaleUp) &&
         (smoothing == other.smoothing) &&
-        (th_mad4 == other.th_mad4));
+        (th_mad4 == other.th_mad4) &&
+        (decimation == other.decimation));
 }
 
 bool BgSegmentParam::operator!=(const BgSegmentParam &other) const {
@@ -115,6 +121,7 @@ std::ostream &operator<<(std::ostream &os, const BgSegmentParam &fp) {
     os << "\toutScaleUp: " << fp.outScaleUp << ",\n";
     os << "\tsmoothing: " << fp.smoothing << ",\n";
     os << "\tth_mad4: " << fp.th_mad4 << ",\n";
+    os << "\tdecimation: " << fp.decimation << ",\n";
 
     os << "}";
     return os;
@@ -153,6 +160,9 @@ t_aif_status BgSegmentParam::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("th_mad4")) {
             th_mad4 = modelParam["th_mad4"].GetFloat();
+        }
+        if (modelParam.HasMember("decimation")) {
+            decimation = modelParam["decimation"].GetString();
         }
     }
 

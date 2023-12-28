@@ -182,6 +182,7 @@ bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
 struct t_aif_padding_info getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst,
 enum cv::InterpolationFlags flag = cv::INTER_LINEAR);
 bool isRoiValid( const int imgWidth, const int imgHeight, const cv::Rect &roiRect );
+cv::InterpolationFlags stringToInterpolationFlags(const std::string &str);
 
 template <typename T>
 void memoryDump(T* outTensor, std::string path, size_t outTotalSize)

@@ -43,6 +43,7 @@ class NpuBgSegmentDetector : public BgSegmentDetector {
     float m_th_mad4;
     cv::Mat m_prevImg;
     cv::Mat m_accumulatedMap;
+    cv::InterpolationFlags m_decimFlag;
 };
 
 DetectorFactoryRegistration<NpuBgSegmentDetector, BgSegmentDescriptor>

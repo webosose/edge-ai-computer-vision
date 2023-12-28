@@ -40,6 +40,7 @@ class BgSegmentParam : public DetectorParam {
     bool outScaleUp;
     bool smoothing;
     float th_mad4;
+    std::string decimation;
 };
 
 } // end of namespace aif

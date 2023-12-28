@@ -21,7 +21,8 @@ NpuBgSegmentDetector::NpuBgSegmentDetector()
     , m_outScaleUp(true) // default : AI Framework scale up the out image.
     , m_smoothing(true)
     , m_th_mad4(1.5)
-    , BgSegmentDetector("O24_SIC_SEG_veri_v531.tflite") {}
+    , m_decimFlag(cv::INTER_LINEAR)
+    , BgSegmentDetector("O24_SIC_SEG_v5.4.3_231228.tflite") {}
 
 
 NpuBgSegmentDetector::~NpuBgSegmentDetector() {}
@@ -65,10 +66,10 @@ t_aif_status NpuBgSegmentDetector::fillInputTensor(const cv::Mat& img)/* overrid
         if ( isRoiValid(img.cols, img.rows, m_roiRect) ) {
             m_useRoi = true;
             cv::Mat roi_img = img( m_roiRect );
-            m_paddingInfo = getPaddedImage(roi_img, cv::Size(width, height), img_resized, cv::INTER_AREA);
+            m_paddingInfo = getPaddedImage(roi_img, cv::Size(width, height), img_resized, m_decimFlag);
         } else {
             m_useRoi = false;
-            m_paddingInfo = getPaddedImage(img, cv::Size(width, height), img_resized, cv::INTER_AREA);
+            m_paddingInfo = getPaddedImage(img, cv::Size(width, height), img_resized, m_decimFlag);
         }
 
         //TRACE("resized size: ", img_resized.size());
@@ -104,8 +105,11 @@ t_aif_status NpuBgSegmentDetector::preProcessing()
         m_smoothing = param->smoothing;
         m_roiRect = {param->origImgRoiX, param->origImgRoiY, param->origImgRoiWidth, param->origImgRoiHeight};
         m_th_mad4 = param->th_mad4;
+        if (!param->decimation.empty()) {
+            m_decimFlag = stringToInterpolationFlags(param->decimation);
+        }
 
-        TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp, " th_mad4: ", m_th_mad4);
+        TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp, " th_mad4: ", m_th_mad4, " decimation: ", m_decimFlag);
         TRACE(" m_roiRect is ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
         return kAifOk;
     } catch (const std::exception& e) {
