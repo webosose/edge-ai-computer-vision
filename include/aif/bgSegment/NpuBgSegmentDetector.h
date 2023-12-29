@@ -12,11 +12,9 @@
 
 namespace aif {
 
-class NpuBgSegmentDescriptor;
-
 class NpuBgSegmentDetector : public BgSegmentDetector {
-  private:
-    NpuBgSegmentDetector();
+  protected:
+    NpuBgSegmentDetector(const std::string &modelName);
 
   public:
     template <typename T1, typename T2>
@@ -45,9 +43,6 @@ class NpuBgSegmentDetector : public BgSegmentDetector {
     cv::Mat m_accumulatedMap;
     cv::InterpolationFlags m_decimFlag;
 };
-
-DetectorFactoryRegistration<NpuBgSegmentDetector, BgSegmentDescriptor>
-    bg_segmentation_npu("bg_segmentation_npu");
 
 } // end of namespace aif
 

@@ -15,14 +15,14 @@
 
 namespace aif {
 
-NpuBgSegmentDetector::NpuBgSegmentDetector()
+NpuBgSegmentDetector::NpuBgSegmentDetector(const std::string &modelName)
     : m_paddingInfo{0,}
     , m_useRoi(false)
     , m_outScaleUp(true) // default : AI Framework scale up the out image.
     , m_smoothing(true)
     , m_th_mad4(1.5)
     , m_decimFlag(cv::INTER_LINEAR)
-    , BgSegmentDetector("O24_SIC_SEG_v5.4.3_231228.tflite") {}
+    , BgSegmentDetector(modelName) {}
 
 
 NpuBgSegmentDetector::~NpuBgSegmentDetector() {}
@@ -109,8 +109,8 @@ t_aif_status NpuBgSegmentDetector::preProcessing()
             m_decimFlag = stringToInterpolationFlags(param->decimation);
         }
 
-        TRACE(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp, " th_mad4: ", m_th_mad4, " decimation: ", m_decimFlag);
-        TRACE(" m_roiRect is ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
+        Logd(" smoothing " , m_smoothing, " outScaleUp: ", m_outScaleUp, " th_mad4: ", m_th_mad4, " decimation: ", m_decimFlag);
+        Logd(" m_roiRect is ", m_roiRect.x, " ", m_roiRect.y, " ", m_roiRect.width, " ", m_roiRect.height);
         return kAifOk;
     } catch (const std::exception& e) {
         Loge(__func__,"Error: ", e.what());

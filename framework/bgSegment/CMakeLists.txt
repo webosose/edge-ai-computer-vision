@@ -11,6 +11,7 @@ set(BGSEGMENT_SRC
 IF(WITH_NPU)
     set(BGSEGMENT_NPU_SRC
         ${BGSEGMENT_SRC_DIR}/NpuBgSegmentDetector.cpp
+        ${BGSEGMENT_SRC_DIR}/NpuBgSegmentDetectors.cpp
     )
 ENDIF(WITH_NPU)
 
