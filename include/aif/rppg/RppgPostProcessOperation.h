@@ -34,7 +34,6 @@ class RppgPostProcessOperation : public BridgeOperation {
         double fftArrayAvg(double freq);
         double median(std::vector<double> &v);
     private:
-        std::vector<float> rppgOutputs;
         int m_fsRe;
         float m_avgHeartrate;
         std::string m_signalCondition;
@@ -50,6 +49,7 @@ class RppgPostProcessOperation : public BridgeOperation {
         double m_prevFilteredHR;
         double m_avgrPPGmHeartrate;
         float m_hrInfo;
+        int m_stableCnt;
         AeRealtimeHRCalAvg aeRealtimeHRCalAvg;
         AeRealtimeHRCalAvg realtimeHRCal;
 };

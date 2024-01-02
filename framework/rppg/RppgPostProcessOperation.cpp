@@ -41,6 +41,7 @@ RppgPostProcessOperation::RppgPostProcessOperation(const std::string& id)
 , m_prevFilteredHR(0.0)
 , m_avgrPPGmHeartrate(0.0)
 , m_hrInfo(0.0)
+, m_stableCnt(0)
 {
     for(int i = 0; i < m_HRMedArraySize; i++) m_HRMedArray.push_back(0.0f);
     for(int i = 0; i < m_rPPGmHRArraySize; i++) m_rPPGmHRArray.push_back(0.0f);
@@ -84,7 +85,6 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     std::pair<double, std::string> aeRealtimeHRCalResult = aeRealtimeHRCalAvg.aeRealtimeHRCal(yy, m_fsRe);
     auto hr_info      = aeRealtimeHRCalResult.first;
     m_signalCondition = aeRealtimeHRCalResult.second;
-    // std::cout << "checing hr_info: " <<hr_info<< std::endl;
     auto HR_freq = hr_info;
     // auto raw_HR = HR_freq;
 
@@ -92,7 +92,6 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     bpfFiltFilt(ggg, yy);
     std::pair<double, std::string> realtimeHRCalResult = realtimeHRCal.aeRealtimeHRCal(ggg, m_fsRe);
     m_rPPGMHr = realtimeHRCalResult.first;
-    // std::cout << "checing m_rPPGMHr: " <<m_rPPGMHr<< std::endl;
 
     int HR_limit = 5;
     if (m_countMedHr < m_HRMedArraySize) m_countMedHr = m_countMedHr + 1;
@@ -119,27 +118,52 @@ bool RppgPostProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     auto curr_rPPG_m_HR = median(p_m_rPPGmHRArray);
 
     double alpha = 0.0;
+    double beta, gamma = 0.0;
     if(m_cntMedmHR == m_rPPGmHRArraySize) {
         curr_rPPG_m_HR = checkHRVarLimit(curr_rPPG_m_HR, m_prevrPPGmHR, HR_limit);
-        alpha = 0.3;
+        alpha = 0.5;
+        double remained_point = 1.0 - alpha;
+
+        if (m_stableCnt >= 5)
+        {
+            if (curr_rPPG_m_HR < 110)
+            {
+                beta  = remained_point * 0.3;
+                gamma = remained_point * 0.7;
+            }
+            else
+            {
+                beta  = remained_point;
+                gamma = 0.0;
+            }
+        }
+        else
+        {
+            m_stableCnt = m_stableCnt + 1;
+            gamma = remained_point;
+            beta = 0.0;
+        }
     }
-    else {
+    else
+    {
+        alpha = 0.0;
+        gamma = 1.0;
+        beta = 0.0;
         curr_rPPG_m_HR = m_rPPGMHr;
     }
 
-    double remained_point = 1.0 - alpha;
-    double beta, gamma = 0.0;
-    if (curr_rPPG_m_HR < 110) {
-        beta  = remained_point * 0.3;
-        gamma = remained_point * 0.7;
+    m_prevrPPGmHR = curr_rPPG_m_HR;
+
+    double curr_filtered_HR = m_prevFilteredHR * alpha + curr_rPPG_m_HR * beta + curr_HR * gamma;
+    if(m_cntMedmHR == m_rPPGmHRArraySize)
+    {
+        m_prevFilteredHR = checkHRVarLimit(curr_filtered_HR, m_prevFilteredHR, HR_limit);
     }
-    else {
-        beta  = remained_point;
-        gamma = 0.0;
+    else
+    {
+        m_prevFilteredHR = curr_filtered_HR;
     }
 
-    m_prevrPPGmHR = curr_rPPG_m_HR;
-    m_prevFilteredHR = m_prevFilteredHR * alpha + curr_rPPG_m_HR * beta + curr_HR * gamma;
     curr_HR = m_prevFilteredHR;
     m_avgHeartrate = curr_HR;
     m_avgrPPGmHeartrate = curr_rPPG_m_HR;

@@ -28,7 +28,6 @@ class RppgPreProcessOperation : public BridgeOperation {
     protected:
         xt::xarray<double> dotProduct(xt::xarray<double>& p, xt::xarray<double>& cn);
     private:
-        std::vector<float> rppgOutputs;
         int m_fsRe;
         int m_targetTime;
         float m_winSec;
