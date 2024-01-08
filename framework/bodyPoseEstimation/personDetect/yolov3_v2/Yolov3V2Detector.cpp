@@ -343,10 +343,10 @@ void Yolov3V2Detector::transform2OriginCoord(const cv::Mat &img, t_pqe_obd_resul
 
         int roi_img_x1 = roi_img_width + off_x;
         int roi_img_y1 = roi_img_height + off_y;
-        result.pos_x0[i] = std::max(std::min(x0, roi_img_x1 - 1), 0);
-        result.pos_y0[i] = std::max(std::min(y0, roi_img_y1 - 1), 0);
-        result.pos_x1[i] = std::max(std::min(x1, roi_img_x1 - 1), 0);
-        result.pos_y1[i] = std::max(std::min(y1, roi_img_y1 - 1), 0);
+        result.pos_x0[i] = std::max(std::min(x0, roi_img_x1 - 1), static_cast<int>(off_x));
+        result.pos_y0[i] = std::max(std::min(y0, roi_img_y1 - 1), static_cast<int>(off_y));
+        result.pos_x1[i] = std::max(std::min(x1, roi_img_x1 - 1), static_cast<int>(off_x));
+        result.pos_y1[i] = std::max(std::min(y1, roi_img_y1 - 1), static_cast<int>(off_y));
     }
 
     TRACE("-------------AFTER--------------");

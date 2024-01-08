@@ -230,12 +230,16 @@ bool FitTvPoseDescriptor::addPose2d(int trackId, const std::vector<std::vector<f
 
     int numClipped = 0;
     for(auto& pos: m_keyPoints[index]) {
-        if (index < m_cropRects.size()) {
+        if (index < m_cropRects.size()) { // TODO: maybe deprecated... check it later.!!
             pos[1] += m_cropRects[index].x;
             pos[2] += m_cropRects[index].y;
         }
-        if (m_roiValid && clipKeypointRange(pos)) {
-            numClipped++;
+        if (m_roiValid) {
+            pos[1] += m_roiRect.x;
+            pos[2] += m_roiRect.y;
+            if(clipKeypointRoiRange(pos)) {
+                numClipped++;
+            }
         }
         rj::Value keyPoint(rj::kArrayType);
         keyPoint.PushBack(static_cast<int>(pos[1]), allocator); // x
@@ -298,7 +302,7 @@ bool FitTvPoseDescriptor::addPose3d(
     return true;
 }
 
-bool FitTvPoseDescriptor::clipKeypointRange(std::vector<float> &pos)
+bool FitTvPoseDescriptor::clipKeypointRoiRange(std::vector<float> &pos)
 {
     bool clipped = false;
 

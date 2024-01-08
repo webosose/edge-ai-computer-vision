@@ -27,7 +27,7 @@ class FitTvPersonCropOperation : public BridgeOperation {
         void computeCropsData(const BBox& bbox, float& scaleX, float& scaleY);
         cv::Mat getCropRect(cv::Mat& originalImg, cv::Size& originSize, BBox& fixedBbox) const;
         std::vector<cv::Rect> getCropRects_deprecated(const std::shared_ptr<NodeInput>& input) const;
-        BBox fixBbox(const std::shared_ptr<NodeInput>& input, const BBox& bbox) const;
+        BBox fixBbox(const cv::Size &originSize, const BBox& bbox) const;
 
     private:
         float mCropExtension;

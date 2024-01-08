@@ -35,13 +35,24 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     }
 
 
-    const cv::Mat& image = descriptor->getImage();
+    cv::Mat image = descriptor->getImage();
 
 #if defined(AFFINE_TRANS)
     Logd("AFFINE_TRANS!!!");
+    const cv::Rect &roiRect = fdescriptor->getRoiRect();
+    if (fdescriptor->isRoiValid()) {
+        image = image( roiRect );
+    }
     const std::vector<BBox>& boxes = fdescriptor->getBboxes();
     for (auto& box : boxes) {
-        auto fixedBbox = fixBbox(input, box);
+        BBox fixedBbox;
+        if (fdescriptor->isRoiValid()) {
+            BBox aligned_box(roiRect.width, roiRect.height);
+            aligned_box.addTlhw(box.xmin - roiRect.x, box.ymin - roiRect.y, box.width, box.height);
+            fixedBbox = fixBbox(fdescriptor->getRoiRect().size(), aligned_box);
+        } else {
+            fixedBbox = fixBbox(image.size(), box);
+        }
         Scale scale;
         computeCropsData(fixedBbox, scale.x, scale.y);
         fdescriptor->addCropData(scale); // pass scales
@@ -49,15 +60,13 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         fdescriptor->addCropImage(image); /* add original image */
     }
 #else
-    auto originalImg = input->getDescriptor()->getImage();
-    auto originSize = input->getDescriptor()->getImage().size();
 
     const std::vector<BBox>& boxes = fdescriptor->getBboxes();
     for (auto& box : boxes) {
-        auto fixedBbox = fixBbox(input, box);
+        auto fixedBbox = fixBbox(image.size(), box);
         fdescriptor->addCropBox(fixedBbox); // pass fixedBox
 
-        auto crop = getCropRect(originalImg, originSize, fixedBbox);
+        auto crop = getCropRect(image, image.size(), fixedBbox);
         fdescriptor->addCropImage(crop); /* add original image */
     }
 
@@ -128,10 +137,11 @@ std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects_deprecated(const st
         return rects;
     }
 
+    const cv::Mat &image = descriptor->getImage();
     const std::vector<BBox>& boxes = descriptor->getBboxes();
     for (auto& box :  boxes) {
 
-        auto fixedBbox = fixBbox(input, box);
+        auto fixedBbox = fixBbox(image.size(), box);
         cv::Rect cropRect = {
             static_cast<int>(fixedBbox.xmin),
             static_cast<int>(fixedBbox.ymin),
@@ -155,12 +165,10 @@ std::vector<cv::Rect> FitTvPersonCropOperation::getCropRects_deprecated(const st
     return rects;
 }
 
-BBox FitTvPersonCropOperation::fixBbox(const std::shared_ptr<NodeInput>& input, const BBox& bbox) const
+BBox FitTvPersonCropOperation::fixBbox(const cv::Size &originSize, const BBox& bbox) const
 {
     int modelInputWidth = 192;
     int modelInputHeight = 256;
-
-    auto originSize = input->getDescriptor()->getImage().size(); // image size
 
     float xmin = std::max(bbox.xmin, 0.0f);
     float ymin = std::max(bbox.ymin, 0.0f);
@@ -182,9 +190,13 @@ BBox FitTvPersonCropOperation::fixBbox(const std::shared_ptr<NodeInput>& input, 
         height = height * 1.25f;
     }
 
+#if 0
     float targetXmin = std::max(0.0f, ((xmin + xmax) / 2.0f) - ((width / 2.0f)));
     float targetYmin = std::max(0.0f, ((ymin + ymax) / 2.0f) - ((height / 2.0f)));
-
+#else // blank padding can be in both left and right side.
+    float targetXmin = ((xmin + xmax) / 2.0f) - ((width / 2.0f));
+    float targetYmin = ((ymin + ymax) / 2.0f) - ((height / 2.0f));
+#endif
     BBox targetBox(originSize.width, originSize.height);
     targetBox.addTlhw(targetXmin, targetYmin, width, height);
     return targetBox;

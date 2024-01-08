@@ -30,7 +30,12 @@ void drawResults(const std::string& inputPath, const std::string & outputPath, c
     }
 
     if (drawAll) {
-        result = Renderer::drawRects(result, fd->getCropRects(), cv::Scalar(255, 0, 0), 1);
+        const cv::Rect &roiRect = fd->getRoiRect();
+        auto cropBbox = fd->getCropBbox(); // get fixedBbox
+        auto cropRect = cv::Rect(cropBbox[0].xmin + roiRect.x , cropBbox[0].ymin + roiRect.y, cropBbox[0].width, cropBbox[0].height);
+
+        result = Renderer::drawRects(result, { roiRect }, cv::Scalar(127,127,127), 2);
+        result = Renderer::drawRects(result, { cropRect }, cv::Scalar(255, 0, 0), 1);
         result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
     }
 

@@ -117,7 +117,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
         bool addPose3d(int trackId,
                 const std::vector<Joint3D>& keyPoints,
                 const Joint3D& trajectory);
-        bool clipKeypointRange(std::vector<float> &pos);
+        bool clipKeypointRoiRange(std::vector<float> &pos);
         bool addPose3dPos(int trackId,
                 const std::vector<Joint3D>& keyPoints);
         bool addPose3dTraj(int trackId,
