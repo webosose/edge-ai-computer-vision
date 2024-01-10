@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -98,37 +98,31 @@ bool FaceMeshRGBExtractOperation::runImpl(const std::shared_ptr<NodeInput> &inpu
         contours.push_back(mouthPoly);
 
         auto score = facemesh[0]["score"].GetDouble();
-        // std::cout << "score: " << score << std::endl;
 
         cv::drawContours(mask, outers,   -1, cv::Scalar(255, 255, 255), -1, cv::LINE_AA);
         cv::drawContours(mask, contours, -1, cv::Scalar(0, 0, 0),       -1, cv::LINE_AA);
 
         cv::Mat coloredMask = cv::Mat::zeros(cv::Size(boundRect.width, boundRect.height), CV_8UC1);
         cv::bitwise_and(faceMeshCropMat, faceMeshCropMat, coloredMask, mask = mask);
-
         // imwrite("face_mesh.png", coloredMask);
 
         // Face Mesh RGB Extraction for rPPG
-        std::vector<std::vector<unsigned char>> roiAllPixel;
+        int count = 0;
+        float r,g,b;
         for (int i=0; i<mask.rows; i++){
             for (int j=0; j<mask.cols; j++) {
                 if (mask.at<unsigned char>(i, j) == 255) { // mask == 255 -> True
-                    auto bgr = coloredMask.at<cv::Vec3b>(i, j);
-                    roiAllPixel.push_back( {bgr[0], bgr[1], bgr[2]} );
+                    cv::Vec3b bgr = coloredMask.at<cv::Vec3b>(i, j);
+                    r += bgr[2];
+                    g += bgr[1];
+                    b += bgr[0];
+                    count++;
                 }
             }
         }
-
-        float r,g,b;
-        for (int i=0; i<roiAllPixel.size(); i++){
-            r += roiAllPixel[i][2];
-            g += roiAllPixel[i][1];
-            b += roiAllPixel[i][0];
-        }
-
-        r /= roiAllPixel.size();
-        g /= roiAllPixel.size();
-        b /= roiAllPixel.size();
+        r /= count;
+        g /= count;
+        b /= count;
 
         rj::Document doc;
         doc.SetObject();

@@ -188,7 +188,6 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     xt::xarray<double> mesh_dataset = xt::adapt((double*)image.data, image.total() * image.channels(), xt::no_ownership(), shape); // total=480, channels=1
     xt::xarray<double> timeInfo = xt::cumsum(xt::view(mesh_dataset, xt::all(), 0)); // [120]
     xt::xarray<double> intrTime = xt::arange((1.0 / m_fsRe), (m_targetTime + 1.0 / m_fsRe), (1.0f / m_fsRe)); // [400]
-
     // CubicSpline Interpolation - AI Reseach Center
     xt::xarray<double> R_yNew, G_yNew, B_yNew;
     CubicSpline cubicSpline;
@@ -236,8 +235,8 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
             for(int i = m; i < n; i++) {
                 double h_update = h_.at(count++) - h_mean;
                 rPPGmDat.at(i) = rPPGmDat.at(i) + h_update;
+                // rPPGmDat.at(i) = rPPGmDat.at(i) + (h_.at(i-m) - h_mean);
             }
-
         }
     }
 

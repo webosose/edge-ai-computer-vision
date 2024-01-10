@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <aif/faceMesh/FaceMeshDetector.h>
-#include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
 namespace aif {
@@ -39,20 +38,39 @@ t_aif_status FaceMeshDetector::fillInputTensor(const cv::Mat& img)/* override*/
             throw std::runtime_error("tflite interpreter not initialized!!");
         }
 
-        t_aif_status res = aif::fillInputTensor<float, cv::Vec3f>(
-            m_interpreter.get(),
-            img,
-            width,
-            height,
-            channels,
-            false,
-            aif::kAifNormalization);
+        tflite::Interpreter* interpreter = m_interpreter.get();
 
-        if (res != kAifOk) {
-            throw std::runtime_error("fillInputTensor failed!!");
+        cv::Mat img_resized;
+        if (img.cols < width || img.rows < height) // expand
+        {
+            cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_LINEAR);
+        }
+        else // shrink...
+        {
+            cv::resize(img, img_resized, cv::Size(width, height), 0, 0, cv::INTER_AREA);
         }
 
-        return res;
+        TRACE("resized size: ", img_resized.size());
+        if (img_resized.rows != height || img_resized.cols != width) {
+            Loge("image resize failed!!");
+            return kAifError;
+        }
+
+        img_resized.convertTo(img_resized, CV_32FC3);
+
+        // Normalization: 0 ~ 1
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                const auto &rgb = img_resized.at<cv::Vec3f>(i, j);
+                if (interpreter->typed_input_tensor<float>(0) != nullptr) {
+                    interpreter->typed_input_tensor<float>(0)[i * width * channels + j * channels + 0] = rgb[2] / 255;
+                    interpreter->typed_input_tensor<float>(0)[i * width * channels + j * channels + 1] = rgb[1] / 255;
+                    interpreter->typed_input_tensor<float>(0)[i * width * channels + j * channels + 2] = rgb[0] / 255;
+                }
+            }
+        }
+
+        return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
         return kAifError;
