@@ -96,6 +96,7 @@ link_directories(
 
 set(SRC_FILES
     ${SRC_DIR}/main.cpp
+    ${SRC_DIR}/verification.cpp
 )
 
 set(LIBS

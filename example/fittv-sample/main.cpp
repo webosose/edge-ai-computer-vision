@@ -13,27 +13,30 @@
 #include <filesystem> // C++17
 
 #include "Renderer.h"
+#include "verification.h"
 #include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
 
 using namespace aif;
 namespace fs = std::filesystem;
 
-void drawResults(const std::string& inputPath, const std::string & outputPath, const Pipe& pipe)
+void drawResults(const std::string& inputPath, const std::string & outputPath, const Pipe& pipe, bool drawAll = true)
 {
     std::cout << "Input: " << inputPath << std::endl;
     std::cout << "Output: " << std::endl << pipe.getDescriptor()->getResult() << std::endl;
     auto fd = std::dynamic_pointer_cast<FitTvPoseDescriptor>(pipe.getDescriptor());
     cv::Mat result = fd->getImage();
     for (auto& keyPoints : fd->getKeyPoints()) {
-        result = Renderer::drawPose2d(result, keyPoints);
+        result = Renderer::drawPose2d(result, keyPoints, drawAll);
     }
 
-    result = Renderer::drawRects(result, fd->getCropRects(), cv::Scalar(255, 0, 0), 1);
-    result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
+    if (drawAll) {
+        result = Renderer::drawRects(result, fd->getCropRects(), cv::Scalar(255, 0, 0), 1);
+        result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
+    }
 
     cv::imwrite(outputPath, result);
-
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -49,7 +52,7 @@ int main(int argc, char* argv[])
                     "operation" : {
                         "type" : "detector",
                         "config": {
-                            "model": "person_yolov3_v1_npu",
+                            "model": "person_yolov3_v2_npu",
                             "param": {
                                 "modelParam": {
                                     "detectObject": "BODY"
@@ -184,35 +187,9 @@ int main(int argc, char* argv[])
 
     const fs::path pathStr(inputPath);
     std::error_code ec;
-    if (inputPath.find("pose_model_val_data") != std::string::npos &&
-                                                 fs::is_directory(pathStr, ec))
-    {
-        for (auto i = 1; i < 10; i++) {
-            std::string inputPathDir(inputPath);
-            inputPathDir += std::to_string(i);
-            std::vector<cv::String> files;
-            cv::glob( inputPathDir, files );
-
-            for (int j = 0; j < files.size(); j++) {
-                cv::Mat image = cv::imread(files[j]);
-                if (!pipe.detect(image)) {
-                    std::cout << "failed to build pipe" << std::endl;
-                    return 0;
-                }
-
-                std::string outputPath = files[j];
-                size_t found = outputPath.find_last_of(".");
-                if (found == std::string::npos) {
-                    std::cout << "Input Image file is wrong" << std::endl;
-                    return 0;
-                }
-
-                outputPath = outputPath.substr(0, found) + "_res" + outputPath.substr(found);
-                std::cout << "outImagePath: " << outputPath << std::endl;
-
-                drawResults(files[j], outputPath, pipe);
-            }
-        }
+    if (fs::is_directory(pathStr, ec)) {
+        /* verification */
+        verify_Dataset(pipe, inputPath, true);
     } else {
         cv::Mat image = cv::imread(inputPath);
         for (int i = 0; i < num_iterator; i++) {     // num_iterator = 1 in default
@@ -222,10 +199,10 @@ int main(int argc, char* argv[])
         }
 
         drawResults(inputPath, outputPath, pipe);
+
     }
 
     AIVision::deinit();
 
     return 0;
 }
-
