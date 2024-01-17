@@ -8,7 +8,6 @@
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 #include <aif/rppg/CubicSpline.h>
-
 #include <aif/rppg/FiltFilt.h>
 #include <aif/rppg/FftLib.h>
 
@@ -226,16 +225,13 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
             double std_s_second = xt::stddev(S_second)();
 
             xt::xarray<double> h_ = xt::zeros<double>({S_first.shape()[0]});
-            for(int i = 0; i < S_first.shape()[0]; i++) {
-                h_.at(i) = S_first.at(i) + (std_s_first / std_s_second) * S_second.at(i);
-            }
+            h_ = S_first + (std_s_first / std_s_second) * S_second;
 
             double h_mean = xt::mean(h_, {0})();
             int count = 0;
             for(int i = m; i < n; i++) {
-                double h_update = h_.at(count++) - h_mean;
-                rPPGmDat.at(i) = rPPGmDat.at(i) + h_update;
-                // rPPGmDat.at(i) = rPPGmDat.at(i) + (h_.at(i-m) - h_mean);
+                double h_update = h_(count++) - h_mean;
+                rPPGmDat(i) = rPPGmDat(i) + h_update;
             }
         }
     }

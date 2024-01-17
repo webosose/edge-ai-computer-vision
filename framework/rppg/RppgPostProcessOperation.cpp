@@ -8,13 +8,11 @@
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 #include <aif/rppg/FiltFilt.h>
-// #include <aif/rppg/FftLib.h>
 
 #include <cmath>
 #include <iostream>
 #include <vector>
 #include <algorithm>
-// #include <xtensor/xsort.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xindex_view.hpp>
 #include <xtensor/xbuilder.hpp>
