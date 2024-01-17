@@ -260,7 +260,6 @@ bool RppgPreProcessOperation::runImpl(const std::shared_ptr<NodeInput>& input)
     // memoryRestore(cv_reshapeData.data, "./swp_input.bin");
     descriptor->copyImage(cv_reshapeData);
     fdescriptor->addFirstInputXarray(data11); // for post-process
-
     return true;
 }
 

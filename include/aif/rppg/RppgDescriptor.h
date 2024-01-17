@@ -18,7 +18,7 @@ public:
     RppgDescriptor();
     virtual ~RppgDescriptor();
 
-    void addRppgOutput(std::vector<float> outputs);
+    void addRppgOutput(std::vector<float>& outputs);
     void clear();
 
     void addRppg(std::vector<float>& rppgOutput) { m_rppgOut = std::move(rppgOutput); }

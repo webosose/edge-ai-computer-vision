@@ -155,6 +155,11 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/facemesh_descriptor_test.cpp
         ${SRC_DIR}/facemesh_detector_test.cpp
         ${SRC_DIR}/facemesh_param_test.cpp
+        ${SRC_DIR}/rppg_descriptor_test.cpp
+        ${SRC_DIR}/rppg_detector_test.cpp
+        ${SRC_DIR}/rppg_param_test.cpp
+        ${SRC_DIR}/rppg_pre_process_operation_test.cpp
+        ${SRC_DIR}/rppg_post_process_operation_test.cpp
     )
 ENDIF(WITH_EXTRA_MODELS)
 

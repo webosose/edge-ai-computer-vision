@@ -92,8 +92,8 @@ t_aif_status CpuRppgDetector::postProcessing(const cv::Mat &img, std::shared_ptr
         std::vector<float> outputs;
         outputs.insert(outputs.end(), &data[0], &data[out_channel]);
 
+        if (rppgDescriptor != nullptr)rppgDescriptor->addRppgOutput(outputs);
         rppgDescriptor->addRppg(outputs);
-        if (rppgDescriptor != nullptr) rppgDescriptor->addRppgOutput(outputs);
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
         return kAifError;

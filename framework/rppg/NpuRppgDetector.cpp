@@ -127,9 +127,9 @@ t_aif_status NpuRppgDetector::postProcessing(const cv::Mat &img, std::shared_ptr
         if (rppgDescriptor == nullptr) {
             throw std::runtime_error("failed to convert Descriptor to RppgDescriptor");
         }
-        rppgDescriptor->addRppg(outputs);
-        if (rppgDescriptor != nullptr) rppgDescriptor->addRppgOutput(outputs);
 
+        if (rppgDescriptor != nullptr) rppgDescriptor->addRppgOutput(outputs);
+        rppgDescriptor->addRppg(outputs);
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
         return kAifError;

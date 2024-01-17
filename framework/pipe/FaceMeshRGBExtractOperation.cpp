@@ -127,11 +127,11 @@ bool FaceMeshRGBExtractOperation::runImpl(const std::shared_ptr<NodeInput> &inpu
         rj::Document doc;
         doc.SetObject();
         rj::Document::AllocatorType& allocator = doc.GetAllocator();
-        rj::Value faceMesh(rj::kArrayType);
-        faceMesh.PushBack(r, allocator);
-        faceMesh.PushBack(g, allocator);
-        faceMesh.PushBack(b, allocator);
-        doc.GetObject().AddMember("meshData", faceMesh, allocator);
+        rj::Value faceMeshRGB(rj::kArrayType);
+        faceMeshRGB.PushBack(r, allocator);
+        faceMeshRGB.PushBack(g, allocator);
+        faceMeshRGB.PushBack(b, allocator);
+        doc.GetObject().AddMember("meshData", faceMeshRGB, allocator);
         descriptor->addBridgeOperationResult(
                 m_id,
                 m_config->getType(),

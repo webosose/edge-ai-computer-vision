@@ -26,7 +26,7 @@ RppgDescriptor::~RppgDescriptor()
 {
 }
 
-void RppgDescriptor::addRppgOutput(std::vector<float> outputs)
+void RppgDescriptor::addRppgOutput(std::vector<float>& outputs)
 {
     rj::Document::AllocatorType &allocator = m_root.GetAllocator();
     if (!m_root.HasMember("rPPG")) {
@@ -35,10 +35,11 @@ void RppgDescriptor::addRppgOutput(std::vector<float> outputs)
     }
 
     rj::Value data(rj::kObjectType);
+    rj::Value tensors(rj::kArrayType);
     for (int i = 0; i < outputs.size(); i++) {
-        data.PushBack(outputs[i], allocator);
+        tensors.PushBack(outputs[i], allocator);
     }
-    data.AddMember("outputTensors", data, allocator);
+    data.AddMember("outputTensors", tensors, allocator);
     m_root["rPPG"].PushBack(data, allocator);
 }
 
