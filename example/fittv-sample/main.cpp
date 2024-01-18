@@ -106,13 +106,32 @@ int main(int argc, char* argv[])
                     }
                 },
                 {
-                    "id" : "detect_pose3d",
+                    "id" : "detect_pose3d_pos",
                     "input" : ["image", "inference"],
                     "output" : ["image", "inference"],
                     "operation" : {
                         "type" : "fittv_pose3d_detector",
                         "config": {
-                            "model": "pose3d_videopose3d_v1_npu",
+                            "model": "pose3d_videopose3d_v2_pos_low",
+                            "param": {
+                                "delegates": [
+                                    {
+                                        "name": "npu_delegate",
+                                        "option": {}
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "id" : "detect_pose3d_traj",
+                    "input" : ["image", "inference"],
+                    "output" : ["image", "inference"],
+                    "operation" : {
+                        "type" : "fittv_pose3d_detector",
+                        "config": {
+                            "model": "pose3d_videopose3d_v2_traj_low",
                             "param": {
                                 "delegates": [
                                     {
@@ -124,7 +143,6 @@ int main(int argc, char* argv[])
                         }
                     }
                 }
-
             ]
         })";
 
@@ -189,7 +207,7 @@ int main(int argc, char* argv[])
     std::error_code ec;
     if (fs::is_directory(pathStr, ec)) {
         /* verification */
-        verify_Dataset(pipe, inputPath, true);
+        verify_Dataset(pipe, inputPath, true, true);
     } else {
         cv::Mat image = cv::imread(inputPath);
         for (int i = 0; i < num_iterator; i++) {     // num_iterator = 1 in default

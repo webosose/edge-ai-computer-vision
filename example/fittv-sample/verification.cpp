@@ -41,15 +41,20 @@ std::string getImageName(const std::string& outputPath)
     if (found != std::string::npos) {
         img_name = outputPath.substr(found+1);
     } else {
-        size_t found2 = outputPath.find("/");
-        img_name = outputPath.substr(found2+1);
+        size_t found2 = outputPath.find("/u0"); // u007 u011 u016 u019
+        if (found2 != std::string::npos) {
+            img_name = outputPath.substr(found2+1);
+        } else {
+            size_t found3 = outputPath.find("/");
+            img_name = outputPath.substr(found3+1);
+        }
     }
     std::cout << "CHECKING image name for json: " << img_name << std::endl;
 
     return img_name;
 }
 
-bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles)
+bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles, bool saveToImages)
 {
     std::string jsonPath = savePath + "outputs.json";
     std::ofstream ofs(jsonPath);
@@ -84,13 +89,15 @@ bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles)
         outputPath = outputPath.substr(0, found) + "_res" + outputPath.substr(found);
         // std::cout << "outImagePath: " << outputPath << std::endl;
 
-        drawResults(files[j], outputPath, pipe);
         if (saveToFiles) {
             if (startSaving) {
                 ofs << ",";
             }
             ofs << "\"" << img_name << "\":" << pipe.getDescriptor()->getResult();
             startSaving = true;
+        }
+        if (saveToImages) {
+            drawResults(files[j], outputPath, pipe);
         }
     }
 
@@ -99,7 +106,7 @@ bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles)
     return true;
 }
 
-void verify_Dataset(Pipe& pipe, const std::string& inputPath, bool saveToFiles)
+void verify_Dataset(Pipe& pipe, const std::string& inputPath, bool saveToFiles, bool saveToImages)
 {
     if (inputPath.find("pose_model_val_data") != std::string::npos) {
         /* col9_pose_model_val_data/images/ */
@@ -112,9 +119,24 @@ void verify_Dataset(Pipe& pipe, const std::string& inputPath, bool saveToFiles)
 
             savePath = inputPathDir;
 
-            if (detectFiles(pipe, files, saveToFiles) == false) {
+            if (detectFiles(pipe, files, saveToFiles, saveToImages) == false) {
                 return;
             }
+        }
+    } else if (inputPath.find("/u0") != std::string::npos) {
+        /* u007
+           u011
+           u016
+           u019 */
+
+        std::vector<cv::String> files;
+        cv::glob( inputPath + "*.jpg", files );        /* files[] are only .jpg file. */
+        std::sort(files.begin(), files.end());
+
+        savePath = inputPath;
+
+        if (detectFiles(pipe, files, saveToFiles, saveToImages) == false) {
+            return;
         }
     } else {
         /* col7_bodyscan/
@@ -126,7 +148,7 @@ void verify_Dataset(Pipe& pipe, const std::string& inputPath, bool saveToFiles)
 
         savePath = inputPath;
 
-        if (detectFiles(pipe, files, saveToFiles) == false) {
+        if (detectFiles(pipe, files, saveToFiles, saveToImages) == false) {
             return;
         }
     }
