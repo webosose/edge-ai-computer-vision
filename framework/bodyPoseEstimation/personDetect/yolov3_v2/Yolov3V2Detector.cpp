@@ -213,7 +213,7 @@ t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat &img, std::shared_pt
                 if (m_GTBBoxes.size() > m_frameId) {
                     auto gtBBox = m_GTBBoxes[m_frameId]; // pair
                     if (gtBBox.second.width > 0 && gtBBox.second.height > 0) {
-                        yolov3Descriptor->addPerson(score, gtBBox.second);
+                        yolov3Descriptor->addPerson(score, gtBBox.second, gtBBox.first);
                         Logi(__func__, " use GT Box !! ", gtBBox.first, ", ", gtBBox.second);
                     }
                 } else {

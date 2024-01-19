@@ -20,7 +20,7 @@ public:
     virtual ~Yolov3V1Descriptor();
 
     // TODO: implment add result
-    virtual void addPerson(float score, const BBox &bbox);
+    virtual void addPerson(float score, const BBox &bbox, const std::string& dbg_fname = "");
     virtual void drawBbox(std::string imgPath);
     virtual void clear();
 

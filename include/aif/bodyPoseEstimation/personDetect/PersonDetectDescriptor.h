@@ -19,7 +19,7 @@ public:
     virtual ~PersonDetectDescriptor() {}
 
     // TODO: implment add result
-    virtual void addPerson(float score, const BBox &bbox) = 0;
+    virtual void addPerson(float score, const BBox &bbox, const std::string& dbg_fname = "") = 0;
     virtual void drawBbox(std::string imgPath) = 0;
     virtual void clear() = 0;
 
@@ -28,6 +28,7 @@ public:
     void addRoiRect(const cv::Rect &roi, bool valid) { m_roiRect = roi; m_roiValid = valid; }
     int getNumBbox() const { return m_boxes.size(); }
     float getScore(int index) const { return m_scores[index]; }
+    const std::string& getDbgFileName() { return m_dbg_fname; }
     const BBox& getBbox(int index) const { return m_boxes[index]; }
     const cv::Rect& getRoiRect() const { return m_roiRect; }
     bool isBodyDetect() { return m_IsBodyDetect; }
@@ -37,6 +38,7 @@ protected:
     size_t m_personCount;
     std::vector<BBox> m_boxes;              // boxes in image coordinates
     std::vector<float> m_scores;            // confidence for each box detection
+    std::string m_dbg_fname;
     cv::Rect m_roiRect;
     bool m_roiValid;
     bool m_IsBodyDetect;

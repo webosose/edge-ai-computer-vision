@@ -8,6 +8,6 @@
 
 #include <aif/pipe/Pipe.h>
 
-void verify_Dataset(aif::Pipe& pipe, const std::string& inputPath, bool saveToFiles, bool saveToImages);
+void verify_Dataset(aif::Pipe& pipe, const std::string& inputPath, const std::string& outputPath);
 
 #endif //__VERIFICATION_H__

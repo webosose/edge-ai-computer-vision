@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
     std::error_code ec;
     if (fs::is_directory(pathStr, ec)) {
         /* verification */
-        verify_Dataset(pipe, inputPath, true, true);
+        verify_Dataset(pipe, inputPath, outputPath);
     } else {
         cv::Mat image = cv::imread(inputPath);
         for (int i = 0; i < num_iterator; i++) {     // num_iterator = 1 in default

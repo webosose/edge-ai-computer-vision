@@ -27,7 +27,7 @@ Yolov3V1Descriptor::~Yolov3V1Descriptor()
 {
 }
 
-void Yolov3V1Descriptor::addPerson(float score, const BBox &bbox)
+void Yolov3V1Descriptor::addPerson(float score, const BBox &bbox, const std::string &dbg_fname)
 {
     m_scores.push_back(score); /* only for person detect */
     m_boxes.push_back(bbox);
@@ -50,6 +50,11 @@ void Yolov3V1Descriptor::addPerson(float score, const BBox &bbox)
         .PushBack(bbox.c0, allocator)
         .PushBack(bbox.c1, allocator);
     person.AddMember("bbox", Bbox, allocator);
+
+    if (!dbg_fname.empty()) {
+        person.AddMember("dbg_fname", dbg_fname, allocator);
+        m_dbg_fname = dbg_fname;
+    }
 
     m_root["persons"].PushBack(person, allocator);
     m_personCount++;
@@ -108,6 +113,7 @@ void Yolov3V1Descriptor::clear()
 
     m_scores.clear();
     m_boxes.clear();
+    m_dbg_fname.clear();
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     m_root.RemoveMember("persons");

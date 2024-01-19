@@ -269,13 +269,18 @@ t_aif_status Yolov3V1Param::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("gt_bboxes")) {
             gt_bboxes.clear();
+            auto bboxes_arr = modelParam["gt_bboxes"].GetArray();
+            gt_bboxes = std::vector<std::pair<std::string, std::vector<float>>>(bboxes_arr.Size());
+            Logd(__func__, " gt_bboxes.size is : ", gt_bboxes.size());
             for (auto& bbox : modelParam["gt_bboxes"].GetArray()) {
                 std::string fname = bbox[0].GetString();
+                int frameId = bbox[1].GetInt();
                 std::vector<float> box;
-                for (auto id = 1; id <= 4; id++) {
+                for (auto id = 2; id <= 5; id++) {
                     box.push_back(bbox[id].GetFloat());
                 }
-                gt_bboxes.push_back(std::make_pair(fname, box));
+                gt_bboxes[frameId] = std::make_pair(fname, box); // gt_bboxes is sorted by frameId in execution.
+                Logd(__func__, " gt_bboxes frameId is : ", frameId);
             }
         }
         if (modelParam.HasMember("origImgRoiX")) {

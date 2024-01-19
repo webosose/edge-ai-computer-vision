@@ -87,7 +87,7 @@ bool FitTvPoseDescriptor::addPersonDetectorResult(
     Logi("addPersonDectectorResult: ", descriptor->toStr());
     m_type.addType(NodeType::INFERENCE);
     for (int i = 0; i < descriptor->getNumBbox(); i++) {
-        if (!addBBox(descriptor->getScore(i), descriptor->getBbox(i))) {
+        if (!addBBox(descriptor->getScore(i), descriptor->getBbox(i), descriptor->getDbgFileName())) {
             return false;
         }
     }
@@ -142,7 +142,7 @@ bool FitTvPoseDescriptor::addPose3dDetectorTrajResult(
             descriptor->getTrajectory());
 }
 
-bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
+bool FitTvPoseDescriptor::addBBox(float score, const BBox& box, const std::string& dbg_fname)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("poseEstimation")) {
@@ -160,6 +160,9 @@ bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
     pose.AddMember("bbox", jbox, allocator);
     pose.AddMember("id", m_trackId++, allocator);
     pose.AddMember("timestamp", m_startTime, allocator);
+    if (!dbg_fname.empty()) {
+        pose.AddMember("dbg_fname", dbg_fname, allocator);
+    }
     m_root["poseEstimation"].PushBack(pose, allocator);
 
     m_boxes.push_back(box);

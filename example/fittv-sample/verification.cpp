@@ -15,7 +15,6 @@
 #include <aif/bodyPoseEstimation/fittv/FitTvPoseDescriptor.h>
 
 using namespace aif;
-//namespace rj = rapidjson;
 namespace fs = std::filesystem;
 
 std::string savePath;
@@ -34,10 +33,16 @@ void drawResults(const std::string& inputPath, const std::string & outputPath, c
 }
 
 
-std::string getImageName(const std::string& outputPath)
+std::string getImageName(const std::string& outputPath, bool onlyFileName = false)
 {
-    size_t found = outputPath.find("/col");
     std::string img_name;
+    if (onlyFileName) {
+        size_t found = outputPath.rfind("/");
+        img_name = outputPath.substr(found+1);
+        return img_name;
+    }
+
+    size_t found = outputPath.find("/col");
     if (found != std::string::npos) {
         img_name = outputPath.substr(found+1);
     } else {
@@ -45,13 +50,34 @@ std::string getImageName(const std::string& outputPath)
         if (found2 != std::string::npos) {
             img_name = outputPath.substr(found2+1);
         } else {
-            size_t found3 = outputPath.find("/");
+            size_t found3 = outputPath.rfind("/");
             img_name = outputPath.substr(found3+1);
         }
     }
     std::cout << "CHECKING image name for json: " << img_name << std::endl;
 
     return img_name;
+}
+
+bool checkDetectedFileName(const std::string &inputFileName, const std::string &result)
+{
+    rj::Document json;
+    json.Parse(result);
+
+    const rj::Value &res = json["poseEstimation"][0];
+    if (res.HasMember("dbg_fname")) {
+        const rj::Value &dbg_fname = json["poseEstimation"][0]["dbg_fname"];
+        auto fname = dbg_fname.GetString();
+        if (fname == inputFileName) {
+            std::cout << __func__<< " input File Name is SAME with detected File Name " << inputFileName << " == " << fname << std::endl;
+            return true;
+        } else {
+            std::cout << __func__<< " input File Name is different with detected File Name " << inputFileName << " != " << fname << std::endl;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles, bool saveToImages)
@@ -77,23 +103,28 @@ bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles, b
            return false;
         }
 
-        std::string outputPath = files[j];
-        size_t found = outputPath.find_last_of(".");
+        const std::string& imgFileName = getImageName(files[j], true); // only file name
+
+        if (!checkDetectedFileName(imgFileName, pipe.getDescriptor()->getResult())) {
+            std::cout << " Detect Wrong File\n";
+            return false;
+        }
+
+        size_t found = imgFileName.find_last_of(".");
         if (found == std::string::npos) {
             std::cout << "Input Image file is wrong" << std::endl;
             return false;
         }
+        std::string outputPath = savePath + "/" + imgFileName.substr(0, found) + "_res" + imgFileName.substr(found);
+        std::cout << "outImagePath: " << outputPath << std::endl;
 
-        std::string img_name = getImageName(files[j]);
-
-        outputPath = outputPath.substr(0, found) + "_res" + outputPath.substr(found);
-        // std::cout << "outImagePath: " << outputPath << std::endl;
+        std::string imgNameKey = getImageName(files[j]); // with dir path..
 
         if (saveToFiles) {
             if (startSaving) {
                 ofs << ",";
             }
-            ofs << "\"" << img_name << "\":" << pipe.getDescriptor()->getResult();
+            ofs << "\"" << imgNameKey << "\":" << pipe.getDescriptor()->getResult();
             startSaving = true;
         }
         if (saveToImages) {
@@ -106,49 +137,30 @@ bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles, b
     return true;
 }
 
-void verify_Dataset(Pipe& pipe, const std::string& inputPath, bool saveToFiles, bool saveToImages)
+void verify_Dataset(Pipe& pipe, const std::string& inputPath, const std::string& outputPath)
 {
-    if (inputPath.find("pose_model_val_data") != std::string::npos) {
-        /* col9_pose_model_val_data/images/ */
-        for (auto i = 1; i < 10; i++) {
-            std::string inputPathDir(inputPath);
-            inputPathDir += std::to_string(i);
-            inputPathDir += "/";
-            std::vector<cv::String> files;
-            cv::glob( inputPathDir + "*.jpg", files );  /* files[] are only .jpg file. */
+    std::vector<cv::String> files;
+    cv::glob( inputPath + "*.jpg", files );        /* files[] are only .jpg file. */
+    savePath = outputPath;
 
-            savePath = inputPathDir;
-
-            if (detectFiles(pipe, files, saveToFiles, saveToImages) == false) {
-                return;
-            }
-        }
-    } else if (inputPath.find("/u0") != std::string::npos) {
+    if (inputPath.find("/u0") != std::string::npos) {
         /* u007
            u011
            u016
            u019 */
 
-        std::vector<cv::String> files;
-        cv::glob( inputPath + "*.jpg", files );        /* files[] are only .jpg file. */
         std::sort(files.begin(), files.end());
 
-        savePath = inputPath;
-
-        if (detectFiles(pipe, files, saveToFiles, saveToImages) == false) {
+        if (detectFiles(pipe, files, true, false) == false) {
             return;
         }
     } else {
         /* col7_bodyscan/
            col8_bodyscan_2/
+           col9_pose_model_val_data/images/$id/
            col10_stop/images/ */
 
-        std::vector<cv::String> files;
-        cv::glob( inputPath + "*.jpg", files );        /* files[] are only .jpg file. */
-
-        savePath = inputPath;
-
-        if (detectFiles(pipe, files, saveToFiles, saveToImages) == false) {
+        if (detectFiles(pipe, files, true, true) == false) {
             return;
         }
     }
