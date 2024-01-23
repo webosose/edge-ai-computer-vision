@@ -62,7 +62,7 @@
        }
      },
      {
-       "id": "face_mask_extract",
+       "id": "face_mesh_extract",
        "input": [
          "image",
          "inference"
@@ -71,7 +71,7 @@
          "image"
        ],
        "operation": {
-         "type": "face_mask_extract",
+         "type": "face_mesh_extract",
          "config": {
            "targetId": "face_mesh"
          }

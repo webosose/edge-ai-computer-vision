@@ -18,8 +18,8 @@ set(PIPE_SRC
     ${PIPE_SRC_DIR}/PipeDescriptorFactory.cpp
     ${PIPE_SRC_DIR}/PersonCropOperation.cpp
     ${PIPE_SRC_DIR}/FaceCropOperation.cpp
-    ${PIPE_SRC_DIR}/FaceMaskExtractOperation.cpp
-    ${PIPE_SRC_DIR}/FaceMeshRGBExtractOperation.cpp
+    ${PIPE_SRC_DIR}/FaceMeshExtractOperation.cpp
+    ${PIPE_SRC_DIR}/FaceMeshExtractOperationConfig.cpp
     ${PIPE_SRC_DIR}/ChangeInputOperation.cpp
     ${PIPE_SRC_DIR}/ChangeInputOperationConfig.cpp
 )

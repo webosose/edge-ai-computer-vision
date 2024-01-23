@@ -125,8 +125,11 @@ int main(int argc, char *argv[])
                     "input": ["image","inference"],
                     "output": ["image"],
                     "operation": {
-                        "type": "face_mesh_rgb_extract",
-                        "config": {"targetId": "face_mesh"}
+                        "type": "face_mesh_extract",
+                        "config": {
+                            "targetId": "face_mesh",
+                            "rgbExtractOn": true
+                        }
                     }
                 }
             ]

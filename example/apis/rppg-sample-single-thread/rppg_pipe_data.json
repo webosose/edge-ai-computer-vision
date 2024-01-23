@@ -49,8 +49,11 @@
             "input": ["image","inference"],
             "output": ["image","inference"],
             "operation": {
-                "type": "face_mesh_rgb_extract",
-                "config": {"targetId": "face_mesh"}
+                "type": "face_mesh_extract",
+                "config": {
+                    "targetId": "face_mesh",
+                    "rgbExtractOn": true
+                }
             }
         }
     ]

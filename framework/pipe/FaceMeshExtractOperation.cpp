@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2023 LG Electronics Inc.
+ * Copyright (c) 2024 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/pipe/FaceMeshRGBExtractOperation.h>
+#include <aif/pipe/FaceMeshExtractOperation.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
@@ -11,21 +11,29 @@
 
 namespace aif {
 
-FaceMeshRGBExtractOperation::FaceMeshRGBExtractOperation(const std::string &id)
+FaceMeshExtractOperation::FaceMeshExtractOperation(const std::string &id)
 : BridgeOperation(id)
 {
 }
 
-FaceMeshRGBExtractOperation::~FaceMeshRGBExtractOperation()
+FaceMeshExtractOperation::~FaceMeshExtractOperation()
 {
 }
 
-bool FaceMeshRGBExtractOperation::runImpl(const std::shared_ptr<NodeInput> &input)
+bool FaceMeshExtractOperation::runImpl(const std::shared_ptr<NodeInput> &input)
 {
     auto &descriptor = input->getDescriptor();
     if (!descriptor)
     {
         Loge(m_id, ": failed to run operaiton (descriptor is null)");
+        return false;
+    }
+
+    std::shared_ptr<FaceMeshExtractOperationConfig> config
+        = std::dynamic_pointer_cast<FaceMeshExtractOperationConfig>(m_config);
+    if (config == nullptr)
+    {
+        Loge(m_id, ": failed to convert BridgeOperationConfig to FaceMeshExtractOperationConfig");
         return false;
     }
 
@@ -35,7 +43,11 @@ bool FaceMeshRGBExtractOperation::runImpl(const std::shared_ptr<NodeInput> &inpu
     const float scaleH = image.rows;
 
     rj::Document json;
-    json.Parse(descriptor->getResult("face_mesh"));
+    if(config->getTargetId() == "") {
+        Loge(m_id, ": failed to get targetId. Face Mesh Extract Operation must need TargetID.");
+        return false;
+    }
+    json.Parse(descriptor->getResult(config->getTargetId()));
 
     const rj::Value &facemesh = json["facemesh"];
     const rj::Value &landmarks = facemesh[0]["landmarks"];
@@ -106,36 +118,41 @@ bool FaceMeshRGBExtractOperation::runImpl(const std::shared_ptr<NodeInput> &inpu
         cv::bitwise_and(faceMeshCropMat, faceMeshCropMat, coloredMask, mask = mask);
         // imwrite("face_mesh.png", coloredMask);
 
-        // Face Mesh RGB Extraction for rPPG
-        int count = 0;
-        float r,g,b;
-        for (int i=0; i<mask.rows; i++){
-            for (int j=0; j<mask.cols; j++) {
-                if (mask.at<unsigned char>(i, j) == 255) { // mask == 255 -> True
-                    cv::Vec3b bgr = coloredMask.at<cv::Vec3b>(i, j);
-                    r += bgr[2];
-                    g += bgr[1];
-                    b += bgr[0];
-                    count++;
+        if (config->getRGBextractOn()) // RGB Extraction for rPPG
+        {
+            int count = 0;
+            float r,g,b;
+            for (int i=0; i<mask.rows; i++){
+                for (int j=0; j<mask.cols; j++) {
+                    if (mask.at<unsigned char>(i, j) == 255) { // mask == 255 -> True
+                        cv::Vec3b bgr = coloredMask.at<cv::Vec3b>(i, j);
+                        r += bgr[2];
+                        g += bgr[1];
+                        b += bgr[0];
+                        count++;
+                    }
                 }
             }
-        }
-        r /= count;
-        g /= count;
-        b /= count;
+            r /= count;
+            g /= count;
+            b /= count;
 
-        rj::Document doc;
-        doc.SetObject();
-        rj::Document::AllocatorType& allocator = doc.GetAllocator();
-        rj::Value faceMeshRGB(rj::kArrayType);
-        faceMeshRGB.PushBack(r, allocator);
-        faceMeshRGB.PushBack(g, allocator);
-        faceMeshRGB.PushBack(b, allocator);
-        doc.GetObject().AddMember("meshData", faceMeshRGB, allocator);
-        descriptor->addBridgeOperationResult(
-                m_id,
-                m_config->getType(),
-                jsonObjectToString(doc.GetObject()));
+            rj::Document doc;
+            doc.SetObject();
+            rj::Document::AllocatorType& allocator = doc.GetAllocator();
+            rj::Value faceMeshRGB(rj::kArrayType);
+            faceMeshRGB.PushBack(r, allocator);
+            faceMeshRGB.PushBack(g, allocator);
+            faceMeshRGB.PushBack(b, allocator);
+            doc.GetObject().AddMember("meshData", faceMeshRGB, allocator);
+            descriptor->addBridgeOperationResult(m_id,
+                                                 m_config->getType(),
+                                                 jsonObjectToString(doc.GetObject()));
+        }
+        else
+        {
+            descriptor->setImage(coloredMask);
+        }
 
     } catch(const cv::Exception& e) {
         Loge(__func__, " Error: ", e.msg);

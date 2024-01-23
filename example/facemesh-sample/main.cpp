@@ -62,11 +62,11 @@ int main(int argc, char* argv[])
                     }
                 },
                 {
-                    "id": "face_mask_extract",
+                    "id": "face_mesh_extract",
                     "input": ["image","inference"],
                     "output": ["image"],
                     "operation": {
-                        "type": "face_mask_extract",
+                        "type": "face_mesh_extract",
                         "config": {"targetId": "face_mesh"}
                     }
                 }
