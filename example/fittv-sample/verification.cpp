@@ -63,6 +63,9 @@ bool checkDetectedFileName(const std::string &inputFileName, const std::string &
 {
     rj::Document json;
     json.Parse(result);
+    if(!json.HasMember("poseEstimation")) {
+        return true;
+    }
 
     const rj::Value &res = json["poseEstimation"][0];
     if (res.HasMember("dbg_fname")) {
