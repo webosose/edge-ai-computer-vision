@@ -8,8 +8,6 @@
 
 #include <aif/base/DetectorFactory.h>
 #include <aif/bodyPoseEstimation/pose3d/Pose3dDetector.h>
-// #include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
-// #include <aif/bodyPoseEstimation/pose3d/Pose3dParam.h>
 
 #include <vector>
 #include <memory>
