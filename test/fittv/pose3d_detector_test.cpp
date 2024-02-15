@@ -143,7 +143,7 @@ TEST_F(Pose3dDetectorTest, 01_pose3d_detect_person)
     cv::Mat joints2d_matd;
     joints2d_mat.convertTo( joints2d_matd, CV_64F );
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v2_pos_low", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D_V2_Low_Pos.tflite");
@@ -164,7 +164,7 @@ TEST_F(Pose3dDetectorTest, 01_pose3d_detect_person)
 
     EXPECT_TRUE(fd->detect(joints2d_matd, descriptor) == aif::kAifOk);
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     auto modelInfoTraj = fdTraj->getModelInfo();
     EXPECT_EQ(modelInfoTraj.height, 27); // numElems
     EXPECT_EQ(modelInfoTraj.width, 41); // mNumJointsIn
@@ -182,7 +182,7 @@ TEST_F(Pose3dDetectorTest, 02_pose3d_detect_person_video_test)
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose3dDescriptor>();
     auto foundPose3ds = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v2_pos_low", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D_V2_Low_Pos.tflite");
@@ -201,7 +201,7 @@ TEST_F(Pose3dDetectorTest, 02_pose3d_detect_person_video_test)
     EXPECT_EQ(modelInfo.width, 41); // mNumJointsIn
     EXPECT_EQ(modelInfo.channels, 2);
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     auto modelInfoTraj = fdTraj->getModelInfo();
     EXPECT_EQ(modelInfoTraj.height, 27); // numElems
     EXPECT_EQ(modelInfoTraj.width, 41); // mNumJointsIn
@@ -215,7 +215,7 @@ TEST_F(Pose3dDetectorTest, 02_pose3d_detect_person_video_test)
 
         EXPECT_TRUE(fd->detect(joints2d_matd, descriptor) == aif::kAifOk);
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
         EXPECT_TRUE(fdTraj->detect(joints2d_matd, descriptor) == aif::kAifOk);
 #endif
     }

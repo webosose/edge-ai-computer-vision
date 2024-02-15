@@ -44,7 +44,7 @@ TEST_F(Pose3dDescriptorTest, 01_constructor)
 TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
 {
     Pose3dDescriptor jpd;
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     Pose3dDescriptor jpdTraj;
 #endif
 
@@ -56,7 +56,7 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
 
     Joint3D joint3dPos = {1.0, 2.0, 3.0};
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     jpd.addJoints3D(joints3d);
     jpdTraj.addTraj3D(joint3dPos);
 #else
@@ -74,7 +74,7 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
     EXPECT_TRUE(d["poses3d"].IsArray());
     EXPECT_TRUE(d["poses3d"].Size() == 1);
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     auto jsonTraj = jpdTraj.toStr();
     Logd(jsonTraj);
 
@@ -101,7 +101,7 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
         EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][2].GetFloat() - (i+0.2f) < aif::EPSILON);
     }
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     EXPECT_TRUE(dTraj["poses3d"][0].IsObject());
     EXPECT_TRUE(dTraj["poses3d"][0].HasMember("joint3dPos"));
     EXPECT_TRUE(dTraj["poses3d"][0]["joint3dPos"].IsArray());

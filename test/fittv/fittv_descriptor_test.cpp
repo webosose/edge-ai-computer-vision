@@ -37,7 +37,7 @@ protected:
     {
     }
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     std::string personId{"person_yolov3_v2_npu"};
     std::string cropId{"fittv_person_crop"};
     std::string pose2dId{"pose2d_resnet_v2_low_npu"};
@@ -124,7 +124,7 @@ protected:
                 joints3d.push_back({(float)j, i * 10.0f + j, i * 20.0f + j});
             }
 
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
             std::shared_ptr<Pose3dDescriptor> pd =
                 std::dynamic_pointer_cast<Pose3dDescriptor>(DetectorFactory::get().getDescriptor(pose3dPosId));
             pd->setTrackId(i);
@@ -342,7 +342,7 @@ TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
     }
 
     auto p3ds = makePose3dDescriptor(numPerson);
-#if defined(USE_O24)
+#if defined(USE_FITMODEL_V2)
     for (auto i = 0; i < p3ds.size(); i += 2) {
         EXPECT_TRUE(fd->addDetectorOperationResult("detect_pose3d_pos", pose3dPosId, p3ds[i]));
         EXPECT_TRUE(fd->addDetectorOperationResult("detect_pose3d_traj", pose3dTrajId, p3ds[i+1]));
