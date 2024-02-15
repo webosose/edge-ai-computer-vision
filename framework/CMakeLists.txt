@@ -209,7 +209,6 @@ IF(WITH_XTENSOR)
     )
 ENDIF(WITH_XTENSOR)
 
-
 add_library(${LIB_NAME}
     SHARED
     ${SRC_FILES}

@@ -10,12 +10,9 @@ set(FITTV_SRC
     ${FITTV_SRC_DIR}/pose3d_descriptor_test.cpp
     ${FITTV_SRC_DIR}/pose3d_detector_test.cpp
     ${FITTV_SRC_DIR}/pose3d_param_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_v1_descriptor_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_v1_detector_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_v1_param_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_v2_descriptor_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_v2_detector_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_v2_param_test.cpp
+    ${FITTV_SRC_DIR}/yolov3_descriptor_test.cpp
+    ${FITTV_SRC_DIR}/yolov3_detector_test.cpp
+    ${FITTV_SRC_DIR}/yolov3_param_test.cpp
     ${FITTV_SRC_DIR}/yolov4_descriptor_test.cpp
     ${FITTV_SRC_DIR}/yolov4_detector_test.cpp
     ${FITTV_SRC_DIR}/yolov4_param_test.cpp

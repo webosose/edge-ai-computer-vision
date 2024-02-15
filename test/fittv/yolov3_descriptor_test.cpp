@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2024 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Descriptor.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
@@ -15,11 +15,11 @@
 using namespace aif;
 namespace rj = rapidjson;
 
-class Yolov3V1DescriptorTest : public ::testing::Test
+class Yolov3DescriptorTest : public ::testing::Test
 {
 protected:
-    Yolov3V1DescriptorTest() = default;
-    ~Yolov3V1DescriptorTest() = default;
+    Yolov3DescriptorTest() = default;
+    ~Yolov3DescriptorTest() = default;
 
     void SetUp() override
     {
@@ -30,9 +30,9 @@ protected:
     }
 };
 
-TEST_F(Yolov3V1DescriptorTest, 01_constructor)
+TEST_F(Yolov3DescriptorTest, 01_constructor)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
     auto json = jfd.toStr();
     Logd(json);
 
@@ -42,9 +42,9 @@ TEST_F(Yolov3V1DescriptorTest, 01_constructor)
     EXPECT_TRUE(d.IsObject());
 }
 
-TEST_F(Yolov3V1DescriptorTest, 02_addperson_one)
+TEST_F(Yolov3DescriptorTest, 02_addperson_one)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     BBox bbox(640, 480);
     bbox.xmin = 2.0f;
@@ -82,9 +82,9 @@ TEST_F(Yolov3V1DescriptorTest, 02_addperson_one)
     EXPECT_TRUE(floatEquals(d["persons"][0]["bbox"][5].GetDouble(), 4.0));
 }
 
-TEST_F(Yolov3V1DescriptorTest, 03_addperson_two)
+TEST_F(Yolov3DescriptorTest, 03_addperson_two)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     BBox bbox(640, 480);
     bbox.xmin = 2.0f;
@@ -123,9 +123,9 @@ TEST_F(Yolov3V1DescriptorTest, 03_addperson_two)
     EXPECT_TRUE(floatEquals(d["persons"].Size(), 2));
 }
 
-TEST_F(Yolov3V1DescriptorTest, 04_add_response_and_returncode)
+TEST_F(Yolov3DescriptorTest, 04_add_response_and_returncode)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     jfd.addResponseName("person_detect");
     jfd.addReturnCode(kAifOk);
@@ -157,9 +157,9 @@ TEST_F(Yolov3V1DescriptorTest, 04_add_response_and_returncode)
     EXPECT_TRUE(floatEquals(d["persons"].Size(), 1));
 }
 
-TEST_F(Yolov3V1DescriptorTest, 05_add_face)
+TEST_F(Yolov3DescriptorTest, 05_add_face)
 {
-    Yolov3V1Descriptor jfd;
+    Yolov3Descriptor jfd;
 
     float score = 1.2;
     /*normalize 0~1 */
@@ -185,5 +185,3 @@ TEST_F(Yolov3V1DescriptorTest, 05_add_face)
     EXPECT_TRUE(floatEquals(d["faces"][0]["region"][2].GetFloat(), 0.5));
     EXPECT_TRUE(floatEquals(d["faces"][0]["region"][3].GetDouble(), 0.0));
 }
-
-

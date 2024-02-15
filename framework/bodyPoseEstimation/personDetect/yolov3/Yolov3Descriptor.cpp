@@ -1,4 +1,9 @@
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v2/Yolov3V2Descriptor.h>
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/log/Logger.h>
 
 #include <rapidjson/writer.h>
@@ -10,24 +15,20 @@
 
 #include <opencv2/opencv.hpp>
 
-
-namespace {
-} // anonymous namespace
-
 namespace rj = rapidjson;
 
 namespace aif {
 
-Yolov3V2Descriptor::Yolov3V2Descriptor()
+Yolov3Descriptor::Yolov3Descriptor()
     : PersonDetectDescriptor()
 {
 }
 
-Yolov3V2Descriptor::~Yolov3V2Descriptor()
+Yolov3Descriptor::~Yolov3Descriptor()
 {
 }
 
-void Yolov3V2Descriptor::addPerson(float score, const BBox &bbox, const std::string& dbg_fname)
+void Yolov3Descriptor::addPerson(float score, const BBox &bbox, const std::string &dbg_fname)
 {
     m_scores.push_back(score); /* only for person detect */
     m_boxes.push_back(bbox);
@@ -60,7 +61,7 @@ void Yolov3V2Descriptor::addPerson(float score, const BBox &bbox, const std::str
     m_personCount++;
 }
 
-void Yolov3V2Descriptor::drawBbox(std::string imgPath)
+void Yolov3Descriptor::drawBbox(std::string imgPath)
 {
     size_t found = imgPath.find_last_of(".");
     if (found == std::string::npos) {
@@ -107,7 +108,7 @@ void Yolov3V2Descriptor::drawBbox(std::string imgPath)
     }
 }
 
-void Yolov3V2Descriptor::clear()
+void Yolov3Descriptor::clear()
 {
     m_personCount = 0;
 
@@ -121,4 +122,4 @@ void Yolov3V2Descriptor::clear()
     m_root.AddMember("persons", persons, allocator);
 }
 
-}
+} // end of namespace aif

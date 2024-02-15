@@ -1,4 +1,9 @@
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v1/Yolov3V1Param.h>
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Param.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -12,7 +17,7 @@ static const char TAG[] = "<FPARAM>";
 
 namespace aif {
 
-Yolov3V1Param::Yolov3V1Param()
+Yolov3Param::Yolov3Param()
     : detectObject("body")
     , gt_bboxes()
     , origImgRoiX(0)
@@ -37,11 +42,11 @@ Yolov3V1Param::Yolov3V1Param()
 {
 }
 
-Yolov3V1Param::~Yolov3V1Param()
+Yolov3Param::~Yolov3Param()
 {
 }
 
-Yolov3V1Param::Yolov3V1Param(const Yolov3V1Param& other)
+Yolov3Param::Yolov3Param(const Yolov3Param& other)
     : detectObject(other.detectObject)
     , gt_bboxes(other.gt_bboxes)
     , origImgRoiX(other.origImgRoiX)
@@ -67,7 +72,7 @@ Yolov3V1Param::Yolov3V1Param(const Yolov3V1Param& other)
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
 
-Yolov3V1Param::Yolov3V1Param(Yolov3V1Param&& other) noexcept
+Yolov3Param::Yolov3Param(Yolov3Param&& other) noexcept
     : detectObject(std::move(other.detectObject))
     , gt_bboxes(std::move(other.gt_bboxes))
     , origImgRoiX(std::move(other.origImgRoiX))
@@ -93,7 +98,7 @@ Yolov3V1Param::Yolov3V1Param(Yolov3V1Param&& other) noexcept
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
 
-Yolov3V1Param& Yolov3V1Param::operator=(const Yolov3V1Param& other)
+Yolov3Param& Yolov3Param::operator=(const Yolov3Param& other)
 {
     // TRACE(TAG, "ASSIGNMENT OPERATOR....");
     if (this == &other) {
@@ -125,7 +130,7 @@ Yolov3V1Param& Yolov3V1Param::operator=(const Yolov3V1Param& other)
     return *this;
 }
 
-Yolov3V1Param& Yolov3V1Param::operator=(Yolov3V1Param&& other) noexcept
+Yolov3Param& Yolov3Param::operator=(Yolov3Param&& other) noexcept
 {
     // TRACE(TAG, "MOVE ASSIGNMENT OPERATOR....");
     if (this == &other) {
@@ -157,7 +162,7 @@ Yolov3V1Param& Yolov3V1Param::operator=(Yolov3V1Param&& other) noexcept
     return *this;
 }
 
-bool Yolov3V1Param::operator==(const Yolov3V1Param& other) const
+bool Yolov3Param::operator==(const Yolov3Param& other) const
 {
     return (
         (detectObject == other.detectObject) &&
@@ -180,17 +185,16 @@ bool Yolov3V1Param::operator==(const Yolov3V1Param& other) const
         (thresh_iou_sc_nms == other.thresh_iou_sc_nms) &&
         (thresh_iou_sc_sur == other.thresh_iou_sc_sur) &&
         (thresh_iou_sc_avg == other.thresh_iou_sc_avg) &&
-        (std::abs(thresh_iou_update - other.thresh_iou_update) < aif::EPSILON)
+        (floatEquals(thresh_iou_update, other.thresh_iou_update))
     );
 }
 
-bool Yolov3V1Param::operator!=(const Yolov3V1Param& other) const
+bool Yolov3Param::operator!=(const Yolov3Param& other) const
 {
     return !operator==(other);
 }
 
-// debug
-std::ostream& operator<<(std::ostream& os, const Yolov3V1Param& fp)
+std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
 {
     os << "\n{\n";
     os << "\tdetectObject: " << fp.detectObject << ",\n";
@@ -250,14 +254,14 @@ std::ostream& operator<<(std::ostream& os, const Yolov3V1Param& fp)
     return os;
 }
 
-void Yolov3V1Param::trace()
+void Yolov3Param::trace()
 {
     std::stringstream ss;
     ss << *this;
     TRACE(TAG, ss.str());
 }
 
-t_aif_status Yolov3V1Param::fromJson(const std::string& param)
+t_aif_status Yolov3Param::fromJson(const std::string& param)
 {
     t_aif_status res = BodyPoseEstimationParam::fromJson(param);
     rj::Document payload;

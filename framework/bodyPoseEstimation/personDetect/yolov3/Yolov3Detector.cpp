@@ -1,4 +1,12 @@
-#include <aif/bodyPoseEstimation/personDetect/yolov3_v2/Yolov3V2Detector.h>
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Detector.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Param.h>
+#include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
+
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -8,9 +16,9 @@
 
 namespace aif {
 
-constexpr int Yolov3V2Detector::tcnt_init[];
+constexpr int Yolov3Detector::tcnt_init[];
 
-Yolov3V2Detector::Yolov3V2Detector(const std::string &modelPath)
+Yolov3Detector::Yolov3Detector(const std::string &modelPath, const int& versionID)
     : PersonDetector(modelPath)
     , m_obd_result{0,}
     , m_bodyResult{0,}
@@ -20,20 +28,23 @@ Yolov3V2Detector::Yolov3V2Detector(const std::string &modelPath)
     , m_topBorder(0)
     , m_IsBodyDetect(true)
     , m_frameId(0)
+    , m_versionId(versionID)
+{
+    if (m_versionId == 0) Logd("detected Yolov3 V1 model!!");
+    else Logd("detected Yolov3 V2 model!!");
+}
+
+Yolov3Detector::~Yolov3Detector()
 {
 }
 
-Yolov3V2Detector::~Yolov3V2Detector()
+std::shared_ptr<DetectorParam> Yolov3Detector::createParam()
 {
-}
-
-std::shared_ptr<DetectorParam> Yolov3V2Detector::createParam()
-{
-    std::shared_ptr<DetectorParam> param = std::make_shared<Yolov3V2Param>();
+    std::shared_ptr<DetectorParam> param = std::make_shared<Yolov3Param>();
     return param;
 }
 
-void Yolov3V2Detector::setModelInfo(TfLiteTensor *inputTensor)
+void Yolov3Detector::setModelInfo(TfLiteTensor *inputTensor)
 {
     if (inputTensor == nullptr) {
         Loge("inputTensor ptr is null");
@@ -46,12 +57,12 @@ void Yolov3V2Detector::setModelInfo(TfLiteTensor *inputTensor)
 
     TRACE("input_size: ", m_modelInfo.inputSize);
     TRACE("batch_size: ", m_modelInfo.batchSize);
-    TRACE("height:", m_modelInfo.height);
-    TRACE("width: ", m_modelInfo.width);
-    TRACE("channels: ", m_modelInfo.channels);
+    TRACE("height:"     , m_modelInfo.height);
+    TRACE("width: "     , m_modelInfo.width);
+    TRACE("channels: "  , m_modelInfo.channels);
 }
 
-t_aif_status Yolov3V2Detector::fillInputTensor(const cv::Mat &img) /* override*/
+t_aif_status Yolov3Detector::fillInputTensor(const cv::Mat &img) /* override*/
 {
     try {
         if (img.rows == 0 || img.cols == 0) {
@@ -63,7 +74,7 @@ t_aif_status Yolov3V2Detector::fillInputTensor(const cv::Mat &img) /* override*/
         int channels = m_modelInfo.channels;
 
         if (m_interpreter == nullptr) {
-            throw std::runtime_error("yolov3_o24.tflite interpreter not initialized!!");
+            throw std::runtime_error("yolov3.tflite interpreter not initialized!!");
         }
 
         cv::Mat img_resized;
@@ -80,6 +91,7 @@ t_aif_status Yolov3V2Detector::fillInputTensor(const cv::Mat &img) /* override*/
         if (img_resized.rows != height || img_resized.cols != width) {
             throw std::runtime_error("image resize failed!!");
         }
+        //img_resized.convertTo(img_resized, CV_8UC3); not needed
 
         uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
         std::memcpy(inputTensor, img_resized.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
@@ -96,13 +108,13 @@ t_aif_status Yolov3V2Detector::fillInputTensor(const cv::Mat &img) /* override*/
     return kAifOk;
 }
 
-t_aif_status Yolov3V2Detector::preProcessing()
+t_aif_status Yolov3Detector::preProcessing()
 {
     try
     {
-        std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+        std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
         if (param == nullptr) {
-            throw std::runtime_error("failed to convert DetectorParam to Yolov3V2Param");
+            throw std::runtime_error("failed to convert DetectorParam to Yolov3Param");
         }
 
         if (boost::iequals(param->detectObject, "body")) {
@@ -137,18 +149,20 @@ t_aif_status Yolov3V2Detector::preProcessing()
     return kAifOk;
 }
 
-t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat &img, std::shared_ptr<Descriptor> &descriptor)
+t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<Descriptor> &descriptor)
 {
+
+
     try {
         Stopwatch sw;
         sw.start();
         const std::vector<int> &outputs = m_interpreter->outputs();
-        TfLiteTensor *output_1 = m_interpreter->tensor(outputs[0]); // sb_conf
-        TfLiteTensor *output_2 = m_interpreter->tensor(outputs[1]); // sb_box
-        TfLiteTensor *output_3 = m_interpreter->tensor(outputs[2]); // mb_conf
-        TfLiteTensor *output_4 = m_interpreter->tensor(outputs[3]); // mb_box
-        TfLiteTensor *output_5 = m_interpreter->tensor(outputs[4]); // lb_conf
-        TfLiteTensor *output_6 = m_interpreter->tensor(outputs[5]); // lb_box
+        TfLiteTensor *output_6 = m_interpreter->tensor(outputs[0]); // sb_conf
+        TfLiteTensor *output_5 = m_interpreter->tensor(outputs[1]); // sb_box
+        TfLiteTensor *output_4 = m_interpreter->tensor(outputs[2]); // mb_conf
+        TfLiteTensor *output_3 = m_interpreter->tensor(outputs[3]); // mb_box
+        TfLiteTensor *output_2 = m_interpreter->tensor(outputs[4]); // lb_conf
+        TfLiteTensor *output_1 = m_interpreter->tensor(outputs[5]); // lb_box
         t_pqe_obd_result *result = nullptr;
 
         if (m_IsBodyDetect) {
@@ -165,31 +179,30 @@ t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat &img, std::shared_pt
         std::vector<unsigned short> obd_sb_conf(SZ_CONV_SB_CONF);	// sb confidence
 
         // De-Quantization + Quantization
-        RD_Result_box (obd_lb_box, reinterpret_cast<unsigned int*>(output_6->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
-        RD_Result_conf (obd_lb_conf, reinterpret_cast<unsigned int*>(output_5->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
-        RD_Result_box (obd_mb_box, reinterpret_cast<unsigned int*>(output_4->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
-        RD_Result_conf (obd_mb_conf, reinterpret_cast<unsigned int*>(output_3->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
-        RD_Result_box_SB (obd_sb_box, reinterpret_cast<unsigned int*>(output_2->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
-        RD_Result_conf_SB (obd_sb_conf, reinterpret_cast<unsigned int*>(output_1->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
+        RD_Result_box    (obd_lb_box,  reinterpret_cast<unsigned int*>(output_1->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
+        RD_Result_conf   (obd_lb_conf, reinterpret_cast<unsigned int*>(output_2->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
+        RD_Result_box    (obd_mb_box,  reinterpret_cast<unsigned int*>(output_3->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
+        RD_Result_conf   (obd_mb_conf, reinterpret_cast<unsigned int*>(output_4->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
+        RD_Result_box_SB (obd_sb_box,  reinterpret_cast<unsigned int*>(output_5->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
+        RD_Result_conf_SB(obd_sb_conf, reinterpret_cast<unsigned int*>(output_6->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
 
         OBD_ComputeResult(obd_lb_box, obd_lb_conf, obd_mb_box, obd_mb_conf, obd_sb_box, obd_sb_conf);
         transform2OriginCoord(img, *result);
 
-        std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+        std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
         if (param == nullptr) {
-            throw std::runtime_error("failed to convert DetectorParam to Yolov3V2Param");
+            throw std::runtime_error("failed to convert DetectorParam to Yolov3Param");
         }
 
-        std::shared_ptr<Yolov3V2Descriptor> yolov3Descriptor = std::dynamic_pointer_cast<Yolov3V2Descriptor>(descriptor);
+        std::shared_ptr<Yolov3Descriptor> yolov3Descriptor = std::dynamic_pointer_cast<Yolov3Descriptor>(descriptor);
         if (yolov3Descriptor == nullptr) {
-            throw std::runtime_error("failed to convert Descriptor to Yolov3V2Descriptor");
+            throw std::runtime_error("failed to convert Descriptor to Yolov3Descriptor");
         }
 
         std::vector<std::pair<BBox, float>> finalBboxList;
         for (int i = 0; i < result->res_cnt; i++) {
             BBox finalBbox(img.cols, img.rows);
-            finalBbox.addXyxy(result->pos_x0[i], result->pos_y0[i],
-                                result->pos_x1[i], result->pos_y1[i], false);
+            finalBbox.addXyxy(result->pos_x0[i], result->pos_y0[i], result->pos_x1[i], result->pos_y1[i], false);
             finalBboxList.emplace_back(finalBbox, result->res_val[i]);
         }
 
@@ -255,7 +268,7 @@ t_aif_status Yolov3V2Detector::postProcessing(const cv::Mat &img, std::shared_pt
     return kAifOk;
 }
 
-void Yolov3V2Detector::getPaddedImage(const cv::Mat &src, cv::Mat &dst)
+void Yolov3Detector::getPaddedImage(const cv::Mat &src, cv::Mat &dst)
 {
     float srcW = src.size().width;
     float srcH = src.size().height;
@@ -289,14 +302,14 @@ void Yolov3V2Detector::getPaddedImage(const cv::Mat &src, cv::Mat &dst)
 
     cv::copyMakeBorder(inputImg, dst, m_topBorder, bottomBorder, m_leftBorder, rightBorder, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
     m_paddedSize = cv::Size(
-        srcW * (static_cast<float>(m_modelInfo.width) / width),
+        srcW * (static_cast<float>(m_modelInfo.width)  / width),
         srcH * (static_cast<float>(m_modelInfo.height) / height));
 }
 
-void Yolov3V2Detector::transform2OriginCoord(const cv::Mat &img, t_pqe_obd_result &result)
+void Yolov3Detector::transform2OriginCoord(const cv::Mat &img, t_pqe_obd_result &result)
 {
-    int img_width = img.cols;
-    int img_height = img.rows;
+    int  img_width = img.cols;
+    int  img_height = img.rows;
     auto off_x = 0.0f;
     auto off_y = 0.0f;
     auto roi_img_width = img_width;
@@ -328,20 +341,20 @@ void Yolov3V2Detector::transform2OriginCoord(const cv::Mat &img, t_pqe_obd_resul
         TRACE(" res_val[", idx, "] = ", result.res_val[idx]);
         TRACE(" res_cls[", idx, "] = ", result.res_cls[idx]);
         TRACE(" tpr_cnt[", idx, "] = ", result.tpr_cnt[idx]);
-        TRACE(" pos_x0[", idx, "] = ", result.pos_x0[idx]);
-        TRACE(" pos_x1[", idx, "] = ", result.pos_x1[idx]);
-        TRACE(" pos_y0[", idx, "] = ", result.pos_y0[idx]);
-        TRACE(" pos_y1[", idx, "] = ", result.pos_y1[idx]);
+        TRACE(" pos_x0[", idx, "] = ",  result.pos_x0[idx]);
+        TRACE(" pos_x1[", idx, "] = ",  result.pos_x1[idx]);
+        TRACE(" pos_y0[", idx, "] = ",  result.pos_y0[idx]);
+        TRACE(" pos_y1[", idx, "] = ",  result.pos_y1[idx]);
         TRACE("---------------------------");
     }
 
     for (int i = 0; i < result.res_cnt; i++) {
         int x0 = ((result.pos_x0[i] - m_leftBorder) / m_ImgResizingScale) + off_x;
-        int y0 = ((result.pos_y0[i] - m_topBorder) / m_ImgResizingScale) + off_y;
+        int y0 = ((result.pos_y0[i] - m_topBorder)  / m_ImgResizingScale) + off_y;
         int x1 = ((result.pos_x1[i] - m_leftBorder) / m_ImgResizingScale) + off_x;
-        int y1 = ((result.pos_y1[i] - m_topBorder) / m_ImgResizingScale) + off_y;
+        int y1 = ((result.pos_y1[i] - m_topBorder)  / m_ImgResizingScale) + off_y;
 
-        int roi_img_x1 = roi_img_width + off_x;
+        int roi_img_x1 = roi_img_width  + off_x;
         int roi_img_y1 = roi_img_height + off_y;
         result.pos_x0[i] = std::max(std::min(x0, roi_img_x1 - 1), static_cast<int>(off_x));
         result.pos_y0[i] = std::max(std::min(y0, roi_img_y1 - 1), static_cast<int>(off_y));
@@ -361,16 +374,16 @@ void Yolov3V2Detector::transform2OriginCoord(const cv::Mat &img, t_pqe_obd_resul
         TRACE(" res_val[", idx, "] = ", result.res_val[idx]);
         TRACE(" res_cls[", idx, "] = ", result.res_cls[idx]);
         TRACE(" tpr_cnt[", idx, "] = ", result.tpr_cnt[idx]);
-        TRACE(" pos_x0[", idx, "] = ", result.pos_x0[idx]);
-        TRACE(" pos_x1[", idx, "] = ", result.pos_x1[idx]);
-        TRACE(" pos_y0[", idx, "] = ", result.pos_y0[idx]);
-        TRACE(" pos_y1[", idx, "] = ", result.pos_y1[idx]);
+        TRACE(" pos_x0[", idx, "] = ",  result.pos_x0[idx]);
+        TRACE(" pos_x1[", idx, "] = ",  result.pos_x1[idx]);
+        TRACE(" pos_y0[", idx, "] = ",  result.pos_y0[idx]);
+        TRACE(" pos_y1[", idx, "] = ",  result.pos_y1[idx]);
         TRACE("---------------------------");
     }
 }
 
-void Yolov3V2Detector::OBD_ComputeResult(std::vector<unsigned short>& obd_lb_box_addr, std::vector<unsigned short>& obd_lb_conf_addr, std::vector<unsigned short>& obd_mb_box_addr,
-                                        std::vector<unsigned short>& obd_mb_conf_addr, std::vector<unsigned short>& obd_sb_box_addr, std::vector<unsigned short>& obd_sb_conf_addr)
+void Yolov3Detector::OBD_ComputeResult(std::vector<unsigned short>& obd_lb_box_addr, std::vector<unsigned short>& obd_lb_conf_addr, std::vector<unsigned short>& obd_mb_box_addr,
+                                       std::vector<unsigned short>& obd_mb_conf_addr, std::vector<unsigned short>& obd_sb_box_addr, std::vector<unsigned short>& obd_sb_conf_addr)
 {
     std::vector<BBox> bbox;
     CV_BOX(BoxType::LB_BOX, obd_lb_box_addr, obd_lb_conf_addr, bbox);
@@ -393,11 +406,11 @@ void Yolov3V2Detector::OBD_ComputeResult(std::vector<unsigned short>& obd_lb_box
     }
 }
 
-void Yolov3V2Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_addr, std::vector<unsigned short>& obd_conf, std::vector<BBox> &bbox)
+void Yolov3Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_addr, std::vector<unsigned short>& obd_conf, std::vector<BBox> &bbox)
 {
-    std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
     if (param == nullptr) {
-        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        Loge(__func__, "failed to convert DetectorParam to Yolov3Param");
         return;
     }
 
@@ -426,7 +439,7 @@ void Yolov3V2Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_
         partial_shift = 3;
         boxIdx = 2;
     } else {
-        throw std::runtime_error("invalid boxType ");
+        throw std::runtime_error("invalid boxType");
     }
 
     cnt_box  = 0;
@@ -436,11 +449,10 @@ void Yolov3V2Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_
         for (i = 0; i < box_w; i++) {
             BX_partial = i << partial_shift;
             for (c = 0; c < box_size; c++) {
-                BX0 = cal_pos(BX_partial, LUT_EXP[boxIdx], obd_addr[cnt_box],     0, param->stride[boxIdx]);
-                BY0 = cal_pos(BY_partial, LUT_EXP[boxIdx], obd_addr[cnt_box + 1], 0, param->stride[boxIdx]);
-                BX1 = cal_pos(BX_partial, LUT_EXP[boxIdx], obd_addr[cnt_box + 2], 1, param->stride[boxIdx]);
-                BY1 = cal_pos(BY_partial, LUT_EXP[boxIdx], obd_addr[cnt_box + 3], 1, param->stride[boxIdx]);
-
+                BX0 = cal_pos(BX_partial, LUT_EXP[m_versionId][boxIdx], obd_addr[cnt_box],     0, param->stride[boxIdx]);
+                BY0 = cal_pos(BY_partial, LUT_EXP[m_versionId][boxIdx], obd_addr[cnt_box + 1], 0, param->stride[boxIdx]);
+                BX1 = cal_pos(BX_partial, LUT_EXP[m_versionId][boxIdx], obd_addr[cnt_box + 2], 1, param->stride[boxIdx]);
+                BY1 = cal_pos(BY_partial, LUT_EXP[m_versionId][boxIdx], obd_addr[cnt_box + 3], 1, param->stride[boxIdx]);
                 BX0 = (BX0 > m_modelInfo.width)  ? m_modelInfo.width  : BX0;
                 BY0 = (BY0 > m_modelInfo.height) ? m_modelInfo.height : BY0;
                 BX1 = (BX1 > m_modelInfo.width)  ? m_modelInfo.width  : BX1;
@@ -456,7 +468,7 @@ void Yolov3V2Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_
                     }
                 }
 
-                CO = cal_confidence(LUT_CONF[boxIdx], obd_conf[cnt_conf], max);
+                CO = cal_confidence(LUT_CONF[m_versionId][boxIdx], obd_conf[cnt_conf], max);
                 if (CO > param->thresh_score[1]) /* low threshold */ {
                     bbox.emplace_back(BX0, BY0, BX1, BY1, CO, max_id);
                     // Logi(__func__, " bbox: ", BX0, " " ,BY0," ", BX1," ", BY1, " ",CO, " ", max_id);
@@ -470,12 +482,12 @@ void Yolov3V2Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_
     TRACE(__FUNCTION__, ": ", bbox.size() - numBox_before);
 }
 
-std::vector<int> Yolov3V2Detector::fw_nms(std::vector<BBox> &bbox)
+std::vector<int> Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
 {
     std::vector<int> res_nms;
-    std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
     if (param == nullptr) {
-        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        Loge(__func__, "failed to convert DetectorParam to Yolov3Param");
         return res_nms;
     }
 
@@ -484,16 +496,16 @@ std::vector<int> Yolov3V2Detector::fw_nms(std::vector<BBox> &bbox)
     int res_sort[MAX_BOX];
 
     for (int idx = 0; idx < bbox.size(); idx++) {
-        int c_idx = idx;
+        int c_idx   = idx;
         int c_score = bbox[c_idx].c0;
 
         for (int idx_sort = 0; idx_sort < num_sort; idx_sort++) {
-            int t_idx = res_sort[idx_sort];
+            int t_idx   = res_sort[idx_sort];
             int t_score = bbox[t_idx].c0;
 
             if (c_score > t_score) { // swap
                 res_sort[idx_sort] = c_idx;
-                c_idx = t_idx;
+                c_idx   = t_idx;
                 c_score = t_score;
             }
         }
@@ -509,12 +521,12 @@ std::vector<int> Yolov3V2Detector::fw_nms(std::vector<BBox> &bbox)
     std::vector<int> keep_flag(bbox.size(), 1);
 
     for (int idx_sort = 0; idx_sort < num_sort; idx_sort++) {
-        int c_idx       = res_sort[idx_sort];
-        long int c_area = res_area[c_idx];
-        int c_score     = bbox[c_idx].c0;
-        int c_class     = bbox[c_idx].c1;
+        int c_idx        = res_sort[idx_sort];
+        long int c_area  = res_area[c_idx];
+        int c_score      = bbox[c_idx].c0;
+        int c_class      = bbox[c_idx].c1;
         int th_score_avg = (c_score * 4) >> 3;
-        int c_keep = keep_flag[c_idx];
+        int c_keep       = keep_flag[c_idx];
         if (c_keep == 0) continue;
 
         for (int idx_nms = idx_sort + 1; idx_nms < num_sort; idx_nms++) {
@@ -549,7 +561,7 @@ std::vector<int> Yolov3V2Detector::fw_nms(std::vector<BBox> &bbox)
     return res_nms;
 }
 
-void Yolov3V2Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, std::vector<int> &res_nms)
+void Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, std::vector<int> &res_nms)
 {
     m_obd_result = {0,};
     m_bodyResult = {0,};
@@ -582,11 +594,10 @@ void Yolov3V2Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int nu
                 m_obd_result.tpr_cnt[m_obd_result.res_cnt] = tcnt_init[_class];
                 m_obd_result.res_cnt++;
             }
-
             // printf("%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", m_obd_result.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
             if (m_obd_result.res_cnt >= OBD_RESULT_NUM) break;
         }
-        //			else //only for person & face
+        // else //only for person & face
         {
             if (_class == eOBD_PERSON && m_bodyResult.res_cnt < OBD_RESULT_NUM) {
                 m_bodyResult.res_cls[m_bodyResult.res_cnt] = _class;
@@ -601,7 +612,8 @@ void Yolov3V2Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int nu
                     m_bodyResult.res_cnt++;
                 }
                 // printf("person%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n",m_bodyResult.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
-            } else if (_class == eOBD_FACE && m_faceResult.res_cnt < OBD_RESULT_NUM) {
+            }
+            else if (_class == eOBD_FACE && m_faceResult.res_cnt < OBD_RESULT_NUM) {
                 m_faceResult.res_cls[m_faceResult.res_cnt] = _class;
                 m_faceResult.pos_x0[m_faceResult.res_cnt]  = _x0;
                 m_faceResult.pos_x1[m_faceResult.res_cnt]  = _x1;
@@ -611,7 +623,6 @@ void Yolov3V2Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int nu
                 if (_x0 != _x1 && _y0 != _y1) {
                     m_faceResult.res_val[m_faceResult.res_cnt] = _score;
                     m_faceResult.tpr_cnt[m_faceResult.res_cnt] = tcnt_init[_class];
-
                     // printf("face%u:%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", m_faceResult.res_cnt, idx, _x0, _x1, _y0, _y1, _class, _score);
                     m_faceResult.res_cnt++;
                 }
@@ -626,11 +637,11 @@ void Yolov3V2Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int nu
     if (m_faceResult.res_cnt < 0 || m_faceResult.res_cnt > OBD_RESULT_NUM) m_faceResult.res_cnt = 0;
 }
 
-void Yolov3V2Detector::FaceMatching()
+void Yolov3Detector::FaceMatching()
 {
-    std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
     if (param == nullptr) {
-        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        Loge(__func__, "failed to convert DetectorParam to Yolov3Param");
         return;
     }
 
@@ -755,11 +766,11 @@ void Yolov3V2Detector::FaceMatching()
     }
 }
 
-bool Yolov3V2Detector::checkUpdate(int index, const BBox &currBbox)
+bool Yolov3Detector::checkUpdate(int index, const BBox &currBbox)
 {
-    std::shared_ptr<Yolov3V2Param> param = std::dynamic_pointer_cast<Yolov3V2Param>(m_param);
+    std::shared_ptr<Yolov3Param> param = std::dynamic_pointer_cast<Yolov3Param>(m_param);
     if (param == nullptr) {
-        Loge(__func__, "failed to convert DetectorParam to Yolov3V2Param");
+        Loge(__func__, "failed to convert DetectorParam to Yolov3Param");
         return false;
     }
 
@@ -780,7 +791,7 @@ bool Yolov3V2Detector::checkUpdate(int index, const BBox &currBbox)
     return true;
 }
 
-void Yolov3V2Detector::RD_Result_box(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y)
+void Yolov3Detector::RD_Result_box(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y)
 {
     int ix,iy,ic,i;
     unsigned int data;
@@ -810,7 +821,7 @@ void Yolov3V2Detector::RD_Result_box(std::vector<unsigned short>& obd_box, unsig
     }
 }
 
-void Yolov3V2Detector::RD_Result_conf(std::vector<unsigned short>& obd_conf, unsigned int* addr,unsigned int size_x, unsigned int size_y)
+void Yolov3Detector::RD_Result_conf(std::vector<unsigned short>& obd_conf, unsigned int* addr,unsigned int size_x, unsigned int size_y)
 {
     int ix,iy,ic,i;
     unsigned int data;
@@ -847,7 +858,7 @@ void Yolov3V2Detector::RD_Result_conf(std::vector<unsigned short>& obd_conf, uns
     }
 }
 
-void Yolov3V2Detector::RD_Result_box_SB(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y)
+void Yolov3Detector::RD_Result_box_SB(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y)
 {
     int ix,iy,ic,i;
 	unsigned int data;
@@ -878,7 +889,7 @@ void Yolov3V2Detector::RD_Result_box_SB(std::vector<unsigned short>& obd_box, un
     }
 }
 
-void Yolov3V2Detector::RD_Result_conf_SB(std::vector<unsigned short>& obd_conf,unsigned int* addr,unsigned int size_x, unsigned int size_y)
+void Yolov3Detector::RD_Result_conf_SB(std::vector<unsigned short>& obd_conf,unsigned int* addr,unsigned int size_x, unsigned int size_y)
 {
     int ix,iy,ic,i;
 	unsigned int data;
