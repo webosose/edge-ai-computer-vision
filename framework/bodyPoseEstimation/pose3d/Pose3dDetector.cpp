@@ -3,7 +3,6 @@
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
-#include <fstream>
 namespace aif {
 
 Pose3dDetector::Pose3dDetector(const std::string& modelPath)
@@ -205,26 +204,31 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
 {
     try {
         const std::vector<int> &outputs = m_interpreter->outputs();
-        if (outputs.size() != 1) throw std::runtime_error("output size should be 1!");
+        if (outputs.size() < 1 || outputs.size() > 2) throw std::runtime_error("output size should be 1 or 2!");
 
-        if (!mIsSecondDetect) {
-            for (int i=0; i<outputs.size(); i++) {
-                TfLiteTensor *output = m_interpreter->tensor(outputs[i]);
-                int outputIdx = getOutputTensorInfo(output);
+        std::vector<int> outputIdxs;
+        for (int i = 0; i < outputs.size(); i++) {
+            TfLiteTensor *output = m_interpreter->tensor(outputs[i]);
+            int outputIdx = getOutputTensorInfo(output);
+            outputIdxs.push_back(outputIdx);
+
+            if (!mIsSecondDetect) {
                 postProcess_forFirstBatch(outputIdx, output);
-            }
-        } else {
-            for (int i=0; i<outputs.size(); i++) {
-                TfLiteTensor *output = m_interpreter->tensor(outputs[i]);
-                int outputIdx = getOutputTensorInfo(output);
+            } else {
                 postProcess_forSecondBatch(outputIdx, output);
             }
+        }
 
+        if (mIsSecondDetect) {
             std::shared_ptr<Pose3dDescriptor> pose3dDescriptor = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
             if (pose3dDescriptor == nullptr) {
                 throw std::runtime_error("failed to convert descriptor to Pose3dDescriptor");
             }
-            pose3dDescriptor->addJointsAndTraj3D(mResults[RESULT_3D_JOINT], mResults[RESULT_3D_TRAJ][0]);
+
+            for (int i = 0; i < outputIdxs.size(); i++) {
+                if (outputIdxs[i] == RESULT_3D_JOINT) pose3dDescriptor->addJoints3D(mResults[RESULT_3D_JOINT]);
+                else pose3dDescriptor->addTraj3D(mResults[RESULT_3D_TRAJ][0]);
+            }
         }
 
         return kAifOk;
@@ -235,7 +239,6 @@ t_aif_status Pose3dDetector::postProcessing(const cv::Mat& img, std::shared_ptr<
         Loge(__func__,"Error: Unknown exception occured!!");
         return kAifError;
     }
-
 
     return kAifOk;
 }
@@ -362,7 +365,7 @@ void Pose3dDetector::fillJoints(uint8_t* inputTensorBuff )
     TRACE(__func__);
 
     auto QUANT = [this](float data) {
-        return static_cast<uint8_t>(( data / mScaleIn ) + mZeropointIn);
+        return static_cast<uint8_t>(std::max(std::min((( data / mScaleIn ) + mZeropointIn), 255.f), 0.0f));
     };
 
     // fill the oldest joints to the first line of buffer
@@ -416,7 +419,7 @@ void Pose3dDetector::fillFlippedJoints(uint8_t* inputTensorBuff)
     }
 
     auto QUANT = [this](float data) {
-        return static_cast<uint8_t>(( data / mScaleIn ) + mZeropointIn);
+        return static_cast<uint8_t>(std::max(std::min((( data / mScaleIn ) + mZeropointIn), 255.f), 0.0f));
     };
 
 

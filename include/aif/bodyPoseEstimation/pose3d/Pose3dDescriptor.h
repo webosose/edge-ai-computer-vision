@@ -41,12 +41,8 @@ public:
     Pose3dDescriptor();
     virtual ~Pose3dDescriptor();
 
-    // TODO: implment add result
-    void addJointsAndTraj3D(const std::vector<Joint3D> &joints3d,
-                     const Joint3D &joint3dPos);
     void addJoints3D(const std::vector<Joint3D> &joints3d);
-    void addTraj3D(const Joint3D &joint3dPos);
-//    void addJoint3DPos(const Joint3D &joint3dPos);
+    void addTraj3D(const Joint3D &joint3dTraj);
 
     int getTrackId() const { return m_trackId; }
     void setTrackId(int id) { m_trackId = id; }
@@ -55,6 +51,7 @@ public:
     { return m_3dResult; }
     const Joint3D& getTrajectory() const
     { return m_trajectory; }
+
 private:
     int m_trackId;
     std::vector<Joint3D> m_3dResult;

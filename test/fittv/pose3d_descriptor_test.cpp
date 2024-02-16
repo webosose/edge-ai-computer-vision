@@ -56,11 +56,11 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
 
     Joint3D joint3dPos = {1.0, 2.0, 3.0};
 
-#if defined(USE_FITMODEL_V2)
     jpd.addJoints3D(joints3d);
+#if defined(USE_FITMODEL_V2)
     jpdTraj.addTraj3D(joint3dPos);
 #else
-    jpd.addJointsAndTraj3D(joints3d, joint3dPos);
+    jpd.addTraj3D(joint3dPos);
 #endif
 
     auto json = jpd.toStr();
@@ -72,7 +72,6 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("poses3d"));
     EXPECT_TRUE(d["poses3d"].IsArray());
-    EXPECT_TRUE(d["poses3d"].Size() == 1);
 
 #if defined(USE_FITMODEL_V2)
     auto jsonTraj = jpdTraj.toStr();
@@ -84,7 +83,10 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
     EXPECT_TRUE(dTraj.IsObject());
     EXPECT_TRUE(dTraj.HasMember("poses3d"));
     EXPECT_TRUE(dTraj["poses3d"].IsArray());
+
     EXPECT_TRUE(dTraj["poses3d"].Size() == 1);
+#else
+    EXPECT_TRUE(d["poses3d"].Size() == 2);
 #endif
 
     EXPECT_TRUE(d["poses3d"][0].IsObject());
@@ -103,21 +105,21 @@ TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
 
 #if defined(USE_FITMODEL_V2)
     EXPECT_TRUE(dTraj["poses3d"][0].IsObject());
-    EXPECT_TRUE(dTraj["poses3d"][0].HasMember("joint3dPos"));
-    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dPos"].IsArray());
-    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dPos"].Size() == 3);
+    EXPECT_TRUE(dTraj["poses3d"][0].HasMember("joint3dTraj"));
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"].IsArray());
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"].Size() == 3);
 
-    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dPos"][0] == 1.0);
-    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dPos"][1] == 2.0);
-    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dPos"][2] == 3.0);
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"][0] == 1.0);
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"][1] == 2.0);
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"][2] == 3.0);
 #else
-    EXPECT_TRUE(d["poses3d"][0].HasMember("joint3dPos"));
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"].IsArray());
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"].Size() == 3);
+    EXPECT_TRUE(d["poses3d"][1].HasMember("joint3dTraj"));
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"].IsArray());
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"].Size() == 3);
 
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"][0] == 1.0);
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"][1] == 2.0);
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"][2] == 3.0);
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"][0] == 1.0);
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"][1] == 2.0);
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"][2] == 3.0);
 #endif
 
 }

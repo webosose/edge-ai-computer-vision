@@ -7,10 +7,6 @@
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
-#include <iostream>
-#include <sstream>
-#include <algorithm>
-
 namespace {
 static const char TAG[] = "<FPARAM>";
 } // anonymous namespace
@@ -142,7 +138,6 @@ bool Pose3dParam::operator!=(const Pose3dParam& other) const
     return !operator==(other);
 }
 
-// debug
 std::ostream& operator<<(std::ostream& os, const Pose3dParam& fp)
 {
     os << "\n{\n";

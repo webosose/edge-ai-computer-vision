@@ -5,9 +5,7 @@ set(POSE3D_SRC
     ${POSE3D_SRC_DIR}/Pose3dParam.cpp
     ${POSE3D_SRC_DIR}/Pose3dParam.cpp
     ${POSE3D_SRC_DIR}/Pose3dDetector.cpp
-    ${POSE3D_SRC_DIR}/NpuPose3dDetector.cpp
-    ${POSE3D_SRC_DIR}/NpuPose3dDetectorV2.cpp
-    ${POSE3D_SRC_DIR}/NpuPose3dDetectorV2s.cpp
+    ${POSE3D_SRC_DIR}/Pose3dDetectors.cpp
     ${POSE3D_SRC_DIR}/Pose3dDescriptor.cpp
 )
 

@@ -12,7 +12,6 @@
 
 #include <vector>
 #include <memory>
-#include <unordered_map>
 
 #include <opencv2/opencv.hpp>
 
@@ -20,11 +19,13 @@ namespace aif {
 
 class Pose3dDetector : public Detector
 {
+protected:
+    Pose3dDetector(const std::string& modelPath);
+
 public:
     using Joints2D = std::vector<Joint2D>;
     using JointQueue = std::deque<Joints2D>;
 
-    Pose3dDetector(const std::string& modelPath);
     virtual ~Pose3dDetector();
 
     t_aif_status detect(const cv::Mat &img,
@@ -68,6 +69,7 @@ private:
 
     uint8_t *mResultForFirstBatch[RESULT_3D_IDX_MAX];
     std::vector<Joint3D> mResults[RESULT_3D_IDX_MAX];
+
 };
 
 } // end of namespace aif
