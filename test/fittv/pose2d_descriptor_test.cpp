@@ -66,14 +66,12 @@ TEST_F(Pose2dDescriptorTest, 02_addKeyPoints)
     EXPECT_TRUE(d["poses"][0]["keypoints"][0].IsArray());
     EXPECT_EQ(d["poses"][0]["keypoints"][0].Size(), 3);
 
-    int i;
-    for ( i = 0; i < Pose2dDescriptor::KEY_POINT_TYPES; i++) {
+    for (int i = 0; i < Pose2dDescriptor::KEY_POINT_TYPES; i++) {
         EXPECT_TRUE(d["poses"][0]["keypoints"][i][0].GetDouble() - (i + 0.1f) < aif::EPSILON);
         EXPECT_TRUE(d["poses"][0]["keypoints"][i][1].GetDouble() - (i + 0.2f) < aif::EPSILON);
         EXPECT_TRUE(d["poses"][0]["keypoints"][i][2].GetDouble() - (i + 0.3f) < aif::EPSILON);
     }
 }
-
 
 TEST_F(Pose2dDescriptorTest, 03_add_response_and_returncode)
 {

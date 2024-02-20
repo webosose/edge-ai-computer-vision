@@ -24,6 +24,7 @@ class CpuQuantPose2dDetector : public Pose2dDetector, public std::enable_shared_
             friend class DetectorFactoryRegistration;
         virtual ~CpuQuantPose2dDetector();
         std::shared_ptr<CpuQuantPose2dDetector> get_shared_ptr() {return shared_from_this();}
+
     protected:
         void setModelInfo(TfLiteTensor* inputTensor) override;
         t_aif_status fillInputTensor(const cv::Mat& img) override;
@@ -31,7 +32,6 @@ class CpuQuantPose2dDetector : public Pose2dDetector, public std::enable_shared_
         t_aif_status postProcessing(const cv::Mat& img,
                 std::shared_ptr<Descriptor>& descriptor) override;
 };
-
 DetectorFactoryRegistration<CpuQuantPose2dDetector, Pose2dDescriptor>
     pose2d_resnet_cpu_quant("pose2d_resnet_cpu_quant");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,14 +16,16 @@
 
 namespace aif {
 
-NpuPose2dDetector::NpuPose2dDetector()
+NpuPose2dDetector::NpuPose2dDetector(const std::string& modelName)
     : mScaleIn(0.0f)
     , mZeropointIn(0)
-    , Pose2dDetector("FitTV_Pose2D_V1.tflite")
+    , Pose2dDetector(modelName)
 {
 }
 
-NpuPose2dDetector::~NpuPose2dDetector() {}
+NpuPose2dDetector::~NpuPose2dDetector()
+{
+}
 
 void NpuPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
 {
@@ -62,26 +64,25 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         } else {
             inputImg = img;
         }
-
         //cv::imwrite("./padded_npu.jpg", inputImg);
         //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
-
 
         inputNormImg = inputImg;
         inputImg.convertTo(inputImg, CV_32FC3);
         inputNormImg.convertTo(inputNormImg, CV_8UC3);
 
         normalizeImageWithQuant(inputImg, inputNormImg);
-        // cv::cvtColor(inputNormImg, inputNormImg, cv::COLOR_BGR2RGB);
-
-        //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
         //memoryDump(inputNormImg.data, "./normQuant_input.bin", width * height * channels * sizeof(uint8_t));
-
         //cv::imwrite("./normQuant_input.jpg", inputNormImg);
-        uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
-        std::memcpy(inputTensor, inputNormImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
 
+        uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
+        if (inputTensor == nullptr) {
+            throw std::runtime_error("inputTensor ptr is null");
+            return kAifError;
+        }
+        std::memcpy(inputTensor, inputNormImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
         //memoryDump(inputTensor, "./input.bin", width * height * channels * sizeof(uint8_t));
+
         return kAifOk;
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
@@ -129,17 +130,13 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     m_heatMapWidth = output->dims->data[3];
 
     float* data= reinterpret_cast<float*>(output->data.data);
-    //memoryDump(data, "./output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * 4);
-
-    //memoryDump(data, "./1_2output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));
+    //memoryDump(data, "./output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));
     //memoryRestore(data, "/usr/share/aif/example/m5_6_before_post_processing.bin");
 
     std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
-#if defined(USE_XTENSOR)
+
     m_postProcess= std::make_shared<XtensorPostProcess>(detector);
-#else
-    m_postProcess= std::make_shared<RegularPostProcess>(detector);
-#endif
+
     if(!m_postProcess->execute(descriptor, data)){
         Loge("failed to get position x, y from heatmap");
         return kAifError;
@@ -151,8 +148,7 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     return kAifOk;
 }
 
-void
-NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
+void NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
 {
     if (input == nullptr || input->dims == nullptr) {
         throw std::runtime_error("input / input->dims is nullptr");
@@ -172,7 +168,6 @@ NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
 
     TRACE( __func__, "[POSE2D!!!!!!!!!!]  mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
 }
-
 
 void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) const
 {
@@ -206,6 +201,5 @@ void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) 
     }
 
 }
-
 
 } // namespace aif

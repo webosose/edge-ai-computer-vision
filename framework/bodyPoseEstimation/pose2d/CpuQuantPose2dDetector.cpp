@@ -16,10 +16,13 @@
 namespace aif {
 
 CpuQuantPose2dDetector::CpuQuantPose2dDetector()
-    : Pose2dDetector("pose2d_mobilenet_full_integer_quant.tflite") {}
+    : Pose2dDetector("pose2d_mobilenet_full_integer_quant.tflite")
+{
+}
 
-CpuQuantPose2dDetector::~CpuQuantPose2dDetector() {}
-
+CpuQuantPose2dDetector::~CpuQuantPose2dDetector()
+{
+}
 
 void CpuQuantPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
 {
@@ -57,7 +60,6 @@ t_aif_status CpuQuantPose2dDetector::fillInputTensor(const cv::Mat& img)/* overr
         } else {
             getPaddedImage(img, cv::Size(width, height), inputImg);
         }
-        //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
         inputImg.convertTo(inputImg, CV_8UC3);
 
         int8_t* inputTensor = m_interpreter->typed_input_tensor<int8_t>(0);
@@ -65,7 +67,7 @@ t_aif_status CpuQuantPose2dDetector::fillInputTensor(const cv::Mat& img)/* overr
             throw std::runtime_error("inputTensor ptr is null");
             return kAifError;
         }
- std::memcpy(inputTensor, inputImg.ptr<int8_t>(0), width * height * channels * sizeof(int8_t));
+        std::memcpy(inputTensor, inputImg.ptr<int8_t>(0), width * height * channels * sizeof(int8_t));
 
         return kAifOk;
     } catch(const std::exception& e) {

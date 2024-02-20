@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,26 +16,24 @@
 
 #include <vector>
 #include <opencv2/opencv.hpp>
-#if defined(USE_XTENSOR)
 #include <xtensor/xarray.hpp>
-#endif
 
 namespace aif {
 
 class XtensorPostProcess : public PostProcess
 {
-public:
-    XtensorPostProcess(std::shared_ptr<Pose2dDetector>& detector);
-    virtual ~XtensorPostProcess();
-private:
-#if defined(USE_XTENSOR)
-    bool processHeatMap(std::shared_ptr<Descriptor>& descriptor, xt::xarray<float>& batchHeatmaps);
-    void gaussianBlur(xt::xarray<float>& batchHeatmaps, const int BLUR_KERNEL = 11) const;
-    void taylor(const xt::xarray<float>& heatMap, xt::xarray<float>& coord ) const;
-    void gaussianDark(xt::xarray<float>& batchHeatmaps, xt::xarray<float>& coords) const;
-#endif
-protected:
-    bool execute(std::shared_ptr<Descriptor>& descriptor, float* data);
+    public:
+        XtensorPostProcess(std::shared_ptr<Pose2dDetector>& detector);
+        virtual ~XtensorPostProcess();
+
+    private:
+        bool processHeatMap(std::shared_ptr<Descriptor>& descriptor, xt::xarray<float>& batchHeatmaps);
+        void gaussianBlur(xt::xarray<float>& batchHeatmaps, const int BLUR_KERNEL = 11) const;
+        void taylor(const xt::xarray<float>& heatMap, xt::xarray<float>& coord ) const;
+        void gaussianDark(xt::xarray<float>& batchHeatmaps, xt::xarray<float>& coords) const;
+
+    protected:
+        bool execute(std::shared_ptr<Descriptor>& descriptor, float* data);
 };
 
 } // end of namespace aif

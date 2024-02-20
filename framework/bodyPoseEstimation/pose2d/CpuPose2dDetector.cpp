@@ -17,9 +17,13 @@
 namespace aif {
 
 CpuPose2dDetector::CpuPose2dDetector(const std::string& modelName)
-    : Pose2dDetector(modelName) {}
+    : Pose2dDetector(modelName)
+{
+}
 
-CpuPose2dDetector::~CpuPose2dDetector() {}
+CpuPose2dDetector::~CpuPose2dDetector()
+{
+}
 
 
 void CpuPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
@@ -61,9 +65,9 @@ t_aif_status CpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         }
         //cv::imwrite("./pad_input.jpg", inputImg);
 
-        //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
         inputImg.convertTo(inputImg, CV_32FC3);
         normalizeImage(inputImg);
+        //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
 
         float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
         if (inputTensor == nullptr) {
@@ -93,8 +97,12 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 {
     Stopwatch sw;
     sw.start();
+
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
+    if (output == nullptr) {
+        throw std::runtime_error("can't get tflite tensor_output!!");
+    }
 
     m_heatMapHeight = output->dims->data[1];
     m_heatMapWidth = output->dims->data[2];
@@ -125,11 +133,9 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
         sw.stop();
         return kAifError;
     }
-#if defined(USE_XTENSOR)
+
     m_postProcess= std::make_shared<XtensorPostProcess>(detector);
-#else
-    m_postProcess= std::make_shared<RegularPostProcess>(detector);
-#endif
+
     if(!m_postProcess->execute(descriptor, buffer)){
         Loge("failed to get position x, y from heatmap");
         delete [] buffer;

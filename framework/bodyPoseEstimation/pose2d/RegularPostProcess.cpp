@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
 #include <aif/log/Logger.h>
 

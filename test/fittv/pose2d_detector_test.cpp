@@ -50,7 +50,7 @@ protected:
 
 TEST_F(Pose2dDetectorTest, 01_getModelInfo)
 {
-    auto fd = DetectorFactory::get().getDetector("pose2d_resnet_cpu");
+    auto fd = DetectorFactory::get().getDetector("pose2d_resnet_low_cpu");
     EXPECT_TRUE(fd.get() != nullptr);
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 256);
@@ -58,9 +58,9 @@ TEST_F(Pose2dDetectorTest, 01_getModelInfo)
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
-TEST_F(Pose2dDetectorTest, 02_detect)
+TEST_F(Pose2dDetectorTest, 02_detect_pose2d_cpu_low)
 {
-    auto pd = DetectorFactory::get().getDetector("pose2d_resnet_cpu");
+    auto pd = DetectorFactory::get().getDetector("pose2d_resnet_low_cpu");
     EXPECT_TRUE(pd.get() != nullptr);
 
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose2dDescriptor>();
@@ -69,21 +69,13 @@ TEST_F(Pose2dDetectorTest, 02_detect)
     EXPECT_EQ(pose2d->getPoseCount(), 1);
 }
 
-TEST_F(Pose2dDetectorTest, 03_detectWithNpu_V1)
+TEST_F(Pose2dDetectorTest, 03_detect_pose2d_npu_low)
 {
-    auto pd = DetectorFactory::get().getDetector("pose2d_resnet_v1_npu");
-    EXPECT_TRUE(pd.get() != nullptr);
-
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose2dDescriptor>();
-    auto pose2d = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
-    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(pose2d->getPoseCount(), 1);
-    EXPECT_EQ(pose2d->getKeyPoints().size(), 41);
-}
-
-TEST_F(Pose2dDetectorTest, 03_detectWithNpu_V2_Low)
-{
+#if defined(USE_FITMODEL_V2)
     auto pd = DetectorFactory::get().getDetector("pose2d_resnet_v2_low_npu");
+#else
+    auto pd = DetectorFactory::get().getDetector("pose2d_resnet_v1_npu");
+#endif
     EXPECT_TRUE(pd.get() != nullptr);
 
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose2dDescriptor>();
