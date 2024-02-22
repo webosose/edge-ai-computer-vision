@@ -17,7 +17,7 @@ OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
 OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 OPTION(WITH_NPU "Enable Npu Delegate Support" OFF)
 OPTION(WITH_NNAPI "Enable Nnapi Delegate Support" OFF)
-OPTION(WITH_XTENSOR "Enable XTensor Support" OFF)
+OPTION(WITH_XTENSOR "Enable XTensor Support" ON)
 
 IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
     set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
