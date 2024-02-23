@@ -16,7 +16,6 @@ ENDIF(WITH_ARMNN)
 IF(WITH_NPU)
     set(NPU_DELEGATE_SRC
         ${DELEGATE_SRC_DIR}/NpuDelegate.cpp
-        ${DELEGATE_SRC_DIR}/NnapiDelegate.cpp
     )
 ENDIF(WITH_NPU)
 
