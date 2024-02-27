@@ -12,6 +12,7 @@
 #include <ostream>
 #include <sstream>
 #include <streambuf>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace aif {
 
@@ -46,7 +47,7 @@ private:
         std::stringstream m_data;
     };
 
-    std::chrono::system_clock::time_point m_when;
+    boost::posix_time::ptime m_when;
     Buffer m_buffer;
     LogLevel m_level;
     static std::mutex s_mutex;
