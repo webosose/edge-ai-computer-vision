@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <boost/exception/all.hpp>
 
 #include <aif/log/LogMessage.h>
 
@@ -19,7 +20,7 @@ LogMessage::LogMessage(LogLevel level)
     : std::ostream(&m_buffer)
     , m_level(level)
 {
-    m_when = std::chrono::system_clock::now();
+    m_when = boost::posix_time::microsec_clock::universal_time();
 }
 
 LogMessage::~LogMessage()
@@ -58,24 +59,10 @@ LogMessage::~LogMessage()
             itsLevel = "none";
         };
 
-        // Prepare time stamp
-        auto its_time_t = std::chrono::system_clock::to_time_t(m_when);
-        auto its_time = std::localtime(&its_time_t);
-        auto its_ms = (m_when.time_since_epoch().count() / 100) % 1000000;
-
-        // CID9333389, CID9333366
-        if (its_time != nullptr) {
-            std::cout
-                << std::dec << std::setw(4) << its_time->tm_year + 1900 << "-"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mon << "-"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_mday << " "
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_hour << ":"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_min << ":"
-                << std::dec << std::setw(2) << std::setfill('0') << its_time->tm_sec << "."
-                << std::dec << std::setw(6) << std::setfill('0') << its_ms << " ["
-                << itsLevel << "] "
-                << m_buffer.m_data.str()
-                << std::endl;
+        try {
+            std::cout << m_when << " [" << itsLevel << "] " << m_buffer.m_data.str() << std::endl;
+        } catch (...) {
+            std::cout << boost::current_exception_diagnostic_information() << std::endl;
         }
     }
 }
