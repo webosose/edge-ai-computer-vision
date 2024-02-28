@@ -17,7 +17,6 @@ OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
 OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 OPTION(WITH_NPU "Enable Npu Delegate Support" OFF)
 OPTION(WITH_NNAPI "Enable Nnapi Delegate Support" OFF)
-OPTION(WITH_XTENSOR "Enable XTensor Support" OFF)
 
 IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
     set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
@@ -25,6 +24,8 @@ ENDIF()
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
+find_package(xtensor REQUIRED)
+find_package(xtl REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -110,12 +111,6 @@ IF(WITH_UPDATABLE_MODELS)
     LINK_DIRECTORIES(${GLIB2_LIBRARY_DIRS})
 ENDIF(WITH_UPDATABLE_MODELS)
 
-IF(WITH_XTENSOR)
-    FIND_PACKAGE(xtensor REQUIRED)
-    FIND_PACKAGE(xtl REQUIRED)
-    ADD_DEFINITIONS(-DUSE_XTENSOR)
-ENDIF(WITH_XTENSOR)
-
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wl,--no-as-needed -O2")
 
@@ -144,6 +139,9 @@ set(LIBS
     ${RAPIDJSON_LIBRARIES}
     ${PMLOGLIB_LDFLAGS}
     pthread
+    xtensor
+    xtensor::optimize
+    xtensor::use_xsimd
 )
 
 IF(WITH_EDGETPU)
@@ -199,15 +197,6 @@ IF(WITH_UPDATABLE_MODELS)
         ailoader
     )
 ENDIF(WITH_UPDATABLE_MODELS)
-
-IF(WITH_XTENSOR)
-    set(LIBS
-        ${LIBS}
-        xtensor
-        xtensor::optimize
-        xtensor::use_xsimd
-    )
-ENDIF(WITH_XTENSOR)
 
 
 add_library(${LIB_NAME}
