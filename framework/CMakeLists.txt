@@ -139,6 +139,9 @@ set(LIBS
     ${RAPIDJSON_LIBRARIES}
     ${PMLOGLIB_LDFLAGS}
     pthread
+    xtensor
+    xtensor::optimize
+    xtensor::use_xsimd
 )
 
 IF(WITH_EDGETPU)
@@ -194,15 +197,6 @@ IF(WITH_UPDATABLE_MODELS)
         ailoader
     )
 ENDIF(WITH_UPDATABLE_MODELS)
-
-IF(WITH_XTENSOR)
-    set(LIBS
-        ${LIBS}
-        xtensor
-        xtensor::optimize
-        xtensor::use_xsimd
-    )
-ENDIF(WITH_XTENSOR)
 
 add_library(${LIB_NAME}
     SHARED
