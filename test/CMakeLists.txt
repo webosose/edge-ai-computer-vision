@@ -155,6 +155,7 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/facemesh_descriptor_test.cpp
         ${SRC_DIR}/facemesh_detector_test.cpp
         ${SRC_DIR}/facemesh_param_test.cpp
+        ${SRC_DIR}/face_mesh_extract_operation_test.cpp
         ${SRC_DIR}/rppg_descriptor_test.cpp
         ${SRC_DIR}/rppg_detector_test.cpp
         ${SRC_DIR}/rppg_param_test.cpp

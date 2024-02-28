@@ -6,6 +6,8 @@ set(FACEMESH_SRC
     ${FACEMESH_SRC_DIR}/FaceMeshDetector.cpp
     ${FACEMESH_SRC_DIR}/CpuFaceMeshDetector.cpp
     ${FACEMESH_SRC_DIR}/FaceMeshDescriptor.cpp
+    ${FACEMESH_SRC_DIR}/FaceMeshExtractOperation.cpp
+    ${FACEMESH_SRC_DIR}/FaceMeshExtractOperationConfig.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${FACEMESH_SRC_DIR})

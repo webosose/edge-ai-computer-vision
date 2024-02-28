@@ -7,7 +7,7 @@
 #define AIF_FACE_MESH_EXTRACT_OPERATION_H
 
 #include <aif/pipe/BridgeOperation.h>
-#include <aif/pipe/FaceMeshExtractOperationConfig.h>
+#include <aif/faceMesh/FaceMeshExtractOperationConfig.h>
 #include <aif/pipe/NodeOperationFactoryRegistration.h>
 
 namespace aif {

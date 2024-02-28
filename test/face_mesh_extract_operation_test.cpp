@@ -7,7 +7,7 @@
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/pipe/PipeDescriptor.h>
-#include <aif/pipe/FaceMeshExtractOperation.h>
+#include <aif/faceMesh/FaceMeshExtractOperation.h>
 #include <aif/faceMesh/FaceMeshDescriptor.h>
 #include <aif/tools/Utils.h>
 #include "ConfigUtil.h"

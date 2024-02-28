@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/pipe/FaceMeshExtractOperationConfig.h>
+#include <aif/faceMesh/FaceMeshExtractOperationConfig.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
