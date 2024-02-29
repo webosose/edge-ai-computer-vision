@@ -52,15 +52,16 @@ TEST_F(SignLanguageAreaDescriptorTest, 02_addBox)
     rj::Document d;
     d.Parse(json.c_str());
 
+    Logi("Output json: %s", json.c_str());
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("signLanguageAreas"));
     EXPECT_TRUE(d["signLanguageAreas"].IsArray());
     EXPECT_TRUE(d["signLanguageAreas"].Size() == 5);
-    EXPECT_TRUE(d["signLanguageAreas"][0].GetFloat() == 0.1f);
-    EXPECT_TRUE(d["signLanguageAreas"][1].GetFloat() == 0.2f);
-    EXPECT_TRUE(d["signLanguageAreas"][2].GetFloat() == 0.3f);
-    EXPECT_TRUE(d["signLanguageAreas"][3].GetFloat() == 0.4f);
-    EXPECT_TRUE(d["signLanguageAreas"][4].GetFloat() == 0.9f);
+    EXPECT_TRUE(aif::floatEquals(d["signLanguageAreas"][0].GetFloat(), 0.1f));
+    EXPECT_TRUE(aif::floatEquals(d["signLanguageAreas"][1].GetFloat(), 0.2f));
+    EXPECT_TRUE(aif::floatEquals(d["signLanguageAreas"][2].GetFloat(), 0.3f));
+    EXPECT_TRUE(aif::floatEquals(d["signLanguageAreas"][3].GetFloat(), 0.4f));
+    EXPECT_TRUE(aif::floatEquals(d["signLanguageAreas"][4].GetFloat(), 0.9f));
 }
 
 TEST_F(SignLanguageAreaDescriptorTest, 03_addBox)

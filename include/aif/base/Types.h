@@ -178,7 +178,17 @@ inline size_t LONG_TO_ULONG(long value) {
         Loge("value may result in lost or misinterpreted data");
     return ulvalue;
 }
-static const float EPSILON = 0.000001f;
+
+constexpr float COMPUTE_EPSILON(int decimal_place) {
+    float epsilon = 1.0f;
+    for (int i = 0; i < decimal_place; ++i) {
+        epsilon /= 10.0f;
+    }
+    return epsilon;
+}
+
+constexpr int DECIMAL_PLACE = 4;
+constexpr float EPSILON = COMPUTE_EPSILON(DECIMAL_PLACE);
 
 typedef enum {
     kAifOk = 0,

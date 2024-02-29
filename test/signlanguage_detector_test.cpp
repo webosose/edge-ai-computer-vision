@@ -17,6 +17,8 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <boost/filesystem.hpp>
 
 using namespace aif;
 
@@ -29,6 +31,22 @@ protected:
     static void SetUpTestCase()
     {
         AIVision::init();
+        std::string imageSubPath = "/images/signlanguagearea.png";
+        std::vector<std::string> imagePaths = {
+            AIVision::getBasePath() + imageSubPath
+        };
+        for(auto& _path : imagePaths) {
+            if (boost::filesystem::exists(_path)) {
+                imagePath = _path;
+                break;
+            }
+        }
+        if (imagePath.empty()) {
+            std::ostringstream ssearchedPath;
+            std::copy(imagePaths.begin(), imagePaths.end() - 1, std::ostream_iterator<std::string>(ssearchedPath, " or "));
+            ssearchedPath << imagePaths.back();
+            FAIL() << "Image file not found at " << ssearchedPath.str();
+        }
     }
 
     static void TearDownTestCase()
@@ -40,15 +58,16 @@ protected:
     void SetUp() override
     {
         DetectorFactory::get().clear();
-        basePath = AIVision::getBasePath();
     }
 
     void TearDown() override
     {
     }
 
-    std::string basePath;
+public:
+    static std::string imagePath;
 };
+std::string SignLanguageAreaDetectorTest::imagePath = "";
 
 TEST_F(SignLanguageAreaDetectorTest, 01_init_signlanguage_model_cpu)
 {
@@ -67,6 +86,6 @@ TEST_F(SignLanguageAreaDetectorTest, 02_detect_signlanguagearea)
     EXPECT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<SignLanguageAreaDescriptor>();
     auto foundSignLanguageArea = std::dynamic_pointer_cast<SignLanguageAreaDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/signlanguagearea.png", descriptor) == aif::kAifOk);
+    EXPECT_TRUE(fd->detectFromImage(SignLanguageAreaDetectorTest::imagePath, descriptor) == aif::kAifOk);
     Logi("Output: ", foundSignLanguageArea->toStr());
 }

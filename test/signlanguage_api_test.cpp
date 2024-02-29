@@ -9,6 +9,8 @@
 #include <aif/tools/Utils.h>
 
 #include <gtest/gtest.h>
+#include <sstream>
+#include <boost/filesystem.hpp>
 
 using namespace aif;
 namespace rj = rapidjson;
@@ -18,14 +20,36 @@ class SignLanguageAreaApiTest : public ::testing::Test
 protected:
     SignLanguageAreaApiTest() = default;
     ~SignLanguageAreaApiTest() = default;
-    void SetUp() override
+    static void SetUpTestCase()
     {
+        AIVision::init();
+        std::string imageSubPath = "/images/signlanguagearea.png";
+        std::vector<std::string> imagePaths = {
+            AIVision::getBasePath() + imageSubPath
+        };
+        for(auto& _path : imagePaths) {
+            if (boost::filesystem::exists(_path)) {
+                imagePath = _path;
+                break;
+            }
+        }
+        if (imagePath.empty()) {
+            std::ostringstream ssearchedPath;
+            std::copy(imagePaths.begin(), imagePaths.end() - 1, std::ostream_iterator<std::string>(ssearchedPath, " or "));
+            ssearchedPath << imagePaths.back();
+            FAIL() << "Image file not found at " << ssearchedPath.str();
+        }
     }
 
-    void TearDown() override
+    static void TearDownTestCase()
     {
+        AIVision::deinit();
     }
+
+public:
+    static std::string imagePath;
 };
+std::string SignLanguageAreaApiTest::imagePath = "";
 
 TEST_F(SignLanguageAreaApiTest, createDetector_default)
 {
@@ -55,9 +79,9 @@ TEST_F(SignLanguageAreaApiTest, detect_signlanguagearea)
     ai.startup();
     EXPECT_TRUE(ai.isStarted());
 
-    std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/signlanguagearea.png", cv::IMREAD_COLOR);
+    cv::Mat input;
     std::string output;
+    input = cv::imread(SignLanguageAreaApiTest::imagePath, cv::IMREAD_COLOR);
 
     EXPECT_TRUE(ai.createDetector(type));
     EXPECT_TRUE(ai.detect(type, input, output));

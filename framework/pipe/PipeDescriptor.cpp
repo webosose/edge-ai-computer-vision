@@ -58,7 +58,7 @@ std::string PipeDescriptor::getResult() const
 
     rj::StringBuffer buffer;
     rj::Writer<rj::StringBuffer> writer(buffer);
-    writer.SetMaxDecimalPlaces(4);
+    writer.SetMaxDecimalPlaces(aif::DECIMAL_PLACE);
     m_root.Accept(writer);
     return buffer.GetString();
 }
