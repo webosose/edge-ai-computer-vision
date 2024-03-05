@@ -8,6 +8,7 @@
 
 #include <aif/pipe/Pipe.h>
 
+void drawResults(const std::string& inputPath, const std::string & outputPath, const aif::Pipe& pipe, bool drawAll = true);
 void verify_Dataset(aif::Pipe& pipe, const std::string& inputPath, const std::string& outputPath);
 
 #endif //__VERIFICATION_H__

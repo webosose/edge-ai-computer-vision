@@ -6,6 +6,7 @@ set(YOLOV3_SRC
     ${YOLOV3_SRC_DIR}/Yolov3Detector.cpp
     ${YOLOV3_SRC_DIR}/Yolov3Detectors.cpp
     ${YOLOV3_SRC_DIR}/Yolov3Descriptor.cpp
+    ${YOLOV3_SRC_DIR}/Yolov3PTQDetector.cpp
 )
 
 IF(WITH_EDGETPU)

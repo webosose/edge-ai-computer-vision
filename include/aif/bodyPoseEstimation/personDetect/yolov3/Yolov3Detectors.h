@@ -25,7 +25,6 @@ class NpuYolov3V1Detector : public Yolov3Detector
 DetectorFactoryRegistration<NpuYolov3V1Detector, Yolov3Descriptor>
     person_yolov3_v1_npu("person_yolov3_v1_npu");
 
-
 class NpuYolov3V2Detector : public Yolov3Detector
 {
     private:

@@ -10,7 +10,8 @@
 #include <aif/bodyPoseEstimation/personDetect/PersonDetectDetector.h>
 #include <aif/bodyPoseEstimation/common.h>
 
-#define OBD_SCORE_MAX    65535 // 0xFF
+//#define OBD_SCORE_MAX    65535 // 0xFF // TODO : => 65025 = 255 * 255
+#define OBD_SCORE_MAX    (255*255) // 0xFF // TODO : => 65025 = 255 * 255
 #define OBD_RESULT_NUM   10
 #define SZ_COORD         (5 + OBD_RESULT_NUM) // 15
 #define MAX_BOX          200 //(SZ_LBBOX + SZ_MBBOX) // 405+1620 = 2025
@@ -88,11 +89,27 @@ class Yolov3Detector : public PersonDetector
 
     protected:
         std::shared_ptr<DetectorParam> createParam() override;
-        void setModelInfo(TfLiteTensor* inputTensor) override;
+        void setModelInOutInfo(const std::vector<int> &t_inputs,
+                                   const std::vector<int> &t_outputs) override;
         t_aif_status fillInputTensor(const cv::Mat& img) override;
         t_aif_status preProcessing() override;
         t_aif_status postProcessing(const cv::Mat& img,
                 std::shared_ptr<Descriptor>& descriptor) override;
+        virtual void Read_Result(std::vector<unsigned short> &obd_lb_box,
+                                 std::vector<unsigned short> &obd_lb_conf,
+                                 std::vector<unsigned short> &obd_mb_box,
+                                 std::vector<unsigned short> &obd_mb_conf,
+                                 std::vector<unsigned short> &obd_sb_box,
+                                 std::vector<unsigned short> &obd_sb_conf);
+
+    protected:
+        TfLiteTensor *output_sb_conf;
+        TfLiteTensor *output_sb_box;
+        TfLiteTensor *output_mb_conf;
+        TfLiteTensor *output_mb_box;
+        TfLiteTensor *output_lb_conf;
+        TfLiteTensor *output_lb_box;
+
 
     private:
         static inline unsigned int cal_pos(int partial, const unsigned int LUT[], unsigned short par, bool cal_mode, unsigned int box_size)

@@ -198,9 +198,9 @@ void memoryDump(T* outTensor, std::string path, size_t outTotalSize)
     outdata.write (reinterpret_cast<char*>(outTensor), outTotalSize);
     outdata.close();
     std::cout << "MemoryDump!!! End-of-file reached.. and size is : " << outTotalSize <<  std::endl;
-    std::cout << "[0]: " <<  std::hex << outTensor[0] << std::endl;
-    std::cout << "[1]: " <<  outTensor[1] << std::endl;
-    std::cout << "[2]: " <<  outTensor[2] << std::endl;
+    printf("[0]: 0x%2x ", outTensor[0]);
+    printf("[1]: 0x%2x ", outTensor[1]);
+    printf("[2]: 0x%2x \n", outTensor[2]);
 
     std::cout << std::dec;
 }

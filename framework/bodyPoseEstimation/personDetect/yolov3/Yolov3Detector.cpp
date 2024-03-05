@@ -44,12 +44,26 @@ std::shared_ptr<DetectorParam> Yolov3Detector::createParam()
     return param;
 }
 
-void Yolov3Detector::setModelInfo(TfLiteTensor *inputTensor)
+void Yolov3Detector::setModelInOutInfo(const std::vector<int> &t_inputs,
+                                       const std::vector<int> &t_outputs)
 {
-    if (inputTensor == nullptr) {
-        Loge("inputTensor ptr is null");
+    if (t_inputs.size() != 1) {
+        Loge("input tensor size should be 1 ");
+        return ;
+    }
+
+    TfLiteTensor *inputTensor = m_interpreter->tensor(t_inputs[0]);
+    if (inputTensor == nullptr || inputTensor->dims == nullptr) {
+        Loge("tflite inputTensor invalid!!");
         return;
     }
+
+    if (inputTensor->dims == nullptr) {
+        Loge("invalid inputTensor dimension!");
+        return;
+    }
+
+    m_modelInfo.inputSize = inputTensor->dims->size;
     m_modelInfo.batchSize = 1;                          // batchSize
     m_modelInfo.height    = inputTensor->dims->data[0]; // height
     m_modelInfo.width     = inputTensor->dims->data[1]; // width
@@ -60,6 +74,19 @@ void Yolov3Detector::setModelInfo(TfLiteTensor *inputTensor)
     TRACE("height:"     , m_modelInfo.height);
     TRACE("width: "     , m_modelInfo.width);
     TRACE("channels: "  , m_modelInfo.channels);
+
+    if (t_outputs.size() != 6) {
+        Loge("output tensor size should be 6!");
+        return ;
+    }
+
+    output_sb_conf = m_interpreter->tensor(t_outputs[0]); // sb_conf
+    output_sb_box = m_interpreter->tensor(t_outputs[1]); // sb_box
+    output_mb_conf = m_interpreter->tensor(t_outputs[2]); // mb_conf
+    output_mb_box = m_interpreter->tensor(t_outputs[3]); // mb_box
+    output_lb_conf = m_interpreter->tensor(t_outputs[4]); // lb_conf
+    output_lb_box = m_interpreter->tensor(t_outputs[5]); // lb_box
+
 }
 
 t_aif_status Yolov3Detector::fillInputTensor(const cv::Mat &img) /* override*/
@@ -137,6 +164,7 @@ t_aif_status Yolov3Detector::preProcessing()
             m_GTBBoxes.push_back(std::make_pair(gt_bbox.first, box));
         }
         Logi(__func__, " m_GTBBoxes.size: ", m_GTBBoxes.size());
+
         return kAifOk;
     }
     catch (const std::exception &e) {
@@ -156,13 +184,6 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
     try {
         Stopwatch sw;
         sw.start();
-        const std::vector<int> &outputs = m_interpreter->outputs();
-        TfLiteTensor *output_6 = m_interpreter->tensor(outputs[0]); // sb_conf
-        TfLiteTensor *output_5 = m_interpreter->tensor(outputs[1]); // sb_box
-        TfLiteTensor *output_4 = m_interpreter->tensor(outputs[2]); // mb_conf
-        TfLiteTensor *output_3 = m_interpreter->tensor(outputs[3]); // mb_box
-        TfLiteTensor *output_2 = m_interpreter->tensor(outputs[4]); // lb_conf
-        TfLiteTensor *output_1 = m_interpreter->tensor(outputs[5]); // lb_box
         t_pqe_obd_result *result = nullptr;
 
         if (m_IsBodyDetect) {
@@ -179,12 +200,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
         std::vector<unsigned short> obd_sb_conf(SZ_CONV_SB_CONF);	// sb confidence
 
         // De-Quantization + Quantization
-        RD_Result_box    (obd_lb_box,  reinterpret_cast<unsigned int*>(output_1->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
-        RD_Result_conf   (obd_lb_conf, reinterpret_cast<unsigned int*>(output_2->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
-        RD_Result_box    (obd_mb_box,  reinterpret_cast<unsigned int*>(output_3->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
-        RD_Result_conf   (obd_mb_conf, reinterpret_cast<unsigned int*>(output_4->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
-        RD_Result_box_SB (obd_sb_box,  reinterpret_cast<unsigned int*>(output_5->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
-        RD_Result_conf_SB(obd_sb_conf, reinterpret_cast<unsigned int*>(output_6->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
+        Read_Result(obd_lb_box, obd_lb_conf, obd_mb_box, obd_mb_conf, obd_sb_box, obd_sb_conf);
 
         OBD_ComputeResult(obd_lb_box, obd_lb_conf, obd_mb_box, obd_mb_conf, obd_sb_box, obd_sb_conf);
         transform2OriginCoord(img, *result);
@@ -421,22 +437,22 @@ void Yolov3Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_ad
     int numBox_before = bbox.size();
 
     if (boxType == BoxType::LB_BOX) { // for CV_LB_BOX
-        box_h = param->lbbox_h;
-        box_w = param->lbbox_w;
-        box_size = param->box_size;
-        partial_shift = 5;
+        box_h = param->lbbox_h; // 9
+        box_w = param->lbbox_w; // 15
+        box_size = param->box_size; // 3
+        partial_shift = 5;          // 2^5 = 32
         boxIdx = 0;
     } else if (boxType == BoxType::MB_BOX) { // for CV_MB_BOX
-        box_h = param->mbbox_h;
-        box_w = param->mbbox_w;
-        box_size = param->box_size;
-        partial_shift = 4;
+        box_h = param->mbbox_h; // 18
+        box_w = param->mbbox_w; // 30
+        box_size = param->box_size; // 3
+        partial_shift = 4;          // 2^4 = 16
         boxIdx = 1;
     } else if (boxType == BoxType::SB_BOX) { // for CV_SB_BOX
-        box_h = param->sbbox_h;
-        box_w = param->sbbox_w;
-        box_size = param->sb_box_size;
-        partial_shift = 3;
+        box_h = param->sbbox_h; // 36
+        box_w = param->sbbox_w; // 60
+        box_size = param->sb_box_size; // 1
+        partial_shift = 3;             // 2^3 = 8
         boxIdx = 2;
     } else {
         throw std::runtime_error("invalid boxType");
@@ -471,7 +487,7 @@ void Yolov3Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_ad
                 CO = cal_confidence(LUT_CONF[m_versionId][boxIdx], obd_conf[cnt_conf], max);
                 if (CO > param->thresh_score[1]) /* low threshold */ {
                     bbox.emplace_back(BX0, BY0, BX1, BY1, CO, max_id);
-                    // Logi(__func__, " bbox: ", BX0, " " ,BY0," ", BX1," ", BY1, " ",CO, " ", max_id);
+                    // Logi(__func__, "[",j,"][",i,"][",c,"] bbox: ", BX0, " " ,BY0," ", BX1," ", BY1, " ",CO, " ", max_id);
                     // printf("%3d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", boxIdx, BX0, BY0, BX1, BY1, max_id, CO);
                 }
                 cnt_box  += 4;
@@ -789,6 +805,22 @@ bool Yolov3Detector::checkUpdate(int index, const BBox &currBbox)
     }
     Logd("UPDATE!!!!!!!!!!!!!!!!!");
     return true;
+}
+
+void Yolov3Detector::Read_Result(std::vector<unsigned short> &obd_lb_box,
+                                 std::vector<unsigned short> &obd_lb_conf,
+                                 std::vector<unsigned short> &obd_mb_box,
+                                 std::vector<unsigned short> &obd_mb_conf,
+                                 std::vector<unsigned short> &obd_sb_box,
+                                 std::vector<unsigned short> &obd_sb_conf)
+{
+    RD_Result_box    (obd_lb_box,  reinterpret_cast<unsigned int*>(output_lb_box->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
+    RD_Result_conf   (obd_lb_conf, reinterpret_cast<unsigned int*>(output_lb_conf->data.data), SZ_LBBOX_W, SZ_LBBOX_H);
+    RD_Result_box    (obd_mb_box,  reinterpret_cast<unsigned int*>(output_mb_box->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
+    RD_Result_conf   (obd_mb_conf, reinterpret_cast<unsigned int*>(output_mb_conf->data.data), SZ_MBBOX_W, SZ_MBBOX_H);
+    RD_Result_box_SB (obd_sb_box,  reinterpret_cast<unsigned int*>(output_sb_box->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
+    RD_Result_conf_SB(obd_sb_conf, reinterpret_cast<unsigned int*>(output_sb_conf->data.data), SZ_SBBOX_W, SZ_SBBOX_H);
+
 }
 
 void Yolov3Detector::RD_Result_box(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y)

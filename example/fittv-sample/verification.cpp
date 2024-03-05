@@ -18,20 +18,28 @@ using namespace aif;
 namespace fs = std::filesystem;
 
 std::string savePath;
-
-void drawResults(const std::string& inputPath, const std::string & outputPath, const Pipe& pipe)
+void drawResults(const std::string& inputPath, const std::string & outputPath, const Pipe& pipe, bool drawAll = true)
 {
     std::cout << "Input: " << inputPath << std::endl;
     std::cout << "Output: " << std::endl << pipe.getDescriptor()->getResult() << std::endl;
     auto fd = std::dynamic_pointer_cast<FitTvPoseDescriptor>(pipe.getDescriptor());
     cv::Mat result = fd->getImage();
     for (auto& keyPoints : fd->getKeyPoints()) {
-        result = Renderer::drawPose2d(result, keyPoints, false);
+        result = Renderer::drawPose2d(result, keyPoints, drawAll);
+    }
+
+    if (drawAll) {
+        const cv::Rect &roiRect = fd->getRoiRect();
+        auto cropBbox = fd->getCropBbox(); // get fixedBbox
+        auto cropRect = cv::Rect(cropBbox[0].xmin + roiRect.x , cropBbox[0].ymin + roiRect.y, cropBbox[0].width, cropBbox[0].height);
+
+        result = Renderer::drawRects(result, { roiRect }, cv::Scalar(127,127,127), 2);
+        result = Renderer::drawRects(result, { cropRect }, cv::Scalar(255, 0, 0), 1);
+        result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
     }
 
     cv::imwrite(outputPath, result);
 }
-
 
 std::string getImageName(const std::string& outputPath, bool onlyFileName = false)
 {
@@ -131,7 +139,7 @@ bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles, b
             startSaving = true;
         }
         if (saveToImages) {
-            drawResults(files[j], outputPath, pipe);
+            drawResults(files[j], outputPath, pipe, true);
         }
     }
 
