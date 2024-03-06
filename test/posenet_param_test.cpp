@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/pose/PosenetParam.h>
+#include <aifex/pose/PosenetParam.h>
 
 #include <gtest/gtest.h>
 

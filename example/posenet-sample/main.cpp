@@ -4,7 +4,7 @@
  */
 
 #include <Sample.h>
-#include <aif/pose/PosenetDescriptor.h>
+#include <aifex/pose/PosenetDescriptor.h>
 
 namespace rj = rapidjson;
 

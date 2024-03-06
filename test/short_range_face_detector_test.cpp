@@ -2,12 +2,13 @@
  * Copyright (c) 2022 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
+#include <aifex/face/FaceDetector.h>
+#include <aifex/face/FaceDescriptor.h>
 
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/Detector.h>
 #include <aif/base/Descriptor.h>
-#include <aif/face/FaceDescriptor.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

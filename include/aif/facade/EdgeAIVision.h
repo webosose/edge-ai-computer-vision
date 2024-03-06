@@ -224,7 +224,6 @@ class ExtraOutput {
 
 /**@example face/main.cpp
 /**@example pipe-sample/main.cpp
-/**@example fittv-sample/main.cpp
  * Simple example of how to use the Edge AI Vision apis.
  */
 

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/semantic/SemanticDescriptor.h>
+#include <aifex/semantic/SemanticDescriptor.h>
+
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 

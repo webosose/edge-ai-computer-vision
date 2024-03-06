@@ -1,4 +1,6 @@
 *build*
 .vscode
 images/*_decoded*
+oe-logs
+oe-workdir
 

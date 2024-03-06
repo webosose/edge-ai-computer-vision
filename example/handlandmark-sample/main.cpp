@@ -4,7 +4,7 @@
  */
 
 #include <Sample.h>
-#include <aif/handLandmark/HandLandmarkDescriptor.h>
+#include <aifex/handLandmark/HandLandmarkDescriptor.h>
 
 namespace rj = rapidjson;
 

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <aifex/bodypix/BodypixDescriptor.h>
+
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
-#include <aif/bodypix/BodypixDescriptor.h>
 
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>

@@ -40,6 +40,16 @@ public:
     std::shared_ptr<NodeOperationConfig> createConfig(
             const rj::Value& value);
 
+    std::vector<std::string> getOperationTypes() const {
+        std::vector<std::string> types;
+        for (const auto& kv : m_configGenerators) {
+            types.push_back(kv.first);
+        }
+        return types;
+    }
+    
+    void clear();
+
 private:
     NodeOperationFactory() {}
     NodeOperationFactory(const NodeOperationFactory&) {}

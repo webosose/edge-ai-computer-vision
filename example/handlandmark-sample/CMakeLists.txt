@@ -103,6 +103,7 @@ set(LIBS
     ${OPENCV_LIBRARIES}
     ${RAPIDJSON_LIBRARIES}
     edgeai-vision
+    edgeai-vision-base
     example-tools
     pthread
 )
@@ -141,6 +142,13 @@ ENDIF(WITH_AUTO_DELEGATE)
 add_executable(
     ${PROJECT_NAME}
     ${SRC_FILES}
+)
+
+#If you want to link edgeai-extensions library(i.e. edgeai-vision-base), you can use the following to set the rpath.
+set(R_PATH "/usr/lib/edgeai-extensions")
+set_target_properties(${PROJECT_NAME}
+        PROPERTIES
+        LINK_FLAGS "-Wl,-rpath,${R_PATH}"
 )
 
 target_link_libraries(${PROJECT_NAME}

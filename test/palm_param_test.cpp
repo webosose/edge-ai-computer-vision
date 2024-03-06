@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <aifex/palm/PalmParam.h>
+
 #include <aif/log/Logger.h>
-#include <aif/palm/PalmParam.h>
 #include <aif/tools/Utils.h>
 
 #include <algorithm>

@@ -18,6 +18,10 @@
 #define EDGEAI_VISION_CONFIG "edgeai.config"
 #endif
 
+#define KEY_LOG_LEVEL "LogLevel"
+#define KEY_BASE_PATH "BasePath"
+#define KEY_REPORT_TYPE "ReportType"
+
 namespace aif {
 
 class AIVision {

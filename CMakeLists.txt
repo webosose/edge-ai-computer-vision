@@ -6,9 +6,6 @@ OPTION(WITH_EXTRA_MODELS "Enable Extra Models" OFF)
 OPTION(WITH_EXAMPLES "Enable Examples" OFF)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
-OPTION(WITH_FITTV "Enable FitTV Model and Example" OFF)
-OPTION(WITH_FITTV_MODEL_V1 "Enable FitTV Model V1" OFF)
-OPTION(WITH_FITTV_MODEL_V2 "Enable FitTV Model V2" OFF)
 
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 
@@ -24,13 +21,9 @@ IF(WITH_EXTRA_MODELS)
     ADD_DEFINITIONS(-DUSE_EXTRA_MODELS)
 ENDIF(WITH_EXTRA_MODELS)
 
-IF(WITH_FITTV_MODEL_V1)
-    ADD_DEFINITIONS(-DUSE_FITMODEL_V1)
-ELSEIF(WITH_FITTV_MODEL_V2)
-    ADD_DEFINITIONS(-DUSE_FITMODEL_V2)
-ENDIF()
-
-add_subdirectory(framework)
+add_subdirectory(core)
+add_subdirectory(extensions)
+add_subdirectory(bin)
 
 IF(WITH_EXAMPLES)
     add_subdirectory(example)
@@ -42,10 +35,6 @@ IF(WITH_HOST_TEST)        ### for meta-shift unit test ###
 ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test)
     add_subdirectory(test/test-dl)
-ENDIF()
-
-IF(WITH_FITTV)
-    ADD_DEFINITIONS(-DUSE_FITTV)
 ENDIF()
 
 add_subdirectory(third_party)

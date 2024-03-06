@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/selfie/SelfieParam.h>
+#include <aifex/selfie/SelfieParam.h>
 
 #include <gtest/gtest.h>
 

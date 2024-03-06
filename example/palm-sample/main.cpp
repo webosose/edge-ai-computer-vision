@@ -4,7 +4,7 @@
  */
 
 #include <Sample.h>
-#include <aif/palm/PalmDescriptor.h>
+#include <aifex/palm/PalmDescriptor.h>
 
 namespace rj = rapidjson;
 

@@ -6,9 +6,9 @@
 #ifndef AIF_RENDERER_H
 #define AIF_RENDERER_H
 
+#include <Bbox.h>
+
 #include <opencv2/opencv.hpp>
-#include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
-#include <aif/bodyPoseEstimation/common.h>
 
 namespace aif {
 

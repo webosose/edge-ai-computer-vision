@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/face/FaceParam.h>
+#include <aifex/face/FaceParam.h>
+
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/face/YuNetFaceParam.h>
+#include <aifex/face/YuNetFaceParam.h>
+
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

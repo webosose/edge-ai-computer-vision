@@ -80,7 +80,7 @@ IF(WITH_AUTO_DELEGATE)
     ADD_DEFINITIONS(-DUSE_AUTO_DELEGATE)
 ENDIF(WITH_AUTO_DELEGATE)
 
-set(EXE_NAME edgeai-vision-test)
+set(EXE_NAME ${PROJECT_NAME})
 set(HDR_DIR ${CMAKE_SOURCE_DIR}/test)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/test)
 
@@ -155,15 +155,6 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/palm_param_test.cpp
         ${SRC_DIR}/yunet_v2_face_detector_test.cpp
         ${SRC_DIR}/yunet_face_detector_test.cpp
-        ${SRC_DIR}/facemesh_descriptor_test.cpp
-        ${SRC_DIR}/facemesh_detector_test.cpp
-        ${SRC_DIR}/facemesh_param_test.cpp
-        ${SRC_DIR}/face_mesh_extract_operation_test.cpp
-        ${SRC_DIR}/rppg_descriptor_test.cpp
-        ${SRC_DIR}/rppg_detector_test.cpp
-        ${SRC_DIR}/rppg_param_test.cpp
-        ${SRC_DIR}/rppg_pre_process_operation_test.cpp
-        ${SRC_DIR}/rppg_post_process_operation_test.cpp
     )
 ENDIF(WITH_EXTRA_MODELS)
 
@@ -174,6 +165,7 @@ set(LIBS
     ${RAPIDJSON_LIBRARIES}
     ${PMLOGLIB_LDFLAGS}
     edgeai-vision
+    edgeai-vision-base
     pthread
 )
 
@@ -238,11 +230,17 @@ add_executable(
     ${EXE_NAME}
     ${SRC_FILES}
 )
-
 target_link_libraries(${EXE_NAME}
     ${GTEST_LIBRARIES}
     ${GTEST_MAIN_LIBRARIES}
     ${LIBS}
+)
+
+#If you want to link edgeai-extensions library(i.e. edgeai-vision-base), you can use the following to set the rpath.
+set(R_PATH "/usr/lib/edgeai-extensions")
+set_target_properties(${EXE_NAME}
+        PROPERTIES
+        LINK_FLAGS "-Wl,-rpath,${R_PATH}"
 )
 
 IF(WITH_HOST_TEST)
@@ -256,10 +254,6 @@ IF(WITH_HOST_TEST)
 ENDIF(WITH_HOST_TEST)
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/pipe")
-
-IF(WITH_FITTV)
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/fittv")
-ENDIF(WITH_FITTV)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/images DESTINATION ${AIF_INSTALL_DIR})
 install(TARGETS ${EXE_NAME} DESTINATION ${AIF_INSTALL_TEST_DIR})

@@ -9,18 +9,27 @@
 #include <aif/base/Types.h>
 #include <aif/base/Detector.h>
 #include <aif/base/DetectorFactory.h>
+#include <aif/base/IRegistration.h>
+#include <aif/log/Logger.h>
 
 #include <string>
 
 namespace aif {
 
 template <typename T1, typename T2>
-class DetectorFactoryRegistration
+class DetectorFactoryRegistration : public IRegistration
 {
 public:
-    DetectorFactoryRegistration(const std::string& id) {
-        DetectorFactory::get().registerGenerator(
-                id,
+    DetectorFactoryRegistration(const std::string& id) : IRegistration(id, kDetector)
+    {
+        RegistrationJob::get().addRegistration(m_extension, m_id, this);
+    }
+
+    void doRegister() override
+    {
+        Logi("doRegister: ", m_id);
+        if (kAifOk != DetectorFactory::get().registerGenerator(
+                m_id,
                 []() {
                     std::shared_ptr<Detector> detector(new T1());
                     return detector;
@@ -29,7 +38,19 @@ public:
                     std::shared_ptr<Descriptor> descriptor(new T2());
                     return descriptor;
                 }
-        );
+        ) ) {
+            return Loge("Failed to register detector: ", m_id);
+        }
+        Logi("Success to register detector: ", m_id);
+    }
+
+    ~DetectorFactoryRegistration()
+    {
+        auto& reg = RegistrationJob::get().getRegistration(m_extension, m_id);
+        if (reg) {
+            reg = nullptr;
+            RegistrationJob::get().removeRegistration(m_extension, m_id);
+        }
     }
 };
 

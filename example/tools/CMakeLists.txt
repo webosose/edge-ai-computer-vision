@@ -37,6 +37,7 @@ link_directories(
 # Source Files
 
 set(SRC_FILES
+    ${SRC_DIR}/Bbox.cpp
     ${SRC_DIR}/WSClient.cpp
     ${SRC_DIR}/WSServer.cpp
     ${SRC_DIR}/WSServerSession.cpp

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/movenet/MovenetDescriptor.h>
+#include <aifex/movenet/MovenetDescriptor.h>
+
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

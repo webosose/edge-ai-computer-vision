@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodypix/BodypixParam.h>
+#include <aifex/bodypix/BodypixParam.h>
 
 #include <gtest/gtest.h>
 

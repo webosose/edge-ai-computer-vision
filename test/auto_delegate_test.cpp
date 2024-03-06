@@ -6,7 +6,8 @@
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DelegateFactory.h>
-#include <aif/pose/PosenetDescriptor.h>
+
+#include <aifex/pose/PosenetDescriptor.h>
 
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>

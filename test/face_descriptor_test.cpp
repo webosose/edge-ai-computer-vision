@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/face/FaceDescriptor.h>
+#include <aifex/face/FaceDescriptor.h>
+
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 

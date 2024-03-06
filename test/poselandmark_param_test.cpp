@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/poseLandmark/PoseLandmarkParam.h>
+#include <aifex/poseLandmark/PoseLandmarkParam.h>
 
 #include <gtest/gtest.h>
 

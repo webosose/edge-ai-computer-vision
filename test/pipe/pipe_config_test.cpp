@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <aif/base/AIVision.h>
 #include <aif/pipe/PipeConfig.h>
 #include <gtest/gtest.h>
 #include "ConfigUtil.h"
@@ -18,10 +19,12 @@ protected:
 
     void SetUp() override
     {
+        AIVision::init();
     }
 
     void TearDown() override
     {
+        AIVision::deinit();
     }
 
 public:

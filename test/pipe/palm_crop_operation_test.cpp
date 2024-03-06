@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/pipe/PalmCropOperation.h>
+#include <aifex/pipe/PalmCropOperation.h>
+#include <aifex/palm/PalmDescriptor.h>
+
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
-#include <aif/palm/PalmDescriptor.h>
 #include <gtest/gtest.h>
 #include <opencv2/opencv.hpp>
 #include "ConfigUtil.h"

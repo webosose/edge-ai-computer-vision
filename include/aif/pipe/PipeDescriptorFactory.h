@@ -31,6 +31,16 @@ public:
 
     std::shared_ptr<PipeDescriptor> create(const std::string& id);
 
+    std::vector<std::string> getDescriptorIds() const {
+        std::vector<std::string> ids;
+        for (const auto& kv : m_generators) {
+            ids.push_back(kv.first);
+        }
+        return ids;
+    }
+
+    void clear();
+
 private:
     PipeDescriptorFactory() {}
     PipeDescriptorFactory(const PipeDescriptorFactory&) {}

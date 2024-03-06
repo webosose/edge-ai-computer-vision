@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/handLandmark/HandLandmarkDescriptor.h>
+#include <aifex/handLandmark/HandLandmarkDescriptor.h>
+
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

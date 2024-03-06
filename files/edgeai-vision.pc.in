@@ -4,7 +4,7 @@ libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
 Name: Edge AI Computer Vision C++ library
-Description: webos edge ai computer vision c++ shared library
+Description: webos edge ai computer vision core c++ shared library
 Version: 1.0.0
 Requires:
 Libs: -L${libdir} -ledgeai-vision

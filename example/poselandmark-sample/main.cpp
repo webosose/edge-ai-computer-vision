@@ -4,7 +4,7 @@
  */
 
 #include <Sample.h>
-#include <aif/poseLandmark/PoseLandmarkDescriptor.h>
+#include <aifex/poseLandmark/PoseLandmarkDescriptor.h>
 
 namespace rj = rapidjson;
 

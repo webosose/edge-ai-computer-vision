@@ -209,6 +209,14 @@ typedef enum {
     kWebSocketError = 3
 } t_aif_event_type;
 
+typedef enum
+{
+    kDetector = 0,
+    kNodeOperation = 1,
+    kPipeDescriptor = 2,
+    kUnknown = 999
+} t_feature_type;
+
 struct t_aif_modelinfo
 {
     int inputSize;
@@ -283,6 +291,22 @@ struct t_aif_padding_info
     int bottomBorder;
     float imgResizingScale;
     cv::Size paddedSize;
+};
+
+struct t_aif_plugin_info {
+    std::string name;
+    std::string path;
+    std::string alias;
+    std::string version;
+    std::string description;
+    void* handle;
+};
+
+struct t_aif_feature_info
+{
+    std::string name;
+    t_feature_type type;
+    std::string plugin_name;
 };
 
 } // end of namespace aif

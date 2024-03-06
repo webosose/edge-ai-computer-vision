@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/text/TextParam.h>
+#include <aifex/text/TextParam.h>
+
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 

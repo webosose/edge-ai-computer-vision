@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/pipe/CropOperation.h>
+#include <aifex/pipe/CropOperation.h>
+
 #include <aif/base/AIVision.h>
 #include <gtest/gtest.h>
 #include <opencv2/opencv.hpp>
