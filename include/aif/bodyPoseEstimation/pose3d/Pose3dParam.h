@@ -23,6 +23,12 @@ public:
         HOMOGENEOUS_COORDINATES = 1,
     };
 
+    enum class AlternativeInputType {
+        IGNORE = 0,
+        REPLICATE = 1,
+        INTERPOLATE = 2,
+    };
+
     Pose3dParam();
     virtual ~Pose3dParam();
     Pose3dParam(const Pose3dParam& other);
@@ -46,6 +52,7 @@ public:
     std::vector<int> arch;               // "ARCH": "3, 3, 3",///dont need?
     std::vector<int> flipPoseMap;        // "FLIP_POSE_MAP": "0, 4, 5, 6, 1, 2, 3, 7, 8, 9, 10, 14, 15, 16, 11, 12, 13, 17, 18, 19, 20, 26, 27, 28, 29, 30, 21, 22, 23, 24, 25, 33, 34, 31, 32, 36, 35, 38, 37, 40, 39",
     PreprocessingType preprocessingType;
+    AlternativeInputType alternativeInputType;
 
     std::array<float, 2> focalLength;    // 1469.2684222875848F, 1469.8823503910792F
     std::array<float, 2> center;         // 650.1274669098675F, 505.44118528424053F

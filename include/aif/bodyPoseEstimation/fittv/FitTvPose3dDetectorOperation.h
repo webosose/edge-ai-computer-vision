@@ -8,6 +8,7 @@
 
 #include <aif/pipe/DetectorOperation.h>
 #include <aif/pipe/NodeOperationFactoryRegistration.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDetector.h>
 #include <aif/base/Detector.h>
 
 #include <string>

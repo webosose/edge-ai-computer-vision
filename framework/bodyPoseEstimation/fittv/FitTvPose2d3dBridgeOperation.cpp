@@ -28,6 +28,15 @@ bool FitTvPose2d3dBridgeOperation::runImpl(const std::shared_ptr<NodeInput>& inp
     }
     std::shared_ptr<FitTvPoseDescriptor> fdescriptor=
         std::dynamic_pointer_cast<FitTvPoseDescriptor>(input->getDescriptor());
+    if (fdescriptor == nullptr) {
+        Loge(__func__, "failed to convert Descriptor to FitTvPoseDescriptor");
+        return false;
+    }
+
+    if ((fdescriptor->getKeyPoints()).size() == 0) {
+        Loge(m_id, ": failed to get Pose2d Keypoints from FitTvPoseDescriptor");
+        return false;
+    }
 
     for (const auto& keyPoints : fdescriptor->getKeyPoints()) {
         std::vector<float> joints2d;

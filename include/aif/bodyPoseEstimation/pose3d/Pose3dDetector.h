@@ -30,6 +30,7 @@ public:
 
     t_aif_status detect(const cv::Mat &img,
                         std::shared_ptr<Descriptor> &descriptor) override;
+    void setNumSkippedInput(const int numSkippedInput) { mNumSkippedInput = numSkippedInput; }
 
 protected:
     std::shared_ptr<DetectorParam> createParam() override;
@@ -40,13 +41,14 @@ protected:
             std::shared_ptr<Descriptor>& descriptor) override;
 
 private:
-    Joint2D normalizeJoints( const float x, const float y, const int width, const int height );
+    Joint2D normalizeJoints(const float x, const float y, const int width, const int height);
+    Joints2D interpolateJoints(const Joints2D& lastJoints, const Joints2D& currJoints, const int split, const int index);
     void initializeParam();
     void getCameraIntrinsics();
     void getInputTensorInfo(TfLiteTensor *input);
     int getOutputTensorInfo(TfLiteTensor *output);
-    void fillJoints( uint8_t* inputTensorBuff );
-    void fillFlippedJoints( uint8_t* inputTensorBuff );
+    void fillJoints(uint8_t* inputTensorBuff);
+    void fillFlippedJoints(uint8_t* inputTensorBuff);
     void postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output);
     void postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output);
     void averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, int numJoints);
@@ -55,6 +57,7 @@ private:
     int mMaxInputs;
     int mBatchSize;
     int mNumElems;
+    int mNumSkippedInput;
     int mNumJointsIn;
     int mNumJointsOut[RESULT_3D_IDX_MAX];
     bool mIsSecondDetect;

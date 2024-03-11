@@ -10,6 +10,7 @@ Pose3dDetector::Pose3dDetector(const std::string& modelPath)
     , mMaxInputs(0)
     , mBatchSize(0)
     , mNumElems(0)
+    , mNumSkippedInput(0)
     , mNumJointsIn(0)
     , mNumJointsOut{0, 0}
     , mIsSecondDetect(false)
@@ -29,13 +30,27 @@ Pose3dDetector::~Pose3dDetector()
         }
 }
 
-Joint2D Pose3dDetector::normalizeJoints(const float x, const float y, const int width, const int height )
+Joint2D Pose3dDetector::normalizeJoints(const float x, const float y, const int width, const int height)
 {
     Joint2D p;
-    p.x = ( ( x / width ) * 2.0f ) - 1.0f;
-    p.y = ( ( y / width ) * 2.0f ) -
-                        ( static_cast<float>( height ) / static_cast<float>( width ) );
+    p.x = ((x / width) * 2.0f) - 1.0f;
+    p.y = ((y / width) * 2.0f) -
+                        (static_cast<float>(height) / static_cast<float>(width));
     return p;
+}
+
+Pose3dDetector::Joints2D Pose3dDetector::interpolateJoints(const Joints2D& lastJoints, const Joints2D& currJoints, const int split, const int index)
+{
+    Joints2D result;
+    float alpha = static_cast<float>(index) / static_cast<float>(split);
+    for (int i = 0; i < lastJoints.size(); i++)
+    {
+        Joint2D p;
+        p.x = lastJoints[i].x + (currJoints[i].x - lastJoints[i].x) * alpha;
+        p.y = lastJoints[i].y + (currJoints[i].y - lastJoints[i].y) * alpha;
+        result.push_back(p);
+    }
+    return result;
 }
 
 t_aif_status Pose3dDetector::detect(const cv::Mat &img, std::shared_ptr<Descriptor> &descriptor)
@@ -122,7 +137,7 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
         TRACE("Pose3D start with imageJoints[idx] ", joints_mat.at<double>(1,0));
         TRACE("Pose3D start with imageJoints[idx] ", joints_mat.at<double>(1,1));
 
-        if ( (joints_mat.rows != mNumJointsIn) || (joints_mat.cols != 2) ) /* 41 x 2 */
+        if ((joints_mat.rows != mNumJointsIn) || (joints_mat.cols != 2)) /* 41 x 2 */
         {
             throw std::runtime_error("joints_mat input size is wrong!");
         }
@@ -130,31 +145,53 @@ t_aif_status Pose3dDetector::fillInputTensor(const cv::Mat& joints_mat)/* overri
         if (!mIsSecondDetect) {    // first batch
             Joints2D curr_joint_array;
 
-            if ( param->preprocessingType == Pose3dParam::PreprocessingType::HOMOGENEOUS_COORDINATES )
+            if (param->preprocessingType == Pose3dParam::PreprocessingType::HOMOGENEOUS_COORDINATES)
             {
                 cv::Mat undistort_result;
-                cv::undistortPoints( joints_mat, undistort_result, mCameraMatrix, mDistCoeff ); /* remove distortion and change to CCS */
-                for ( int j = 0; j < undistort_result.rows; j++ )
+                cv::undistortPoints(joints_mat, undistort_result, mCameraMatrix, mDistCoeff); /* remove distortion and change to CCS */
+                for (int j = 0; j < undistort_result.rows; j++)
                 {
                     Joint2D p;
-                    p.x = undistort_result.at<double>( j, 0 );
-                    p.y = undistort_result.at<double>( j, 1 );
-                    curr_joint_array.push_back( p );
+                    p.x = undistort_result.at<double>(j, 0);
+                    p.y = undistort_result.at<double>(j, 1);
+                    curr_joint_array.push_back(p);
                 }
             }
             else
             {
-                for ( int j = 0; j < joints_mat.rows; j++ )
+                for (int j = 0; j < joints_mat.rows; j++)
                 {
-                    float x = joints_mat.at<double>( j, 0 );
-                    float y = joints_mat.at<double>( j, 1 );
-                    Joint2D p = normalizeJoints( x, y, param->orgImgWidth, param->orgImgHeight );
-                    curr_joint_array.push_back( p );
+                    float x = joints_mat.at<double>(j, 0);
+                    float y = joints_mat.at<double>(j, 1);
+                    Joint2D p = normalizeJoints(x, y, param->orgImgWidth, param->orgImgHeight);
+                    curr_joint_array.push_back(p);
                 }
             }
 
-            mJoints_Q.push_back( curr_joint_array );
-            if ( mJoints_Q.size() > mNumElems )
+            int NumUpdateInput = 1;
+            if (param->alternativeInputType != Pose3dParam::AlternativeInputType::IGNORE)
+            {
+                NumUpdateInput = mNumSkippedInput + 1 > mNumElems ? mNumElems : mNumSkippedInput + 1;
+            }
+
+            // ignore, can not interpolate, replicate
+            if ((NumUpdateInput == 1) || (mJoints_Q.size() == 0) || (param->alternativeInputType != Pose3dParam::AlternativeInputType::INTERPOLATE))
+            {
+                for (int j = 1; j <= NumUpdateInput; j++)
+                {
+                    mJoints_Q.push_back(curr_joint_array);
+                }
+            }
+            else // interpolate
+            {
+                Joints2D last_joint_array = mJoints_Q.back();
+                for (int j = 1; j <= NumUpdateInput; j++)
+                {
+                    mJoints_Q.push_back(interpolateJoints(last_joint_array, curr_joint_array, NumUpdateInput, j));
+                }
+            }
+
+            while (mJoints_Q.size() > mNumElems)
             {
                 mJoints_Q.pop_front();
             }
@@ -255,12 +292,12 @@ void Pose3dDetector::initializeParam()
     mMaxInputs = 1;
     mBatchSize = 1;
 
-    if ( param->flipPoses == true )
+    if (param->flipPoses == true)
     {
         mBatchSize *= 2;
     }
 
-    if ( param->preprocessingType == Pose3dParam::PreprocessingType::HOMOGENEOUS_COORDINATES )
+    if (param->preprocessingType == Pose3dParam::PreprocessingType::HOMOGENEOUS_COORDINATES)
     {
         getCameraIntrinsics();
     }
@@ -279,28 +316,28 @@ void Pose3dDetector::getCameraIntrinsics()
     auto radialDistortion = param->radialDistortion;
     auto tanDistortion = param->tanDistortion;
 
-    if ( param->hasIntrinsics == false)
+    if (param->hasIntrinsics == false)
     {
-        focal_length.fill( 1000.0f );
+        focal_length.fill(1000.0f);
         center[0] = param->orgImgWidth / 2.0f;
         center[1] = param->orgImgHeight / 2.0f;
-        radialDistortion.fill( 0.0f );
-        tanDistortion.fill( 0.0f );
+        radialDistortion.fill(0.0f);
+        tanDistortion.fill(0.0f);
     }
 
-    mCameraMatrix = cv::Mat::zeros( cv::Size( 3, 3 ), CV_32FC1 );
-    mCameraMatrix.at<float>( 0, 0 ) = focal_length[0];
-    mCameraMatrix.at<float>( 1, 1 ) = focal_length[1];
-    mCameraMatrix.at<float>( 0, 2 ) = center[0];
-    mCameraMatrix.at<float>( 1, 2 ) = center[1];
-    mCameraMatrix.at<float>( 2, 2 ) = 1;
+    mCameraMatrix = cv::Mat::zeros(cv::Size(3, 3), CV_32FC1);
+    mCameraMatrix.at<float>(0, 0) = focal_length[0];
+    mCameraMatrix.at<float>(1, 1) = focal_length[1];
+    mCameraMatrix.at<float>(0, 2) = center[0];
+    mCameraMatrix.at<float>(1, 2) = center[1];
+    mCameraMatrix.at<float>(2, 2) = 1;
 
-    mDistCoeff = cv::Mat::zeros( cv::Size( 1, 5 ), CV_32FC1 );
-    mDistCoeff.at<float>( 0, 0 ) = radialDistortion[0];
-    mDistCoeff.at<float>( 0, 1 ) = radialDistortion[1];
-    mDistCoeff.at<float>( 0, 2 ) = tanDistortion[0];
-    mDistCoeff.at<float>( 0, 3 ) = tanDistortion[1];
-    mDistCoeff.at<float>( 0, 4 ) = radialDistortion[2];
+    mDistCoeff = cv::Mat::zeros(cv::Size(1, 5), CV_32FC1);
+    mDistCoeff.at<float>(0, 0) = radialDistortion[0];
+    mDistCoeff.at<float>(0, 1) = radialDistortion[1];
+    mDistCoeff.at<float>(0, 2) = tanDistortion[0];
+    mDistCoeff.at<float>(0, 3) = tanDistortion[1];
+    mDistCoeff.at<float>(0, 4) = radialDistortion[2];
 
 }
 
@@ -326,7 +363,7 @@ void Pose3dDetector::getInputTensorInfo(TfLiteTensor *input)
     mScaleIn = q_params->scale->data[0];
     mZeropointIn = q_params->zero_point->data[0];
 
-    TRACE( __func__, " mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
+    TRACE(__func__, " mScaleIn: " , mScaleIn , " mZeropointIn: " , mZeropointIn);
 }
 
 int Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
@@ -336,9 +373,9 @@ int Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
     }
 
     int idx = 0;
-    if (output->bytes == 1 * 41 * 3 ) {
+    if (output->bytes == 1 * 41 * 3) {
         idx = RESULT_3D_JOINT;
-    } else if (output->bytes == 1 * 1 * 3 ) {
+    } else if (output->bytes == 1 * 1 * 3) {
         idx = RESULT_3D_TRAJ;
     } else {
         throw std::runtime_error("output bytes is wrong!!");
@@ -356,23 +393,23 @@ int Pose3dDetector::getOutputTensorInfo(TfLiteTensor *output)
     mScaleOut[idx] = q_params->scale->data[0];
     mZeropointOut[idx] = q_params->zero_point->data[0];
 
-    TRACE( __func__, " mScaleOut[" , idx , "]: " , mScaleOut[idx] , " mZeropointOut[" , idx , "]: " , mZeropointOut);
+    TRACE(__func__, " mScaleOut[" , idx , "]: " , mScaleOut[idx] , " mZeropointOut[" , idx , "]: " , mZeropointOut);
     return idx;
 }
 
-void Pose3dDetector::fillJoints(uint8_t* inputTensorBuff )
+void Pose3dDetector::fillJoints(uint8_t* inputTensorBuff)
 {
     TRACE(__func__);
 
     auto QUANT = [this](float data) {
-        return static_cast<uint8_t>(std::max(std::min((( data / mScaleIn ) + mZeropointIn), 255.f), 0.0f));
+        return static_cast<uint8_t>(std::max(std::min(((data / mScaleIn) + mZeropointIn), 255.f), 0.0f));
     };
 
     // fill the oldest joints to the first line of buffer
     auto it = mJoints_Q.cbegin();
     auto prev_line = inputTensorBuff;
     int idx = 0;
-    for ( auto& j2d : *it )  // x, y
+    for (auto& j2d : *it)  // x, y
     {
         // q = deq / scale + zero_point
         inputTensorBuff[2*idx] = QUANT(j2d.x);
@@ -383,20 +420,20 @@ void Pose3dDetector::fillJoints(uint8_t* inputTensorBuff )
     it++;
 
     // copy to empty lines + 1
-    const auto numEmptySlots = static_cast<int>( mNumElems ) - static_cast<int>( mJoints_Q.size() );
+    const auto numEmptySlots = static_cast<int>(mNumElems) - static_cast<int>(mJoints_Q.size());
     const auto inByte = mNumJointsIn * sizeof(uint8_t) * 2; // 41 * 2 bytes? = 84 bytes
-    for ( auto i = 0; i < numEmptySlots; i++ )
+    for (auto i = 0; i < numEmptySlots; i++)
     {
-        std::memcpy(inputTensorBuff, prev_line , inByte ); // copy prev_line's values to empty slots...
+        std::memcpy(inputTensorBuff, prev_line , inByte); // copy prev_line's values to empty slots...
         prev_line = inputTensorBuff;
         inputTensorBuff += inByte;
     }
 
     // fill rest
-    while ( it != mJoints_Q.cend() )
+    while (it != mJoints_Q.cend())
     {
         idx = 0;
-        for ( auto& j2d : *it )
+        for (auto& j2d : *it)
         {
             // q = deq / scale + zero_point TODO: ???
             inputTensorBuff[2*idx] = QUANT(j2d.x);
@@ -419,7 +456,7 @@ void Pose3dDetector::fillFlippedJoints(uint8_t* inputTensorBuff)
     }
 
     auto QUANT = [this](float data) {
-        return static_cast<uint8_t>(std::max(std::min((( data / mScaleIn ) + mZeropointIn), 255.f), 0.0f));
+        return static_cast<uint8_t>(std::max(std::min(((data / mScaleIn) + mZeropointIn), 255.f), 0.0f));
     };
 
 
@@ -427,7 +464,7 @@ void Pose3dDetector::fillFlippedJoints(uint8_t* inputTensorBuff)
     auto it = mJoints_Q.cbegin();
     auto prev_line = inputTensorBuff;
     int idx = 0;
-    for ( auto& j2d : *it )
+    for (auto& j2d : *it)
     {
         // q = deq / scale + zero_point TODO: ???
         auto flipped_idx = param->flipPoseMap[idx];
@@ -439,20 +476,20 @@ void Pose3dDetector::fillFlippedJoints(uint8_t* inputTensorBuff)
     it++;
 
     // copy to empty lines + 1
-    const auto numEmptySlots = static_cast<int>( mNumElems ) - static_cast<int>( mJoints_Q.size() );
+    const auto numEmptySlots = static_cast<int>(mNumElems) - static_cast<int>(mJoints_Q.size());
     const auto inByte = mNumJointsIn * sizeof(uint8_t) * 2; // 41 * 2 Bytes
-    for ( auto i = 0; i < numEmptySlots; i++ )
+    for (auto i = 0; i < numEmptySlots; i++)
     {
-        std::memcpy(inputTensorBuff, prev_line , inByte ); // copy prev_line's values to empty slots...
+        std::memcpy(inputTensorBuff, prev_line , inByte); // copy prev_line's values to empty slots...
         prev_line = inputTensorBuff;
         inputTensorBuff += inByte;
     }
 
     // fill rest
-    while ( it != mJoints_Q.cend() )
+    while (it != mJoints_Q.cend())
     {
         idx = 0;
-        for ( auto& j2d : *it )
+        for (auto& j2d : *it)
         {
             auto flipped_idx = param->flipPoseMap[idx];
             inputTensorBuff[2*flipped_idx] = QUANT((j2d.x) * -1.f);
@@ -526,12 +563,12 @@ void Pose3dDetector::averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* 
 
     mResults[idx].clear();
     Joint3D result;
-    for ( auto j = 0; j < numJoints; ++j) // 41, 1
+    for (auto j = 0; j < numJoints; ++j) // 41, 1
     {
         auto f_idx = param->flipPoseMap[j];
-        result.x = ( DEQ(buff[3*j]) + ( DEQ(flipped[3*f_idx]) * -1.f ) ) / 2;
-        result.y = ( DEQ(buff[3*j+1]) + DEQ(flipped[3*f_idx+1]) ) / 2;
-        result.z = ( DEQ(buff[3*j+2]) + DEQ(flipped[3*f_idx+2]) ) / 2;
+        result.x = (DEQ(buff[3*j]) + (DEQ(flipped[3*f_idx]) * -1.f)) / 2;
+        result.y = (DEQ(buff[3*j+1]) + DEQ(flipped[3*f_idx+1])) / 2;
+        result.z = (DEQ(buff[3*j+2]) + DEQ(flipped[3*f_idx+2])) / 2;
 
         mResults[idx].push_back(result);
     }

@@ -34,6 +34,10 @@ bool FitTvPersonCropOperation::runImpl(const std::shared_ptr<NodeInput>& input)
         return false;
     }
 
+    if ((fdescriptor->getBboxes()).size() == 0) {
+        Loge(m_id, ": failed to get BBox from FitTvPoseDescriptor");
+        return false;
+    }
 
     cv::Mat image = descriptor->getImage();
 

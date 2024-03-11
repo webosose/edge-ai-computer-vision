@@ -95,6 +95,7 @@ TEST_F(Pose3dParamTest, 04_test_fromJson)
             \"arch\": [3, 3, 3],\
             \"flipPoseMap\": [ 0, 4, 5 ],\
             \"preprocessingType\": 1, \
+            \"alternativeInputType\": 1, \
             \"focalLength\": [ 1469.2684222875848, 1469.8823503910792 ],\
             \"center\": [ 650.1274669098675, 505.44118528424053 ],\
             \"radialdistortion\": [ -0.12686622768237987, -0.33232941922945763, 0.3877008223664106 ],\
@@ -115,6 +116,7 @@ TEST_F(Pose3dParamTest, 04_test_fromJson)
     EXPECT_EQ(pp.flipPoseMap[1], 4);
     EXPECT_EQ(pp.flipPoseMap[2], 5);
     EXPECT_EQ(pp.preprocessingType, Pose3dParam::PreprocessingType::HOMOGENEOUS_COORDINATES);
+    EXPECT_EQ(pp.alternativeInputType, Pose3dParam::AlternativeInputType::REPLICATE);
     EXPECT_EQ(pp.focalLength[0], 1469.2684222875848f);
     EXPECT_EQ(pp.focalLength[1], 1469.8823503910792f);
     EXPECT_EQ(pp.center[0], 650.1274669098675f);

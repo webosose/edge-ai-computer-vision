@@ -39,6 +39,10 @@ bool FitTvPose2dDetectorOperation::runImpl(const std::shared_ptr<NodeInput>& inp
         return false;
     }
 
+    if (fitTvDescriptor->getCropImages().size() == 0) {
+        Loge(m_id, ": failed to get crop images from FitTvPoseDescriptor");
+        return false;
+    }
 
     int trackId = 1;
     for (const auto& image : fitTvDescriptor->getCropImages()) {

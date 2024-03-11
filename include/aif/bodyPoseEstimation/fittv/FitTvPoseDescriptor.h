@@ -52,6 +52,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
         const std::vector<Scale>& getCropData() const { return m_cropScales; }
         const std::vector<std::vector<std::vector<float>>>& getKeyPoints() const { return m_keyPoints; }
         const std::vector<cv::Mat>& getPose3dInputs() const { return m_pose3dInputs; }
+        int getNumSkippedFrames() const { return m_numSkippedFrames; }
         bool updateKeyPoints(std::vector<std::vector<std::vector<float>>>& updatedKeyPoints) {
                 m_keyPoints.swap(updatedKeyPoints); // update pose2d keypoints
 
@@ -112,6 +113,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
 
         bool addBBox(float scroe, const BBox& box, const std::string &dbg_fname="");
         bool addRoi(const cv::Rect& rect);
+        void addNumSkippedFrames(int num) { m_numSkippedFrames = num; }
         bool addCropRect(int trackId, const cv::Rect& rect);
         bool addPose2d(int trackId, const std::vector<std::vector<float>>& keyPoints);
         bool addPose3d(int trackId,
@@ -125,6 +127,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
 
     private:
         int m_trackId;
+        int m_numSkippedFrames;
         std::vector<BBox> m_boxes;
         cv::Rect m_roiRect;
         bool m_roiValid;

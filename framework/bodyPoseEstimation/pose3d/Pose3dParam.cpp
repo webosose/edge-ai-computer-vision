@@ -29,6 +29,7 @@ Pose3dParam::Pose3dParam()
                   38, 37,
                   40, 39}    // L/R flip index
     , preprocessingType(PreprocessingType::HOMOGENEOUS_COORDINATES)
+    , alternativeInputType(AlternativeInputType::REPLICATE)
     , focalLength{1469.2684222875848f, 1469.8823503910792f}
     , center{650.1274669098675f, 505.44118528424053f}
     , radialDistortion{-0.12686622768237987f, -0.33232941922945763f, 0.3877008223664106f}
@@ -46,6 +47,7 @@ Pose3dParam::Pose3dParam(const Pose3dParam& other)
     , arch(other.arch)
     , flipPoseMap(other.flipPoseMap)
     , preprocessingType(other.preprocessingType)
+    , alternativeInputType(other.alternativeInputType)
     , focalLength(other.focalLength)
     , center(other.center)
     , radialDistortion(other.radialDistortion)
@@ -61,6 +63,7 @@ Pose3dParam::Pose3dParam(Pose3dParam&& other) noexcept
     , arch(std::move(other.arch))
     , flipPoseMap(std::move(other.flipPoseMap))
     , preprocessingType(std::move(other.preprocessingType))
+    , alternativeInputType(std::move(other.alternativeInputType))
     , focalLength(std::move(other.focalLength))
     , center(std::move(other.center))
     , radialDistortion(std::move(other.radialDistortion))
@@ -82,6 +85,7 @@ Pose3dParam& Pose3dParam::operator=(const Pose3dParam& other)
     arch = other.arch;
     flipPoseMap = other.flipPoseMap;
     preprocessingType = other.preprocessingType;
+    alternativeInputType = other.alternativeInputType;
     focalLength = other.focalLength;
     center = other.center;
     radialDistortion = other.radialDistortion;
@@ -103,6 +107,7 @@ Pose3dParam& Pose3dParam::operator=(Pose3dParam&& other) noexcept
     arch = std::move(other.arch);
     flipPoseMap = std::move(other.flipPoseMap);
     preprocessingType = std::move(other.preprocessingType);
+    alternativeInputType = std::move(other.alternativeInputType);
     focalLength = std::move(other.focalLength);
     center = std::move(other.center);
     radialDistortion = std::move(other.radialDistortion);
@@ -120,6 +125,7 @@ bool Pose3dParam::operator==(const Pose3dParam& other) const
         (std::equal(arch.begin(), arch.end(), other.arch.begin())) &&
         (std::equal(flipPoseMap.begin(), flipPoseMap.end(), other.flipPoseMap.begin())) &&
         (preprocessingType == other.preprocessingType) &&
+        (alternativeInputType == other.alternativeInputType) &&
         (std::abs(focalLength[0] - other.focalLength[0]) < aif::EPSILON) &&
         (std::abs(focalLength[1] - other.focalLength[1]) < aif::EPSILON) &&
         (std::abs(center[0] - other.center[0]) < aif::EPSILON) &&
@@ -162,6 +168,7 @@ std::ostream& operator<<(std::ostream& os, const Pose3dParam& fp)
     }
     os << "],\n";
     os << "\tpreprocessingType: " << static_cast<int>(fp.preprocessingType) << ",\n";
+    os << "\talternativeInputType: " << static_cast<int>(fp.alternativeInputType) << ",\n";
     os << "\tfocalLength: " << fp.focalLength[0] << ", " << fp.focalLength[1] << ",\n";
     os << "\tcenter: " << fp.center[0] << ", " << fp.center[1] << ",\n";
     os << "\tradialDistortion: " << fp.radialDistortion[0] << ", ";
@@ -216,6 +223,9 @@ t_aif_status Pose3dParam::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("preprocessingType")) {
             preprocessingType = static_cast<PreprocessingType>(modelParam["preprocessingType"].GetInt());
+        }
+        if (modelParam.HasMember("alternativeInputType")) {
+            alternativeInputType = static_cast<AlternativeInputType>(modelParam["alternativeInputType"].GetInt());
         }
         if (modelParam.HasMember("focalLength")) {
             focalLength.fill({});

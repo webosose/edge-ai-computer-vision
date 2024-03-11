@@ -17,6 +17,7 @@ namespace aif {
 FitTvPoseDescriptor::FitTvPoseDescriptor()
 : PipeDescriptor()
 , m_trackId(1)
+, m_numSkippedFrames(0)
 , m_roiValid(false)
 {
 }
@@ -98,6 +99,7 @@ bool FitTvPoseDescriptor::addPersonDetectorResult(
     } else {
         m_roiValid = false;
     }
+    m_numSkippedFrames = descriptor->getNumNonDetected();
 
     return true;
 }

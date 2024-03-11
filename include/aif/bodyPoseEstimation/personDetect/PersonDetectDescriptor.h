@@ -15,7 +15,7 @@ namespace aif {
 class PersonDetectDescriptor: virtual public Descriptor
 {
 public:
-    PersonDetectDescriptor() : m_personCount(0), m_IsBodyDetect(true) {}
+    PersonDetectDescriptor() : m_numNonDetected(0), m_personCount(0), m_IsBodyDetect(true) {}
     virtual ~PersonDetectDescriptor() {}
 
     // TODO: implment add result
@@ -26,7 +26,9 @@ public:
     size_t size() const { return m_personCount; }
 
     void addRoiRect(const cv::Rect &roi, bool valid) { m_roiRect = roi; m_roiValid = valid; }
+    void addNumNonDetected(int count) { m_numNonDetected = count; }
     int getNumBbox() const { return m_boxes.size(); }
+    int getNumNonDetected() const { return m_numNonDetected; }
     float getScore(int index) const { return m_scores[index]; }
     const std::string& getDbgFileName() { return m_dbg_fname; }
     const BBox& getBbox(int index) const { return m_boxes[index]; }
@@ -35,6 +37,7 @@ public:
     bool isRoiValid() { return m_roiValid; }
 
 protected:
+    int m_numNonDetected;
     size_t m_personCount;
     std::vector<BBox> m_boxes;              // boxes in image coordinates
     std::vector<float> m_scores;            // confidence for each box detection

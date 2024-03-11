@@ -269,6 +269,13 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
             yolov3Descriptor->addRoiRect( cv::Rect(0,0,0,0), false );
         }
 
+        if (static_cast<int>(finalBboxList.size()) == 0) {
+            mNumNonDetected++;
+        } else {
+            yolov3Descriptor->addNumNonDetected(mNumNonDetected);
+            mNumNonDetected = 0;
+        }
+
         m_frameId++;
         m_prevBboxList = finalBboxList;
         TRACE("postProcessing(): ", sw.getMs(), "ms");

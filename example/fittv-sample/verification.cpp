@@ -110,8 +110,7 @@ bool detectFiles(Pipe& pipe, std::vector<cv::String>& files, bool saveToFiles, b
 
         cv::Mat image = cv::imread(files[j]);
         if (!pipe.detect(image)) {
-           std::cout << "failed to build pipe" << std::endl;
-           return false;
+           std::cout << "failed to detect" << std::endl;
         }
 
         const std::string& imgFileName = getImageName(files[j], true); // only file name

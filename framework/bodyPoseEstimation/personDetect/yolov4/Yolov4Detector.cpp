@@ -233,6 +233,13 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
             yolov4Descriptor->addRoiRect( cv::Rect(0,0,0,0), false );
         }
 
+        if (static_cast<int>( after_filtered.size() == 0)) {
+            mNumNonDetected++;
+        } else {
+            yolov4Descriptor->addNumNonDetected(mNumNonDetected);
+            mNumNonDetected = 0;
+        }
+
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();
     } catch(const std::exception& e) {
