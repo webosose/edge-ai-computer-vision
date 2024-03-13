@@ -427,5 +427,31 @@ cv::InterpolationFlags stringToInterpolationFlags(const std::string &str)
     return cv::INTER_LINEAR;
 }
 
+std::pair<float, int>
+getQuantizationTensorInfo(TfLiteTensor *tensor)
+{
+    std::pair<float, int> error_result(0.0, 0);
+
+    if (tensor == nullptr || tensor->dims == nullptr) {
+        Loge(__func__, " tensor / tensor->dims is nullptr");
+        return error_result;
+    }
+
+    TfLiteAffineQuantization* q_params = reinterpret_cast<TfLiteAffineQuantization*>(tensor->quantization.params);
+    if (!q_params) {
+        Loge(__func__, " tensor doesn't have q_params...");
+        return error_result;
+    }
+
+    if (q_params->scale->size != 1) {
+        Loge(__func__, " tensor should not per-axis quant...");
+        return error_result;
+    }
+
+    float scale = q_params->scale->data[0];
+    int zeropoint = q_params->zero_point->data[0];
+
+    return std::make_pair(scale, zeropoint);
+}
 
 } // end of namespace aif

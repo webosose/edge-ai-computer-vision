@@ -5,7 +5,6 @@
 
 #include <aif/log/Logger.h>
 #include <aif/bodyPoseEstimation/pose2d/NpuPose2dDetector.h>
-#include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 
 #include <aif/tools/Stopwatch.h>
@@ -125,9 +124,9 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     int zeroPoint= q_params->zero_point->data[0];
     Logi("scale: ", scale, " zero_point: ", zeroPoint);
 
-    m_numKeyPoints = output->dims->data[1];
-    m_heatMapHeight = output->dims->data[2];
-    m_heatMapWidth = output->dims->data[3];
+    m_numKeyPoints = output->dims->data[1]; // 41
+    m_heatMapHeight = output->dims->data[2]; // 64
+    m_heatMapWidth = output->dims->data[3]; // 48
 
     float* data= reinterpret_cast<float*>(output->data.data);
     //memoryDump(data, "./output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));

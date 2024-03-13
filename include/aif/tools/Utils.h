@@ -237,6 +237,9 @@ void memoryRestore(T* tensor_data, std::string path)
    return ;
 }
 
+std::pair<float, int>
+getQuantizationTensorInfo(TfLiteTensor *tensor);
+
 } // end of namespace aif
 
 #endif // AIF_UTILS_H
