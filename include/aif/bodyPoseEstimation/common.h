@@ -53,6 +53,7 @@ public:
     BBox(float xmin_, float ymin_, float width_, float height_);
     void addXyxy( float xmin_, float ymin_, float xmax_, float ymax_, bool clip=true );
     void addTlhw( float xmin_, float ymin_, float width_, float height_ );
+    void addWHcc( float width_, float height, float cx_, float cy_ );
 
     friend std::ostream& operator<<( std::ostream& os, const BBox& bbox );
 };

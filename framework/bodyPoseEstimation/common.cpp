@@ -76,6 +76,16 @@ BBox::BBox( float xmin_, float ymin_, float width_, float height_)
 }
 
 void
+BBox::addWHcc( float width_, float height_, float cx_, float cy_ )
+{
+    width = width_;
+    height = height_;
+
+    c_x = cx_;
+    c_y = cy_;
+}
+
+void
 BBox::addXyxy( float xmin_, float ymin_, float xmax_, float ymax_, bool clip )
 {
     if ( clip )

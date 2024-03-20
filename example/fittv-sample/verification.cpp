@@ -31,10 +31,21 @@ void drawResults(const std::string& inputPath, const std::string & outputPath, c
     if (drawAll) {
         const cv::Rect &roiRect = fd->getRoiRect();
         auto cropBbox = fd->getCropBbox(); // get fixedBbox
-        auto cropRect = cv::Rect(cropBbox[0].xmin + roiRect.x , cropBbox[0].ymin + roiRect.y, cropBbox[0].width, cropBbox[0].height);
+        auto cropScale = fd->getCropData(); // get scale applied to fixedBbox.
+
+        /* cropRect in here, is approximation of real cropRect, because it uses affine transformation */
+        std::vector<cv::Rect> cropRects;
+        for (int i = 0; i < cropBbox.size(); i++) {
+            int crop_width = cropScale[i].x * 200.f;
+            int crop_height = cropScale[i].y * 200.f;
+            int crop_xmin = cropBbox[i].c_x - (crop_width / 2);
+            int crop_ymin = cropBbox[i].c_y - (crop_height / 2);
+            auto cropRect = cv::Rect(crop_xmin + roiRect.x , crop_ymin + roiRect.y, crop_width, crop_height);
+            cropRects.push_back(cropRect);
+        }
 
         result = Renderer::drawRects(result, { roiRect }, cv::Scalar(127,127,127), 2);
-        result = Renderer::drawRects(result, { cropRect }, cv::Scalar(255, 0, 0), 1);
+        result = Renderer::drawRects(result, cropRects, cv::Scalar(255, 0, 0), 1);
         result = Renderer::drawBoxes(result, fd->getBboxes(), cv::Scalar(0, 0, 255), 2);
     }
 

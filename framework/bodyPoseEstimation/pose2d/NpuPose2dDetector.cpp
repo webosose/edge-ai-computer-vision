@@ -59,7 +59,7 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
         cv::Mat inputImg, inputNormImg;
         if (m_useUDP) {
             getAffinedImage(img, cv::Size(width, height), inputImg);
-            //cv::imwrite("affined_input_npu.jpg", inputImg);
+            /* cv::imwrite("affined_input_npu.jpg", inputImg); // for debugging!!  */
             //memoryDump(inputImg.data, "./orig_input.bin", width * height * channels * sizeof(uint8_t));
         } else {
             inputImg = img;
@@ -175,8 +175,8 @@ void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) 
         return static_cast<uint8_t> (std::max(std::min(((data / mScaleIn) + mZeropointIn), 255.f), 0.0f)); // fixed
     };
 
-    const float meanRGB[3] = { 0.406, 0.456, 0.485 }; // R,G,B
-    const float stdRGB[3] = { 4.44, 4.46, 4.36 };     // R,G,B
+    const float meanBGR[3] = { 0.406, 0.456, 0.485 }; // B,G,R : R is biggest!!!
+    const float stdBGR[3] = { 4.44, 4.46, 4.36 };     // B,G,R
 
     auto dataPtr = reinterpret_cast<float*>(img.data);
     auto norm_dataPtr = reinterpret_cast<uint8_t*>(normImg.data);
@@ -187,9 +187,9 @@ void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) 
         float* localPtr = dataPtr + i * 3;
         uint8_t* norm_localPtr = norm_dataPtr + i * 3;
 #if 1 // for debugging
-        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanRGB[2] ) * stdRGB[2]; // B
-        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanRGB[1] ) * stdRGB[1]; // G
-        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanRGB[0] ) * stdRGB[0]; // R
+        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0]; // B
+        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1]; // G
+        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2]; // R
         norm_localPtr[0] = QUANT(localPtr[0]);
         norm_localPtr[1] = QUANT(localPtr[1]);
         norm_localPtr[2] = QUANT(localPtr[2]);

@@ -153,17 +153,18 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 
 void CpuPose2dDetector::normalizeImage(cv::Mat& img) const
 {
-    const float meanBGR[3] = { 0.406, 0.456, 0.485 };
+    const float meanBGR[3] = { 0.406, 0.456, 0.485 }; // B,G,R : R is biggest!!
     const float stdBGR[3] = { 4.44, 4.46, 4.36 };
 
     auto dataPtr = reinterpret_cast<float*>(img.data);
     auto total = img.total();
 
+    // Assume img is BGR, normImg is BGR
     for (auto i = 0; i < total; i++ ) {
         float* localPtr = dataPtr + i * 3;
-        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0];
-        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1];
-        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2];
+        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0]; // B
+        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1]; // G
+        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2]; // R
     }
 }
 
