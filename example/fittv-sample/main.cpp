@@ -182,6 +182,8 @@ int main(int argc, char* argv[])
     Pipe pipe;
     if (!pipe.build(config)) {
         std::cout << "failed to build pipe" << std::endl;
+        AIVision::deinit();
+        return 0;
     }
 
     const fs::path pathStr(inputPath);
@@ -193,7 +195,7 @@ int main(int argc, char* argv[])
         cv::Mat image = cv::imread(inputPath);
         for (int i = 0; i < num_iterator; i++) {     // num_iterator = 1 in default
             if (!pipe.detect(image)) {
-                std::cout << "failed to build pipe" << std::endl;
+                std::cout << "failed to detect" << std::endl;
             }
         }
 

@@ -284,10 +284,8 @@ void Pose3dDetector::initializeParam()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
     if (param == nullptr) {
-        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
-        return;
+        throw std::runtime_error("failed to convert DetectorParam to Pose3dParam");
     }
-
 
     mMaxInputs = 1;
     mBatchSize = 1;
@@ -307,8 +305,7 @@ void Pose3dDetector::getCameraIntrinsics()
 {
     std::shared_ptr<Pose3dParam> param = std::dynamic_pointer_cast<Pose3dParam>(m_param);
     if (param == nullptr) {
-        Loge(__func__, "failed to convert DetectorParam to Pose3dParam");
-        return;
+        throw std::runtime_error("failed to convert DetectorParam to Pose3dParam");
     }
 
     auto focal_length = param->focalLength;
@@ -318,6 +315,12 @@ void Pose3dDetector::getCameraIntrinsics()
 
     if (param->hasIntrinsics == false)
     {
+        if (param->orgImgWidth == 0 || param->orgImgHeight == 0)
+        {
+            throw std::runtime_error("no camera intrinsic and orgImgWidth, orgImgHeight are not initialized...");
+        }
+
+        Logi("Camera Intrinsic: no camera intrinsic, use approximation");
         focal_length.fill(1000.0f);
         center[0] = param->orgImgWidth / 2.0f;
         center[1] = param->orgImgHeight / 2.0f;
