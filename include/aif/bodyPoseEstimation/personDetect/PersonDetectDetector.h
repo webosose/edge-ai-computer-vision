@@ -15,6 +15,7 @@ public:
                      , mOrigImgRoiWidth(0)
                      , mOrigImgRoiHeight(0)
                      , mNumNonDetected(0)
+                     , mConfidenceThreshold(0.0)
                      , m_roiValid(false) {}
     virtual ~PersonDetector() {}
 
@@ -33,6 +34,7 @@ protected:
     int mOrigImgRoiWidth;
     int mOrigImgRoiHeight;
     int mNumNonDetected;
+    double mConfidenceThreshold;
     bool m_roiValid;
 };
 

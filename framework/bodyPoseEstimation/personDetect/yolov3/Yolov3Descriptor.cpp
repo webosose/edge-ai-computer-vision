@@ -28,10 +28,11 @@ Yolov3Descriptor::~Yolov3Descriptor()
 {
 }
 
-void Yolov3Descriptor::addPerson(float score, const BBox &bbox, const std::string &dbg_fname)
+void Yolov3Descriptor::addPerson(float score, const BBox &bbox, double confidenceThreshold, const std::string &dbg_fname)
 {
     m_scores.push_back(score); /* only for person detect */
     m_boxes.push_back(bbox);
+    m_confidenceThreshold = confidenceThreshold;
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("persons")) {
@@ -41,6 +42,7 @@ void Yolov3Descriptor::addPerson(float score, const BBox &bbox, const std::strin
 
     rj::Value person(rj::kObjectType);
     person.AddMember("score", score, allocator);
+    person.AddMember("confidenceThreshold", confidenceThreshold, allocator);
 
     /* [xmin, ymin, xmax, ymax, c0, c1] */
     rj::Value Bbox(rj::kArrayType);

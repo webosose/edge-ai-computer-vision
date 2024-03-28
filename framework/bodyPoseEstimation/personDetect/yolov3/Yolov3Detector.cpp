@@ -30,7 +30,7 @@ Yolov3Detector::Yolov3Detector(const std::string &modelPath, const int& versionI
     , m_frameId(0)
     , m_versionId(versionID)
 {
-    if (m_versionId == 0) Logd("detected Yolov3 V1 model!!");
+    if (m_versionId == static_cast<int>(VersionType::MODEL_V1)) Logd("detected Yolov3 V1 model!!");
     else Logd("detected Yolov3 V2 model!!");
 }
 
@@ -165,6 +165,14 @@ t_aif_status Yolov3Detector::preProcessing()
         }
         Logi(__func__, " m_GTBBoxes.size: ", m_GTBBoxes.size());
 
+        if (param->thresh_confidence > -aif::EPSILON && param->thresh_confidence - 1.0 < aif::EPSILON) { // if 0.0 <= thresh_confidence <= 1.0
+            mConfidenceThreshold = param->thresh_confidence;
+        } else if (m_versionId == static_cast<int>(VersionType::MODEL_V2)) {
+            mConfidenceThreshold = 0.35;
+        } else { // MODEL_V1
+            mConfidenceThreshold = 0.7;
+        }
+
         return kAifOk;
     }
     catch (const std::exception &e) {
@@ -242,11 +250,11 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
                 if (m_GTBBoxes.size() > m_frameId) {
                     auto gtBBox = m_GTBBoxes[m_frameId]; // pair
                     if (gtBBox.second.width > 0 && gtBBox.second.height > 0) {
-                        yolov3Descriptor->addPerson(score, gtBBox.second, gtBBox.first);
+                        yolov3Descriptor->addPerson(score, gtBBox.second, mConfidenceThreshold, gtBBox.first);
                         Logi(__func__, " use GT Box !! ", gtBBox.first, ", ", gtBBox.second);
                     }
                 } else {
-                    yolov3Descriptor->addPerson(score, finalBbox);
+                    yolov3Descriptor->addPerson(score, finalBbox, mConfidenceThreshold);
                 }
             } else {
                 /* normalize 0~1 */
@@ -254,7 +262,8 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
                 yolov3Descriptor->addFace(score,
                                         finalBbox.xmin / img.cols, finalBbox.ymin / img.rows,
                                         finalBbox.width / img.cols, finalBbox.height / img.rows,
-                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        mConfidenceThreshold);
                 // cv::Mat image = cv::imread("./saved_image.png", cv::IMREAD_COLOR);
                 // cv::Point lb(finalBbox.xmin, finalBbox.ymin);
                 // cv::Point tr(finalBbox.width+finalBbox.xmin, finalBbox.height+finalBbox.ymin);

@@ -48,7 +48,8 @@ void FaceDescriptor::addFace(
         float leftear_x,
         float leftear_y,
         float rightear_x,
-        float rightear_y
+        float rightear_y,
+        double confidenceThreshold
     )
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
@@ -59,6 +60,7 @@ void FaceDescriptor::addFace(
 
     rj::Value face(rj::kObjectType);
     face.AddMember("score", score, allocator);
+    face.AddMember("confidenceThreshold", confidenceThreshold, allocator);
 
     // region: [x, y, w, h]
     rj::Value region(rj::kArrayType);

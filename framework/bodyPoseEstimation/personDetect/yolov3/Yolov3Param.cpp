@@ -39,6 +39,7 @@ Yolov3Param::Yolov3Param()
     , thresh_iou_sc_sur(200)
     , thresh_iou_sc_avg(128)
     , thresh_iou_update(0.7)
+    , thresh_confidence(-1.0)
 {
 }
 
@@ -68,6 +69,7 @@ Yolov3Param::Yolov3Param(const Yolov3Param& other)
     , thresh_iou_sc_sur(other.thresh_iou_sc_sur)
     , thresh_iou_sc_avg(other.thresh_iou_sc_avg)
     , thresh_iou_update(other.thresh_iou_update)
+    , thresh_confidence(other.thresh_confidence)
 {
     // TRACE(TAG, "COPY CONSTRUCTOR....");
 }
@@ -94,6 +96,7 @@ Yolov3Param::Yolov3Param(Yolov3Param&& other) noexcept
     , thresh_iou_sc_sur(std::move(other.thresh_iou_sc_sur))
     , thresh_iou_sc_avg(std::move(other.thresh_iou_sc_avg))
     , thresh_iou_update(std::move(other.thresh_iou_update))
+    , thresh_confidence(std::move(other.thresh_confidence))
 {
     // TRACE(TAG, "MOVE CONSTRUCTOR....");
 }
@@ -126,6 +129,7 @@ Yolov3Param& Yolov3Param::operator=(const Yolov3Param& other)
     thresh_iou_sc_sur = other.thresh_iou_sc_sur;
     thresh_iou_sc_avg = other.thresh_iou_sc_avg;
     thresh_iou_update = other.thresh_iou_update;
+    thresh_confidence = other.thresh_confidence;
 
     return *this;
 }
@@ -158,6 +162,7 @@ Yolov3Param& Yolov3Param::operator=(Yolov3Param&& other) noexcept
     thresh_iou_sc_sur = std::move(other.thresh_iou_sc_sur);
     thresh_iou_sc_avg = std::move(other.thresh_iou_sc_avg);
     thresh_iou_update = std::move(other.thresh_iou_update);
+    thresh_confidence = std::move(other.thresh_confidence);
 
     return *this;
 }
@@ -185,7 +190,8 @@ bool Yolov3Param::operator==(const Yolov3Param& other) const
         (thresh_iou_sc_nms == other.thresh_iou_sc_nms) &&
         (thresh_iou_sc_sur == other.thresh_iou_sc_sur) &&
         (thresh_iou_sc_avg == other.thresh_iou_sc_avg) &&
-        (floatEquals(thresh_iou_update, other.thresh_iou_update))
+        (floatEquals(thresh_iou_update, other.thresh_iou_update)) &&
+        (std::abs(thresh_confidence - other.thresh_confidence) < aif::EPSILON)
     );
 }
 
@@ -249,6 +255,7 @@ std::ostream& operator<<(std::ostream& os, const Yolov3Param& fp)
     os << "\tthresh_iou_sc_sur: " << fp.thresh_iou_sc_sur << ",\n";
     os << "\tthresh_iou_sc_avg: " << fp.thresh_iou_sc_avg << ",\n";
     os << "\tthresh_iou_update: " << fp.thresh_iou_update << ",\n";
+    os << "\tthresh_confidence: " << fp.thresh_confidence << "\n";
 
     os << "}";
     return os;
@@ -349,6 +356,9 @@ t_aif_status Yolov3Param::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("thresh_iou_update")) {
             thresh_iou_update = modelParam["thresh_iou_update"].GetFloat();
+        }
+        if (modelParam.HasMember("thresh_confidence")) {
+            thresh_confidence = modelParam["thresh_confidence"].GetDouble();
         }
     }
 

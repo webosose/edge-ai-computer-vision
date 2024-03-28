@@ -15,11 +15,11 @@ namespace aif {
 class PersonDetectDescriptor: virtual public Descriptor
 {
 public:
-    PersonDetectDescriptor() : m_numNonDetected(0), m_personCount(0), m_IsBodyDetect(true) {}
+    PersonDetectDescriptor() : m_numNonDetected(0), m_confidenceThreshold(0.0), m_personCount(0), m_IsBodyDetect(true) {}
     virtual ~PersonDetectDescriptor() {}
 
     // TODO: implment add result
-    virtual void addPerson(float score, const BBox &bbox, const std::string& dbg_fname = "") = 0;
+    virtual void addPerson(float score, const BBox &bbox, double confidenceThreshold = 0.0, const std::string& dbg_fname = "") = 0;
     virtual void drawBbox(std::string imgPath) = 0;
     virtual void clear() = 0;
 
@@ -30,6 +30,7 @@ public:
     int getNumBbox() const { return m_boxes.size(); }
     int getNumNonDetected() const { return m_numNonDetected; }
     float getScore(int index) const { return m_scores[index]; }
+    double getConfidenceThreshold() const { return m_confidenceThreshold; }
     const std::string& getDbgFileName() { return m_dbg_fname; }
     const BBox& getBbox(int index) const { return m_boxes[index]; }
     const cv::Rect& getRoiRect() const { return m_roiRect; }
@@ -38,6 +39,7 @@ public:
 
 protected:
     int m_numNonDetected;
+    double m_confidenceThreshold;
     size_t m_personCount;
     std::vector<BBox> m_boxes;              // boxes in image coordinates
     std::vector<float> m_scores;            // confidence for each box detection

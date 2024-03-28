@@ -36,7 +36,8 @@ public:
         float leftear_x,
         float leftear_y,
         float rightear_x,
-        float rightear_y
+        float rightear_y,
+        double confidenceThreshold = 0.0
     );
 
     size_t size() const { return m_faceCount; }

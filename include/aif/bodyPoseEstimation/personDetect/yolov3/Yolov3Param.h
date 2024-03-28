@@ -57,6 +57,7 @@ class Yolov3Param : public BodyPoseEstimationParam
         int thresh_iou_sc_sur;
         int thresh_iou_sc_avg;
         float thresh_iou_update;
+        double thresh_confidence;
 };
 
 } // end of namespace aif

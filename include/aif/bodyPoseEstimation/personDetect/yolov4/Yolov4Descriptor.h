@@ -26,7 +26,7 @@ public:
     virtual ~Yolov4Descriptor();
 
     // TODO: implment add result
-    virtual void addPerson(float score, const BBox &bbox, const std::string& dbg_fname = "");
+    virtual void addPerson(float score, const BBox &bbox, double confidenceThreshold = 0.0, const std::string& dbg_fname = "");
     virtual void drawBbox(std::string imgPath);
     virtual void clear();
 

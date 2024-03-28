@@ -98,6 +98,12 @@ t_aif_status Yolov4Detector::preProcessing()
         mOrigImgRoiWidth = param->origImgRoiWidth;
         mOrigImgRoiHeight = param->origImgRoiHeight;
 
+        if (param->thresh_confidence > -aif::EPSILON && param->thresh_confidence - 1.0 < aif::EPSILON) { // if 0.0 <= thresh_confidence <= 1.0
+            mConfidenceThreshold = param->thresh_confidence;
+        } else {
+            mConfidenceThreshold = 0.7;
+        }
+
     } catch(const std::exception& e) {
         Loge(__func__,"Error: ", e.what());
         return kAifError;
@@ -223,7 +229,7 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
                         ( i < static_cast<int>( after_filtered.size() ) ) && ( i < param->numMaxPerson ); i++ )
         {
             // TODO: implement to add result into descriptor
-            yolov4Descriptor->addPerson(after_filtered[i].second, after_filtered[i].first);
+            yolov4Descriptor->addPerson(after_filtered[i].second, after_filtered[i].first, mConfidenceThreshold);
         }
         free(outConcatTensor_deq);
 

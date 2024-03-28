@@ -27,7 +27,7 @@ Yolov4Descriptor::~Yolov4Descriptor()
 }
 
 
-void Yolov4Descriptor::addPerson(float score, const BBox &bbox, const std::string &dbg_fname)
+void Yolov4Descriptor::addPerson(float score, const BBox &bbox, double confidenceThreshold, const std::string &dbg_fname)
 {
     m_scores.push_back(score);
     m_boxes.push_back(bbox);
@@ -40,6 +40,7 @@ void Yolov4Descriptor::addPerson(float score, const BBox &bbox, const std::strin
 
     rj::Value person(rj::kObjectType);
     person.AddMember("score", score, allocator);
+    person.AddMember("confidenceThreshold", confidenceThreshold, allocator);
 
     /* [xmin, ymin, xmax, ymax, width, height, c_x, c_y] */
     rj::Value Bbox(rj::kArrayType);

@@ -111,7 +111,7 @@ class FitTvPoseDescriptor : public PipeDescriptor
                 const std::string& id,
                 const std::shared_ptr<Pose3dDescriptor> descriptor);
 
-        bool addBBox(float scroe, const BBox& box, const std::string &dbg_fname="");
+        bool addBBox(float scroe, const BBox& box, double confidenceThreshold=0.0, const std::string &dbg_fname="");
         bool addRoi(const cv::Rect& rect);
         void addNumSkippedFrames(int num) { m_numSkippedFrames = num; }
         bool addCropRect(int trackId, const cv::Rect& rect);
