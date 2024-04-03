@@ -261,7 +261,7 @@ TEST_F(Yolov3DetectorTest, 01_yolov3_detect_person)
     #endif
 }
 
-TEST_F(Yolov3DetectorTest, 02_yolov3_yc_detect_face)
+TEST_F(Yolov3DetectorTest, 02_yolov3_detect_face)
 {
     auto fd = std::dynamic_pointer_cast<Yolov3Detector>(DetectorFactory::get().getDetector(detectorName, use_npu_delegate_and_face_detect));
     EXPECT_TRUE(fd.get() != nullptr);
