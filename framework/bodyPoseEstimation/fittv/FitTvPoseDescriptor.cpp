@@ -45,23 +45,23 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
     if ((model.rfind("person_yolov4", 0) == 0) ||
         (model.rfind("person_yolov3", 0) == 0)) {
         auto person = std::dynamic_pointer_cast<PersonDetectDescriptor>(descriptor);
-        return addPersonDetectorResult(nodeId, person);
+        return addPersonDetectorResult(nodeId, std::move(person));
     }
     else if (model.rfind("pose2d_resnet", 0) == 0) {
         auto pose2d = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
-        return addPose2dDetectorResult(nodeId, pose2d);
+        return addPose2dDetectorResult(nodeId, std::move(pose2d));
     }
     else if (model.rfind("pose3d_videopose3d_v1", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
-        return addPose3dDetectorResult(nodeId, pose3d);
+        return addPose3dDetectorResult(nodeId, std::move(pose3d));
     }
     else if (model.rfind("pose3d_videopose3d_v2_pos", 0) == 0 || model.rfind("pose3d_videopose3d_ptq_pos", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
-        return addPose3dDetectorPosResult(nodeId, pose3d);
+        return addPose3dDetectorPosResult(nodeId, std::move(pose3d));
     }
     else if (model.rfind("pose3d_videopose3d_v2_traj", 0) == 0 ||  model.rfind("pose3d_videopose3d_ptq_traj", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
-        return addPose3dDetectorTrajResult(nodeId, pose3d);
+        return addPose3dDetectorTrajResult(nodeId, std::move(pose3d));
     }
     return false;
 }

@@ -120,8 +120,7 @@ bool FaceMeshExtractOperation::runImpl(const std::shared_ptr<NodeInput> &input)
 
         if (config->getRGBextractOn()) // RGB Extraction for rPPG
         {
-            int count = 0;
-            float r,g,b;
+            float count = 0.0f, r = 0.0f , g = 0.0f, b = 0.0f;
             for (int i=0; i<mask.rows; i++){
                 for (int j=0; j<mask.cols; j++) {
                     if (mask.at<unsigned char>(i, j) == 255) { // mask == 255 -> True
@@ -129,7 +128,7 @@ bool FaceMeshExtractOperation::runImpl(const std::shared_ptr<NodeInput> &input)
                         r += bgr[2];
                         g += bgr[1];
                         b += bgr[0];
-                        count++;
+                        count += 1.0f;
                     }
                 }
             }

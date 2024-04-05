@@ -135,7 +135,7 @@ bool PostProcess::applyInverseTransform(std::vector<std::vector<float>>& keyPoin
         imageJoints.push_back(imageJoint);
     }
 
-    keyPoints = imageJoints;
+    keyPoints = std::move(imageJoints);
 
     return true;
 }

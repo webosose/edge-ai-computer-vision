@@ -20,6 +20,12 @@ constexpr int Yolov3Detector::tcnt_init[];
 
 Yolov3Detector::Yolov3Detector(const std::string &modelPath, const int& versionID)
     : PersonDetector(modelPath)
+    , output_sb_conf(nullptr)
+    , output_sb_box(nullptr)
+    , output_mb_conf(nullptr)
+    , output_mb_box(nullptr)
+    , output_lb_conf(nullptr)
+    , output_lb_box(nullptr)
     , m_obd_result{0,}
     , m_bodyResult{0,}
     , m_faceResult{0,}
@@ -108,10 +114,10 @@ t_aif_status Yolov3Detector::fillInputTensor(const cv::Mat &img) /* override*/
         if (isRoiValid(img.cols, img.rows)) {
             m_roiValid = true;
             cv::Mat roi_img = img(cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight));
-            getPaddedImage(roi_img, img_resized);
+            if(!getPaddedImage(roi_img, img_resized)) throw std::runtime_error("getPaddedImage failed!!");
         } else {
             m_roiValid = false;
-            getPaddedImage(img, img_resized);
+            if(!getPaddedImage(img, img_resized)) throw std::runtime_error("getPaddedImage failed!!");
         }
 
         TRACE("resized size: ", img_resized.size());
@@ -248,7 +254,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
 
             if (m_IsBodyDetect) {
                 if (m_GTBBoxes.size() > m_frameId) {
-                    auto gtBBox = m_GTBBoxes[m_frameId]; // pair
+                    const auto& gtBBox = m_GTBBoxes[m_frameId]; // pair
                     if (gtBBox.second.width > 0 && gtBBox.second.height > 0) {
                         yolov3Descriptor->addPerson(score, gtBBox.second, mConfidenceThreshold, gtBBox.first);
                         Logi(__func__, " use GT Box !! ", gtBBox.first, ", ", gtBBox.second);
@@ -286,7 +292,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
         }
 
         m_frameId++;
-        m_prevBboxList = finalBboxList;
+        m_prevBboxList = std::move(finalBboxList);
         TRACE("postProcessing(): ", sw.getMs(), "ms");
         sw.stop();
     } catch (const std::exception &e) {
@@ -300,7 +306,7 @@ t_aif_status Yolov3Detector::postProcessing(const cv::Mat &img, std::shared_ptr<
     return kAifOk;
 }
 
-void Yolov3Detector::getPaddedImage(const cv::Mat &src, cv::Mat &dst)
+bool Yolov3Detector::getPaddedImage(const cv::Mat &src, cv::Mat &dst)
 {
     float srcW = src.size().width;
     float srcH = src.size().height;
@@ -336,6 +342,8 @@ void Yolov3Detector::getPaddedImage(const cv::Mat &src, cv::Mat &dst)
     m_paddedSize = cv::Size(
         srcW * (static_cast<float>(m_modelInfo.width)  / width),
         srcH * (static_cast<float>(m_modelInfo.height) / height));
+
+    return true;
 }
 
 void Yolov3Detector::transform2OriginCoord(const cv::Mat &img, t_pqe_obd_result &result)
@@ -476,6 +484,7 @@ void Yolov3Detector::CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_ad
 
     cnt_box  = 0;
     cnt_conf = 0;
+
     for (j = 0; j < box_h; j++) {
         BY_partial = j << partial_shift;
         for (i = 0; i < box_w; i++) {
@@ -529,6 +538,10 @@ std::vector<int> Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
 
     for (int idx = 0; idx < bbox.size(); idx++) {
         int c_idx   = idx;
+        if (bbox.size() <= c_idx) {
+            Loge("Yolov3 bbox c_idx error");
+            return res_nms;
+        }
         int c_score = bbox[c_idx].c0;
 
         for (int idx_sort = 0; idx_sort < num_sort; idx_sort++) {
@@ -554,6 +567,10 @@ std::vector<int> Yolov3Detector::fw_nms(std::vector<BBox> &bbox)
 
     for (int idx_sort = 0; idx_sort < num_sort; idx_sort++) {
         int c_idx        = res_sort[idx_sort];
+        if (bbox.size() <= c_idx || keep_flag.size() <= c_idx) {
+            Loge("Yolov3 bbox or keep_flag c_idx error");
+            return res_nms;
+        }
         long int c_area  = res_area[c_idx];
         int c_score      = bbox[c_idx].c0;
         int c_class      = bbox[c_idx].c1;
@@ -601,8 +618,13 @@ void Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_
 
     int idx = 0;
     int selState = 0;
+
     for (idx = 0; idx < num_nms; idx++) {
         int idx_nms = res_nms[idx];
+        if (idx_nms < 0 || idx_nms >= bbox.size()) {
+            Logw(__func__, " idx_nms is wrong number ", idx_nms);
+            continue;
+        }
         int _x0 = bbox[idx_nms].xmin;
         int _y0 = bbox[idx_nms].ymin;
         int _x1 = bbox[idx_nms].xmax;
@@ -610,6 +632,11 @@ void Yolov3Detector::Classify_OBD_Result(const std::vector<BBox> &bbox, int num_
         int _score = (bbox[idx_nms].c0);
         int _class = (bbox[idx_nms].c1);
         // printf("%2d: (%4d,%4d,%4d,%4d) [%2d: %5d]\n", idx, _x0, _y0, _x1, _y1, _class, _score);
+
+        if (_class < 0 || _class >= eOBD_MAX) {
+            Logw(__func__, " wrong _class id : ", _class);
+            continue;
+        }
 
         selState = ((_class == eOBD_PERSON) || (_class == eOBD_FACE)) ? 0 : 1; // objects execept for person, face
 
@@ -812,6 +839,10 @@ bool Yolov3Detector::checkUpdate(int index, const BBox &currBbox)
     }
     Logd("m_prevBboxList.size() ", m_prevBboxList.size());
 
+    if (m_prevBboxList.size() <= index) {
+        Loge("Yolov3: index >= m_prevBboxList.size() error");
+        return false;
+    }
     const BBox &prevBbox = m_prevBboxList[index].first;
     cv::Rect2f prevRect(prevBbox.xmin, prevBbox.ymin, prevBbox.width, prevBbox.height);
     cv::Rect2f curRect(currBbox.xmin, currBbox.ymin, currBbox.width, currBbox.height);

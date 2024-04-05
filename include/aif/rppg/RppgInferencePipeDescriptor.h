@@ -42,9 +42,9 @@ class RppgInferencePipeDescriptor : public PipeDescriptor
         void addFirstInputXarray (const xt::xarray<double>& data11) { m_data11 = data11; }
 
         const std::vector<float>& getRppgOutputs() { return m_rppgOutputs; }
-        const int getBatchSize() const { return m_batchSize; }
-        const int getChannelSize() const { return m_channelSize; }
-        const size_t getNumRppg() const { return m_rppgOutputs.size(); }
+        int getBatchSize() const { return m_batchSize; }
+        int getChannelSize() const { return m_channelSize; }
+        size_t getNumRppg() const { return m_rppgOutputs.size(); }
         bool addRppgFinalResult(float bpm, std::string signalCondition);
         const xt::xarray<double>& getFirstInputXarray() { return m_data11; }
 

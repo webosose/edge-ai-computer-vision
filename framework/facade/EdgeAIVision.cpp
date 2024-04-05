@@ -266,7 +266,7 @@ bool EdgeAIVision::pipeCreate(const std::string& id, const std::string& option)
     if (!pipe->build(option))  {
         return false;
     }
-    m_pipeMap[id] = pipe;
+    m_pipeMap[id] = std::move(pipe);
     return true;
 }
 

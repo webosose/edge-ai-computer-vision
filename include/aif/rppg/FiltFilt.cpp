@@ -4,9 +4,10 @@
 */
 // Code from AI Research Center
 
-#include <vector>
+#ifndef AIF_FILT_FILT_CPP
+#define AIF_FILT_FILT_CPP
 
-#include <aif/rppg/FiltFilt.h>
+// #include "FiltFilt.h"
 
 namespace aif {
 namespace kb {
@@ -136,3 +137,5 @@ std::vector<T>&& FiltFilt<T>::ZeroPhaseFiltering(const std::vector<T>& p_inputVe
 } // end of namespace math
 } // end of namespace kb
 } // end of namespace aif
+
+#endif //AIF_FILT_FILT_CPP

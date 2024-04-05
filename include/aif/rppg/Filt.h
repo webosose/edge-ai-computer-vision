@@ -171,6 +171,6 @@ protected:
 } // end of namespace kb
 } // end of namespace aif
 
-#include <aif/rppg/Filt.cpp>
+#include "Filt.cpp"
 
 #endif // AIF_FILT_H

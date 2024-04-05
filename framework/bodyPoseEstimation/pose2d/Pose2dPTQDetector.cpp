@@ -231,9 +231,9 @@ template <typename T>
 void Pose2dPTQDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) const
 {
     float upper, lower = 0.0f;
-    if (typeid(T) == typeid(uint8_t)) {
+    if (std::is_same<T, uint8_t>::value) {
         upper = 255.f; lower = 0.0f;
-    } else if (typeid(T) == typeid(int8_t)) {
+    } else if (std::is_same<T, int8_t>::value) {
         upper = 127.f; lower = -128.f;
     } else {
         Loge(__func__, " type is wrong!!");

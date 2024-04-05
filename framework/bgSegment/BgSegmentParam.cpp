@@ -103,7 +103,7 @@ bool BgSegmentParam::operator==(const BgSegmentParam &other) const {
         (origImgRoiHeight == other.origImgRoiHeight) &&
         (outScaleUp == other.outScaleUp) &&
         (smoothing == other.smoothing) &&
-        (th_mad4 == other.th_mad4) &&
+        (std::abs(th_mad4 - other.th_mad4) < aif::EPSILON) &&
         (decimation == other.decimation));
 }
 
@@ -162,7 +162,7 @@ t_aif_status BgSegmentParam::fromJson(const std::string& param)
             th_mad4 = modelParam["th_mad4"].GetFloat();
         }
         if (modelParam.HasMember("decimation")) {
-            decimation = modelParam["decimation"].GetString();
+            decimation = (modelParam["decimation"].GetString()!= nullptr ? modelParam["decimation"].GetString() : "");
         }
     }
 

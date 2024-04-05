@@ -46,7 +46,7 @@ bool RppgInferencePipeDescriptor::addDetectorOperationResult(
 {
     if (model.rfind("rppg", 0) == 0) {
         auto rppg = std::dynamic_pointer_cast<RppgDescriptor>(descriptor);
-        return appendRppg(nodeId, rppg);
+        return appendRppg(nodeId, std::move(rppg));
     }
     return false;
 }
@@ -77,7 +77,7 @@ bool RppgInferencePipeDescriptor::addRppgFinalResult(float bpm, std::string sign
     }
     rj::Value data(rj::kObjectType);
     // add signal condition and bpm
-    data.AddMember("signalCondition", signalCondition, allocator);
+    data.AddMember("signalCondition", std::move(signalCondition), allocator);
     data.AddMember("bpm", bpm, allocator);
     m_root["rPPG"].PushBack(data, allocator);
 

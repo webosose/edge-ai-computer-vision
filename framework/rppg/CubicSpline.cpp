@@ -28,13 +28,13 @@ CubicSpline::~CubicSpline()
 
 void CubicSpline::CSpline(xt::xarray<double> x, xt::xarray<double> y)
 {
-    calcSplineParams(x, y);
-    m_x0 = x;
+    calcSplineParams(x, std::move(y));
+    m_x0 = std::move(x);
 }
 
 xt::xarray<double> CubicSpline::CalcCSpline(xt::xarray<double> x)
 {
-    return pieceWiseSpline( x, m_x0, m_a, m_b, m_c, m_d);
+    return pieceWiseSpline(std::move(x), m_x0, m_a, m_b, m_c, m_d);
 }
 
 xt::xarray<double> CubicSpline::triDiagSolve (xt::xarray<double> A, xt::xarray<double> B, xt::xarray<double> C, xt::xarray<double> F)
@@ -72,7 +72,7 @@ int CubicSpline::calcSplineParams( xt::xarray<double> x, xt::xarray<double> y)
     xt::xarray<double> scalar = {0.0};
     xt::xarray<double> ret;
 
-    m_a = y;
+    m_a = std::move(y);
     h = xt::diff(x);
     m_c = xt::zeros<double>({1});
 
@@ -82,7 +82,7 @@ int CubicSpline::calcSplineParams( xt::xarray<double> x, xt::xarray<double> y)
     F = ((xt::view(m_a, xt::range(2, xt::placeholders::_)) - xt::view(m_a, xt::range(1, -1))) / xt::view(h, xt::range(1, xt::placeholders::_))
         - ( xt::view(m_a, xt::range(1, -1)) - xt::view(m_a, xt::range(xt::placeholders::_, -2))) / xt::view(h, xt::range(xt::placeholders::_, -1))) * 3;
 
-    tri_diag = triDiagSolve( A, B, C, F);
+    tri_diag = triDiagSolve(std::move(A), std::move(B), std::move(C), std::move(F));
     m_c = xt::concatenate(xt::xtuple(m_c, tri_diag, scalar), 0);
 
     m_d = xt::diff(m_c) / (3 * h);
@@ -138,7 +138,7 @@ xt::xarray<double> CubicSpline::pieceWiseSpline(xt::xarray<double> x, xt::xarray
 
     x = xt::flatten(x);
     ix = searchsortedMerge(xt::view(x0, xt::range(1, -1)), x);
-    y = funcSpline(x, ix, x0, a, b, c, d);
+    y = funcSpline(std::move(x), std::move(ix), std::move(x0), std::move(a), std::move(b), std::move(c), std::move(d));
     y = y.reshape(xsh);
 
     return y;

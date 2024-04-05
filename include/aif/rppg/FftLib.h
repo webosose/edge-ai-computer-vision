@@ -16,7 +16,6 @@ typedef struct
     uint16_t bitRevLength;       /**< bit reversal table length. */
 } arm_cfft_instance_f32;
 
-
 extern const float32_t twiddleCoef_1024[2048];
 extern uint16_t armBitRevIndexTable1024[ARMBITREVINDEXTABLE_1024_TABLE_LENGTH];
 
@@ -27,8 +26,3 @@ void arm_cfft_radix8by4_f32( arm_cfft_instance_f32 * S, float32_t * p1);
 void arm_cfft_radix8by2_f32( arm_cfft_instance_f32 * S, float32_t * p1);
 void arm_bitreversal_32 (uint32_t * pSrc, const uint16_t bitRevLen, const uint16_t * pBitRevTable);
 void arm_cfft_f32( const arm_cfft_instance_f32 * S, float32_t * p1, uint8_t ifftFlag, uint8_t bitReverseFlag);
-
-
-
-
-

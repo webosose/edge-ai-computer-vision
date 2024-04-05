@@ -69,9 +69,6 @@ std::pair<double, std::string> AeRealtimeHRCalAvg::fftArrayAvg(double freq, std:
             if (error_count > 3) {
                 signalCondition = "Bad";
                 m_count = 2;
-            } else if (error_count > 5){
-                signalCondition = "Bad";
-                m_count = 0;
             }
         }
     }

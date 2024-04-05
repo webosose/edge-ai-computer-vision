@@ -15,7 +15,7 @@ namespace aif {
 class PersonDetectDescriptor: virtual public Descriptor
 {
 public:
-    PersonDetectDescriptor() : m_numNonDetected(0), m_confidenceThreshold(0.0), m_personCount(0), m_IsBodyDetect(true) {}
+    PersonDetectDescriptor() : m_numNonDetected(0), m_confidenceThreshold(0.0), m_personCount(0), m_roiValid(false), m_IsBodyDetect(true) {}
     virtual ~PersonDetectDescriptor() {}
 
     // TODO: implment add result

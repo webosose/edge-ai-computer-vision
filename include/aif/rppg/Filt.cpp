@@ -4,7 +4,10 @@
 */
 // Code from AI Research Center
 
-#include <aif/rppg/Filt.h>
+#ifndef AIF_FILT_CPP
+#define AIF_FILT_CPP
+
+// #include "Filt.h"
 
 namespace aif {
 namespace kb {
@@ -105,3 +108,5 @@ std::vector<T> Filt<T>::GetOutput() const
 } // end of namespace math
 } // end of namespace kb
 } // end of namespace aif
+
+#endif //AIF_FILT_CPP

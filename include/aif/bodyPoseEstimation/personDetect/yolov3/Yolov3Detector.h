@@ -134,7 +134,7 @@ class Yolov3Detector : public PersonDetector
         void CV_BOX(BoxType boxType, std::vector<unsigned short>& obd_addr, std::vector<unsigned short>& obd_conf, std::vector<BBox> &bbox);
         std::vector<int> fw_nms(std::vector<BBox> &bbox);
         void Classify_OBD_Result(const std::vector<BBox> &bbox, int num_nms, std::vector<int> &res_nms);
-        void getPaddedImage(const cv::Mat& src, cv::Mat& dst);
+        bool getPaddedImage(const cv::Mat& src, cv::Mat& dst);
         void FaceMatching();
         bool checkUpdate(int index, const BBox &currBbox);
         void RD_Result_box(std::vector<unsigned short>& obd_box, unsigned int* addr,unsigned int size_x, unsigned int size_y);

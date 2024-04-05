@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include <aif/rppg/Filt.h>
+#include "Filt.h"
 
 namespace aif {
 namespace kb {
@@ -83,7 +83,6 @@ protected:
 } // end of namespace kb
 } // end of namespace aif
 
-#include <aif/rppg/FiltFilt.cpp>
-
+#include "FiltFilt.cpp"
 
 #endif // AIF_FILT_FILT_H
