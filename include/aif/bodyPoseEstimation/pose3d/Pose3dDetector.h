@@ -35,12 +35,11 @@ public:
 protected:
     std::shared_ptr<DetectorParam> createParam() override;
     void setModelInfo(TfLiteTensor* inputTensor) override;
-    t_aif_status fillInputTensor(const cv::Mat& img) override;
-    t_aif_status preProcessing() override;
-    t_aif_status postProcessing(const cv::Mat& img,
+    virtual t_aif_status fillInputTensor(const cv::Mat& img) override;
+    virtual t_aif_status preProcessing() override;
+    virtual t_aif_status postProcessing(const cv::Mat& img,
             std::shared_ptr<Descriptor>& descriptor) override;
 
-private:
     Joint2D normalizeJoints(const float x, const float y, const int width, const int height);
     Joints2D interpolateJoints(const Joints2D& lastJoints, const Joints2D& currJoints, const int split, const int index);
     void initializeParam();
@@ -49,11 +48,11 @@ private:
     int getOutputTensorInfo(TfLiteTensor *output);
     void fillJoints(uint8_t* inputTensorBuff);
     void fillFlippedJoints(uint8_t* inputTensorBuff);
-    void postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output);
-    void postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output);
+    virtual void postProcess_forFirstBatch(int outputIdx, TfLiteTensor* output);
+    virtual void postProcess_forSecondBatch(int outputIdx, TfLiteTensor* output);
     void averageWithFilippedResult(int idx, uint8_t* buff, uint8_t* flipped, int numInputs, int numJoints);
 
-private:
+protected:
     int mMaxInputs;
     int mBatchSize;
     int mNumElems;

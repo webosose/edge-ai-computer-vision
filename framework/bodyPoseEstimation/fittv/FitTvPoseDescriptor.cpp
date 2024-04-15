@@ -55,11 +55,11 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
         return addPose3dDetectorResult(nodeId, pose3d);
     }
-    else if (model.rfind("pose3d_videopose3d_v2_pos", 0) == 0) {
+    else if (model.rfind("pose3d_videopose3d_v2_pos", 0) == 0 || model.rfind("pose3d_videopose3d_ptq_pos", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
         return addPose3dDetectorPosResult(nodeId, pose3d);
     }
-    else if (model.rfind("pose3d_videopose3d_v2_traj", 0) == 0) {
+    else if (model.rfind("pose3d_videopose3d_v2_traj", 0) == 0 ||  model.rfind("pose3d_videopose3d_ptq_traj", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
         return addPose3dDetectorTrajResult(nodeId, pose3d);
     }
