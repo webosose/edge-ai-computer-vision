@@ -32,11 +32,16 @@ class PipeDescriptor : public Descriptor {
         void setStartTimestamp(int64_t timestamp);
 
         void setImage(const cv::Mat& image);
+        void copyImage(const cv::Mat& image);
         const NodeType& getType() const;
         const cv::Mat& getImage() const;
 
         std::string getResult() const;
         std::string getResult(const std::string& nodeId) const;
+
+        const ExtraOutputs& getExtraOutputs() const;
+        bool getExtraOutput(const std::string& nodeId, ExtraOutput& extraOutput);
+        void initExtraOutputs(const ExtraOutputs& extraOutputs);
 
         virtual bool addBridgeOperationResult(
                 const std::string& nodeId,
@@ -56,6 +61,7 @@ class PipeDescriptor : public Descriptor {
         NodeType m_type;
         cv::Mat m_image;
         int64_t m_startTime;
+        ExtraOutputs m_extraOutputs;
 };
 
 } // end of namespace aif

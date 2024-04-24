@@ -13,13 +13,11 @@ set(FITTV_SRC
     ${FITTV_SRC_DIR}/yolov3_descriptor_test.cpp
     ${FITTV_SRC_DIR}/yolov3_detector_test.cpp
     ${FITTV_SRC_DIR}/yolov3_param_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_yc_descriptor_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_yc_detector_test.cpp
-    ${FITTV_SRC_DIR}/yolov3_yc_param_test.cpp
     ${FITTV_SRC_DIR}/yolov4_descriptor_test.cpp
     ${FITTV_SRC_DIR}/yolov4_detector_test.cpp
     ${FITTV_SRC_DIR}/yolov4_param_test.cpp
     ${FITTV_SRC_DIR}/one_euro_filter_operation_test.cpp
+    ${FITTV_SRC_DIR}/bgsegment_detector_test.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${FITTV_SRC_DIR})

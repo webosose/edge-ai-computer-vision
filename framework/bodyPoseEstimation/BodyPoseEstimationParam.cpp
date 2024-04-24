@@ -18,8 +18,8 @@ static const char TAG[] = "<FPARAM>";
 namespace aif {
 
 BodyPoseEstimationParam::BodyPoseEstimationParam()
-    : orgImgWidth(640)
-    , orgImgHeight(480)
+    : orgImgWidth(0)
+    , orgImgHeight(0)
     , numMaxPerson(1)
     , hasIntrinsics(true)
     , timeLogIntervalMs(0)

@@ -44,6 +44,7 @@ public:
     bool useFp16;
     double nms_threshold;
     double bbox_conf_threshold;
+    double thresh_confidence;
     unsigned int numClasses;
     unsigned int numOutChannels;
     std::vector<int> strides;

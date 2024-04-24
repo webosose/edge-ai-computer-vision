@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <aif/log/Logger.h>
 #include <aif/bodyPoseEstimation/pose2d/NpuPose2dDetector.h>
-#include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 
 #include <aif/tools/Stopwatch.h>
@@ -16,14 +15,16 @@
 
 namespace aif {
 
-NpuPose2dDetector::NpuPose2dDetector()
+NpuPose2dDetector::NpuPose2dDetector(const std::string& modelName)
     : mScaleIn(0.0f)
     , mZeropointIn(0)
-    , Pose2dDetector("FitTV_Pose2D_Division.tflite")
+    , Pose2dDetector(modelName)
 {
 }
 
-NpuPose2dDetector::~NpuPose2dDetector() {}
+NpuPose2dDetector::~NpuPose2dDetector()
+{
+}
 
 void NpuPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
 {
@@ -80,6 +81,10 @@ t_aif_status NpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
 
     //cv::imwrite("./normQuant_input.jpg", inputNormImg);
     uint8_t* inputTensor = m_interpreter->typed_input_tensor<uint8_t>(0);
+    if (inputTensor == nullptr) {
+        Loge(__func__, "inputTensor ptr is null");
+        return kAifError;
+    }
     std::memcpy(inputTensor, inputNormImg.ptr<uint8_t>(0), width * height * channels * sizeof(uint8_t));
 
     //memoryDump(inputTensor, "./input.bin", width * height * channels * sizeof(uint8_t));
@@ -120,22 +125,18 @@ t_aif_status NpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
     int zeroPoint= q_params->zero_point->data[0];
     Logi("scale: ", scale, " zero_point: ", zeroPoint);
 
-    m_numKeyPoints = output->dims->data[1];
-    m_heatMapHeight = output->dims->data[2];
-    m_heatMapWidth = output->dims->data[3];
+    m_numKeyPoints = output->dims->data[1]; // 41
+    m_heatMapHeight = output->dims->data[2]; // 64
+    m_heatMapWidth = output->dims->data[3]; // 48
 
     float* data= reinterpret_cast<float*>(output->data.data);
-    //memoryDump(data, "./output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * 4);
-
-    //memoryDump(data, "./1_2output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));
+    //memoryDump(data, "./output.bin", m_numKeyPoints * m_heatMapHeight * m_heatMapWidth * sizeof(float));
     //memoryRestore(data, "/usr/share/aif/example/m5_6_before_post_processing.bin");
 
     std::shared_ptr<Pose2dDetector> detector = this->get_shared_ptr();
-#if defined(USE_XTENSOR)
+
     m_postProcess= std::make_shared<XtensorPostProcess>(detector);
-#else
-    m_postProcess= std::make_shared<RegularPostProcess>(detector);
-#endif
+
     if(!m_postProcess->execute(descriptor, data)){
         Loge("failed to get position x, y from heatmap");
         return kAifError;
@@ -173,15 +174,14 @@ NpuPose2dDetector::getInputTensorInfo(TfLiteTensor *input)
     return kAifOk;
 }
 
-
 void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) const
 {
     auto QUANT = [this](float data) {
         return static_cast<uint8_t> (std::max(std::min(((data / mScaleIn) + mZeropointIn), 255.f), 0.0f)); // fixed
     };
 
-    const float meanRGB[3] = { 0.406, 0.456, 0.485 }; // R,G,B
-    const float stdRGB[3] = { 4.44, 4.46, 4.36 };     // R,G,B
+    const float meanBGR[3] = { 0.406, 0.456, 0.485 }; // B,G,R : R is biggest!!!
+    const float stdBGR[3] = { 4.44, 4.46, 4.36 };     // B,G,R
 
     auto dataPtr = reinterpret_cast<float*>(img.data);
     auto norm_dataPtr = reinterpret_cast<uint8_t*>(normImg.data);
@@ -192,9 +192,9 @@ void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) 
         float* localPtr = dataPtr + i * 3;
         uint8_t* norm_localPtr = norm_dataPtr + i * 3;
 #if 1 // for debugging
-        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanRGB[2] ) * stdRGB[2]; // B
-        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanRGB[1] ) * stdRGB[1]; // G
-        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanRGB[0] ) * stdRGB[0]; // R
+        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0]; // B
+        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1]; // G
+        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2]; // R
         norm_localPtr[0] = QUANT(localPtr[0]);
         norm_localPtr[1] = QUANT(localPtr[1]);
         norm_localPtr[2] = QUANT(localPtr[2]);
@@ -206,6 +206,5 @@ void NpuPose2dDetector::normalizeImageWithQuant(cv::Mat& img, cv::Mat& normImg) 
     }
 
 }
-
 
 } // namespace aif

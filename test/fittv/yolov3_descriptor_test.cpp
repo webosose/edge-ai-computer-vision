@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2024 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -185,5 +185,3 @@ TEST_F(Yolov3DescriptorTest, 05_add_face)
     EXPECT_TRUE(floatEquals(d["faces"][0]["region"][2].GetFloat(), 0.5));
     EXPECT_TRUE(floatEquals(d["faces"][0]["region"][3].GetDouble(), 0.0));
 }
-
-

@@ -7,7 +7,11 @@ set(POSE2D_SRC
     ${POSE2D_SRC_DIR}/Pose2dDetector.cpp
     ${POSE2D_SRC_DIR}/Pose2dDescriptor.cpp
     ${POSE2D_SRC_DIR}/CpuPose2dDetector.cpp
+    ${POSE2D_SRC_DIR}/CpuPose2dDetectors.cpp
     ${POSE2D_SRC_DIR}/NpuPose2dDetector.cpp
+    ${POSE2D_SRC_DIR}/NpuPose2dDetectors.cpp
+    ${POSE2D_SRC_DIR}/Pose2dPTQDetector.cpp
+    ${POSE2D_SRC_DIR}/Pose2dPTQDetectors.cpp
     ${POSE2D_SRC_DIR}/CpuQuantPose2dDetector.cpp
     ${POSE2D_SRC_DIR}/RegularPostProcess.cpp
     ${POSE2D_SRC_DIR}/XtensorPostProcess.cpp

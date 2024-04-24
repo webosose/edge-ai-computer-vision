@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
@@ -41,9 +41,12 @@ TEST_F(Pose3dDescriptorTest, 01_constructor)
     EXPECT_TRUE(d.IsObject());
 }
 
-TEST_F(Pose3dDescriptorTest, 02_addjoints3d_one)
+TEST_F(Pose3dDescriptorTest, 02_add_jointsandtraj)
 {
     Pose3dDescriptor jpd;
+#if defined(USE_FITMODEL_V2)
+    Pose3dDescriptor jpdTraj;
+#endif
 
     std::vector<Joint3D> joints3d;
     for (int i=0; i<41; i++) {
@@ -53,7 +56,12 @@ TEST_F(Pose3dDescriptorTest, 02_addjoints3d_one)
 
     Joint3D joint3dPos = {1.0f, 2.0f, 3.0f};
 
-    jpd.addJoints3D(joints3d, joint3dPos);
+    jpd.addJoints3D(joints3d);
+#if defined(USE_FITMODEL_V2)
+    jpdTraj.addTraj3D(joint3dPos);
+#else
+    jpd.addTraj3D(joint3dPos);
+#endif
 
     auto json = jpd.toStr();
     Logd(json);
@@ -64,7 +72,23 @@ TEST_F(Pose3dDescriptorTest, 02_addjoints3d_one)
     EXPECT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("poses3d"));
     EXPECT_TRUE(d["poses3d"].IsArray());
-    EXPECT_TRUE(d["poses3d"].Size() == 1);
+
+#if defined(USE_FITMODEL_V2)
+    auto jsonTraj = jpdTraj.toStr();
+    Logd(jsonTraj);
+
+    rj::Document dTraj;
+    dTraj.Parse(jsonTraj.c_str());
+
+    EXPECT_TRUE(dTraj.IsObject());
+    EXPECT_TRUE(dTraj.HasMember("poses3d"));
+    EXPECT_TRUE(dTraj["poses3d"].IsArray());
+
+    EXPECT_TRUE(dTraj["poses3d"].Size() == 1);
+#else
+    EXPECT_TRUE(d["poses3d"].Size() == 2);
+#endif
+
     EXPECT_TRUE(d["poses3d"][0].IsObject());
     EXPECT_TRUE(d["poses3d"][0].HasMember("joints3d"));
     EXPECT_TRUE(d["poses3d"][0]["joints3d"].IsArray());
@@ -74,20 +98,33 @@ TEST_F(Pose3dDescriptorTest, 02_addjoints3d_one)
 
     int i;
     for ( i = 0; i < 41; i++) {
-        EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][0].GetDouble() - (i+0.0) < aif::EPSILON);
-        EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][1].GetDouble() - (i+0.1) < aif::EPSILON);
-        EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][2].GetDouble() - (i+0.2) < aif::EPSILON);
+        EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][0].GetFloat() - (i+0.0f) < aif::EPSILON);
+        EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][1].GetFloat() - (i+0.1f) < aif::EPSILON);
+        EXPECT_TRUE(d["poses3d"][0]["joints3d"][i][2].GetFloat() - (i+0.2f) < aif::EPSILON);
     }
-    EXPECT_TRUE(d["poses3d"][0].HasMember("joint3dPos"));
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"].IsArray());
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"].Size() == 3);
 
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"][0] == 1.0);
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"][1] == 2.0);
-    EXPECT_TRUE(d["poses3d"][0]["joint3dPos"][2] == 3.0);
+#if defined(USE_FITMODEL_V2)
+    EXPECT_TRUE(dTraj["poses3d"][0].IsObject());
+    EXPECT_TRUE(dTraj["poses3d"][0].HasMember("joint3dTraj"));
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"].IsArray());
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"].Size() == 3);
+
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"][0] == 1.0);
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"][1] == 2.0);
+    EXPECT_TRUE(dTraj["poses3d"][0]["joint3dTraj"][2] == 3.0);
+#else
+    EXPECT_TRUE(d["poses3d"][1].HasMember("joint3dTraj"));
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"].IsArray());
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"].Size() == 3);
+
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"][0] == 1.0);
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"][1] == 2.0);
+    EXPECT_TRUE(d["poses3d"][1]["joint3dTraj"][2] == 3.0);
+#endif
+
 }
 
-
+//FIXME: @Jooyeon Lee: this doesn't exist in fittv3 branch. Need to check if it's needed
 TEST_F(Pose3dDescriptorTest, 03_add_response_and_returncode)
 {
     Pose3dDescriptor jpd;
@@ -118,4 +155,3 @@ TEST_F(Pose3dDescriptorTest, 03_add_response_and_returncode)
     EXPECT_TRUE(d["poses3d"].IsArray());
     EXPECT_TRUE(d["poses3d"].Size() == 1);
 }
-

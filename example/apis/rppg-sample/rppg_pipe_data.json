@@ -1,0 +1,60 @@
+{
+  "name": "rppg_pipe_data",
+  "nodes": [
+      {
+          "id": "detect_face",
+          "input": ["image"],
+          "output": ["image", "inference"],
+          "operation": {
+              "type": "detector",
+              "config": {
+                  "model": "person_yolov3_v2_npu",
+                  "param": {
+                        "modelParam": {"detectObject": "FACE"},
+                        "delegates": [
+                            {
+                                "name": "npu_delegate",
+                                "option": {}
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "face_crop",
+            "input": ["image","inference"],
+            "output": ["image","inference"],
+            "operation": {
+                "type": "face_crop",
+                "config": {"targetId": "detect_face"}
+            }
+        },
+        {
+            "id": "face_mesh",
+            "input": ["image","inference"],
+            "output": ["image","inference"],
+            "operation": {
+                "type": "detector",
+                "config": {
+                    "model": "facemesh_cpu",
+                    "param": {
+                    "autoDelegate": {"policy": "CPU_ONLY"}
+                    }
+                }
+            }
+        },
+        {
+            "id": "extract_face_mesh_rgb",
+            "input": ["image","inference"],
+            "output": ["image","inference"],
+            "operation": {
+                "type": "face_mesh_extract",
+                "config": {
+                    "targetId": "face_mesh",
+                    "rgbExtractOn": true
+                }
+            }
+        }
+    ]
+}

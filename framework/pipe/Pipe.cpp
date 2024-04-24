@@ -64,6 +64,39 @@ bool Pipe::detect(const cv::Mat& image)
     m_descriptor->setImage(image);
 
     m_descriptor->setStartTimestamp(sw.getTimestamp());
+    
+    std::shared_ptr<PipeNode> prevNode;
+    for (auto& node : m_nodes) {
+        if (!prevNode) {
+            node->getInput()->setDescriptor(m_descriptor);
+        } else {
+            prevNode->moveDescriptor(node);
+        }
+
+        if (!node->run()) {
+            return false;
+        }
+        prevNode = node;
+    }
+    Logi(m_name, ": pipe detect time: ", sw.getMs(), "ms");
+
+    sw.stop();
+    return true;
+}
+
+bool Pipe::detect(const cv::Mat& image, const ExtraOutputs& extraOutputs)
+{
+    if (m_nodes.empty()) {
+        Loge(m_name, ": empty pipe");
+        return false;
+    }
+
+    Stopwatch sw;
+    sw.start();
+    m_descriptor = PipeDescriptorFactory::get().create(m_config->getDescriptorId());
+    m_descriptor->initExtraOutputs(extraOutputs);
+
+    m_descriptor->setImage(image);
 
     std::shared_ptr<PipeNode> prevNode;
     for (auto& node : m_nodes) {
@@ -78,10 +111,7 @@ bool Pipe::detect(const cv::Mat& image)
         }
         prevNode = node;
     }
-    Logw(m_name, ": pipe detect time: ", sw.getMs(), "ms");
-
-    /* for debug!! */
-    //drawPipeResults();
+    Logd(m_name, ": pipe detect time: ", sw.getMs(), "ms");
 
     sw.stop();
     return true;

@@ -1,0 +1,107 @@
+{
+    "name" : "fittv_pipe",
+    "descriptor": "fittv_pose",
+    "nodes": [
+        {
+            "id" : "detect_person",
+            "input" : ["image"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "detector",
+                "config": {
+                    "model": "person_yolov3_v2_npu",
+                    "param": {
+                        "modelParam": {
+                            "thresh_iou_update": 1.0
+                        },
+                        "delegates": [
+                            {
+                                "name": "npu_delegate",
+                                "option": {}
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id" : "person_crop",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "fittv_person_crop",
+                "config": {
+                    "targetId" : "detect_person"
+                }
+            }
+        },
+        {
+            "id" : "detect_pose2d",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "fittv_pose2d_detector",
+                "config": {
+                    "model": "pose2d_resnet_v2_low_npu",
+                    "param": {
+                        "delegates": [
+                            {
+                                "name": "npu_delegate",
+                                "option": {}
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id" : "2d3d_bridge",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "fittv_pose2d3d",
+                "config": {
+                    "targetId" : "detect_pose2d"
+                }
+            }
+        },
+        {
+            "id" : "detect_pose3d_pos",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "fittv_pose3d_detector",
+                "config": {
+                    "model": "pose3d_videopose3d_v2_pos_low",
+                    "param": {
+                        "delegates": [
+                            {
+                                "name": "npu_delegate",
+                                "option": {}
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id" : "detect_pose3d_traj",
+            "input" : ["image", "inference"],
+            "output" : ["image", "inference"],
+            "operation" : {
+                "type" : "fittv_pose3d_detector",
+                "config": {
+                    "model": "pose3d_videopose3d_v2_traj_low",
+                    "param": {
+                        "delegates": [
+                            {
+                                "name": "npu_delegate",
+                                "option": {}
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

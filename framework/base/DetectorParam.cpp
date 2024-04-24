@@ -51,7 +51,9 @@ t_aif_status DetectorParam::fromJson(const std::string &param) {
     if (!m_useAutoDelegate) {
         if (payload.HasMember("delegates")) {
             for (auto &delegate : payload["delegates"].GetArray()) {
-                std::string option = jsonObjectToString(delegate["option"]);
+                std::string option = "";
+                if (delegate.HasMember("option"))
+                    option = jsonObjectToString(delegate["option"]);
                 m_delegates.push_back({delegate["name"].GetString(), option});
                 Logi("[delegates][name] ", delegate["name"].GetString());
                 Logi("[delegates][option] ", option);

@@ -2,6 +2,7 @@
  * Copyright (c) 2022 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
+
 #ifndef AIF_POSE2D_DETECTOR_H
 #define AIF_POSE2D_DETECTOR_H
 
@@ -20,38 +21,41 @@ class PostProcess;
 
 class Pose2dDetector : public Detector
 {
-public:
-    Pose2dDetector(const std::string& modelPath);
-    virtual ~Pose2dDetector();
+    public:
+        Pose2dDetector(const std::string& modelPath);
+        virtual ~Pose2dDetector();
 
-    void setCropData(const Scale& cropScale, const BBox& cropBbox, bool useUDP) {
-                    m_cropScale = cropScale;
-                    m_cropBbox = cropBbox;
-                    m_useUDP = useUDP; }
+        void setCropData(const Scale& cropScale, const BBox& cropBbox, bool useUDP) {
+                        m_cropScale = cropScale;
+                        m_cropBbox = cropBbox;
+                        m_useUDP = useUDP; }
 
-    enum {
-        DEFAULT_HEATMAP_WIDTH = 48,
-        DEFAULT_HEATMAP_HEIGHT = 64
-    };
-protected:
-    std::shared_ptr<DetectorParam> createParam() override;
-    void getAffinedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst);
-    void getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst);
-    std::shared_ptr<PostProcess> m_postProcess;
-protected:
-    cv::Rect m_cropRect;
-    Scale m_cropScale;
-    BBox m_cropBbox;
-    bool m_useUDP;
-    cv::Size m_paddedSize;
-    int m_leftBorder;
-    int m_topBorder;
-    unsigned int m_numKeyPoints;
-    unsigned int m_heatMapWidth;
-    unsigned int m_heatMapHeight;
-    cv::Mat mTransMat;
-public:
-   friend class PostProcess;
+        enum {
+            DEFAULT_HEATMAP_WIDTH = 48,
+            DEFAULT_HEATMAP_HEIGHT = 64
+        };
+
+    protected:
+        std::shared_ptr<DetectorParam> createParam() override;
+        void getAffinedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst);
+        void getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst);
+        std::shared_ptr<PostProcess> m_postProcess;
+
+    protected:
+        cv::Rect m_cropRect;
+        Scale m_cropScale;
+        BBox m_cropBbox;
+        bool m_useUDP;
+        cv::Size m_paddedSize;
+        int m_leftBorder;
+        int m_topBorder;
+        unsigned int m_numKeyPoints;
+        unsigned int m_heatMapWidth;
+        unsigned int m_heatMapHeight;
+        cv::Mat mTransMat;
+
+    public:
+    friend class PostProcess;
 };
 
 } // end of namespace aif

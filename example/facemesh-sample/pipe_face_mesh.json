@@ -1,0 +1,81 @@
+ {
+   "name": "pipe_face_mesh",
+   "nodes": [
+     {
+       "id": "detect_face",
+       "input": [
+         "image"
+       ],
+       "output": [
+         "image",
+         "inference"
+       ],
+       "operation": {
+         "type": "detector",
+         "config": {
+           "model": "person_yolov3_v1_npu",
+           "param": {
+             "modelParam": {
+               "detectObject": "FACE"
+             }
+           }
+         }
+       }
+     },
+     {
+       "id": "face_crop",
+       "input": [
+         "image",
+         "inference"
+       ],
+       "output": [
+         "image",
+         "inference"
+       ],
+       "operation": {
+         "type": "face_crop",
+         "config": {
+           "targetId": "detect_face"
+         }
+       }
+     },
+     {
+       "id": "face_mesh",
+       "input": [
+         "image",
+         "inference"
+       ],
+       "output": [
+         "image",
+         "inference"
+       ],
+       "operation": {
+         "type": "detector",
+         "config": {
+           "model": "facemesh_cpu",
+           "param": {
+             "autoDelegate": {
+               "policy": "CPU_ONLY"
+             }
+           }
+         }
+       }
+     },
+     {
+       "id": "face_mesh_extract",
+       "input": [
+         "image",
+         "inference"
+       ],
+       "output": [
+         "image"
+       ],
+       "operation": {
+         "type": "face_mesh_extract",
+         "config": {
+           "targetId": "face_mesh"
+         }
+       }
+     }
+   ]
+ }

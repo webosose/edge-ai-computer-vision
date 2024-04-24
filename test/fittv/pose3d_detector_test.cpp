@@ -7,7 +7,7 @@
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/Detector.h>
 #include <aif/base/Descriptor.h>
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
 
@@ -36,7 +36,6 @@ protected:
         AIVision::deinit();
     }
 
-
     void SetUp() override
     {
         DetectorFactory::get().clear();
@@ -58,22 +57,28 @@ protected:
         "    }"
         "  ]"
         "}"};
-
-
-    std::string use_npu_delegate_and_people {
-        "{"
-        "  \"delegates\" : ["
-        "    {"
-        "      \"name\": \"npu_delegate\","
-        "      \"option\": {"
-        "       }"
-        "    }"
-        "  ],"
-        "  \"commonParam\" : {"
-        "    \"numMaxPerson\": 5"
-        "  }"
-        "}"};
-
+    std::vector<float> joints2d = { 290, 236,    275, 236,
+                                    275, 290,    275, 350,
+                                    305, 236,    305, 295,
+                                    305, 350,    290, 181,
+                                    290, 136,    290, 116,
+                                    290, 81,     320, 146,
+                                    330, 186,    305, 221,
+                                    260, 146,    245, 186,
+                                    280, 201,    290, 221,
+                                    290, 186,    290, 166,
+                                    290, 131,    300, 196,
+                                    300, 201,    300, 201,
+                                    300, 206,    295, 206,
+                                    285, 231,    285, 236,
+                                    285, 236,    290, 236,
+                                    295, 236,    270, 375,
+                                    265, 370,    305, 375,
+                                    315, 370,    285, 101,
+                                    295, 101,    275, 106,
+                                    305, 106,    290, 196,
+                                    295, 231
+                                  };
     std::vector<std::vector<float>> joints2d_arr;
 
     void test_arr_init() {
@@ -131,48 +136,42 @@ protected:
 
 TEST_F(Pose3dDetectorTest, 01_pose3d_detect_person)
 {
-    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_npu", use_npu_delegate);
-    EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D.tflite");
-    auto modelInfo = fd->getModelInfo();
-    EXPECT_EQ(modelInfo.height, 27); // numElems
-    EXPECT_EQ(modelInfo.width, 41); // mNumJointsIn
-    EXPECT_EQ(modelInfo.channels, 2);
-
     std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose3dDescriptor>();
     auto foundPose3ds = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
-
-    std::vector<float> joints2d = { 290, 236,    275, 236,
-                                    275, 290,    275, 350,
-                                    305, 236,    305, 295,
-                                    305, 350,    290, 181,
-                                    290, 136,    290, 116,
-                                    290, 81,     320, 146,
-									330, 186,    305, 221,
-                                    260, 146,    245, 186,
-                                    280, 201,    290, 221,
-                                    290, 186,    290, 166,
-                                    290, 131,    300, 196,
-                                    300, 201,    300, 201,
-                                    300, 206,    295, 206,
-                                    285, 231,    285, 236,
-                                    285, 236,    290, 236,
-					                295, 236,    270, 375,
-					                265, 370,    305, 375,
-				                    315, 370,    285, 101,
-				                    295, 101,    275, 106,
-				                    305, 106,    290, 196,
-				                    295, 231
-                                  };
 
     cv::Mat joints2d_mat(41, 2, CV_32F, joints2d.data());
     cv::Mat joints2d_matd;
     joints2d_mat.convertTo( joints2d_matd, CV_64F );
 
-    std::cout << "Pose2D Result imageJoints[idx] " << joints2d_matd.at<double>(0,0) << std::endl;
+#if defined(USE_FITMODEL_V2)
+    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v2_pos_low", use_npu_delegate);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D_V2_Low_Pos.tflite");
+
+    auto fdTraj = DetectorFactory::get().getDetector("pose3d_videopose3d_v2_traj_low", use_npu_delegate);
+    EXPECT_TRUE(fdTraj.get() != nullptr);
+    EXPECT_EQ(fdTraj->getModelName(), "FitTV_Pose3D_V2_Low_Traj.tflite");
+#else
+    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v1_npu", use_npu_delegate);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D_V1.tflite");
+#endif
+
+    auto modelInfo = fd->getModelInfo();
+    EXPECT_EQ(modelInfo.height, 27); // numElems
+    EXPECT_EQ(modelInfo.width, 41); // mNumJointsIn
+    EXPECT_EQ(modelInfo.channels, 2);
 
     EXPECT_TRUE(fd->detect(joints2d_matd, descriptor) == aif::kAifOk);
 
+#if defined(USE_FITMODEL_V2)
+    auto modelInfoTraj = fdTraj->getModelInfo();
+    EXPECT_EQ(modelInfoTraj.height, 27); // numElems
+    EXPECT_EQ(modelInfoTraj.width, 41); // mNumJointsIn
+    EXPECT_EQ(modelInfoTraj.channels, 2);
+
+    EXPECT_TRUE(fdTraj->detect(joints2d_matd, descriptor) == aif::kAifOk);
+#endif
     std::cout << foundPose3ds->toStr() << std::endl;
 }
 
@@ -180,31 +179,49 @@ TEST_F(Pose3dDetectorTest, 02_pose3d_detect_person_video_test)
 {
     test_arr_init();
 
-    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_npu", use_npu_delegate);
+    std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose3dDescriptor>();
+    auto foundPose3ds = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+
+#if defined(USE_FITMODEL_V2)
+    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v2_pos_low", use_npu_delegate);
     EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D.tflite");
+    EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D_V2_Low_Pos.tflite");
+
+    auto fdTraj = DetectorFactory::get().getDetector("pose3d_videopose3d_v2_traj_low", use_npu_delegate);
+    EXPECT_TRUE(fdTraj.get() != nullptr);
+    EXPECT_EQ(fdTraj->getModelName(), "FitTV_Pose3D_V2_Low_Traj.tflite");
+#else
+    auto fd = DetectorFactory::get().getDetector("pose3d_videopose3d_v1_npu", use_npu_delegate);
+    EXPECT_TRUE(fd.get() != nullptr);
+    EXPECT_EQ(fd->getModelName(), "FitTV_Pose3D_V1.tflite");
+#endif
+
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 27); // numElems
     EXPECT_EQ(modelInfo.width, 41); // mNumJointsIn
     EXPECT_EQ(modelInfo.channels, 2);
 
-    std::shared_ptr<Descriptor> descriptor = std::make_shared<Pose3dDescriptor>();
-    auto foundPose3ds = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+#if defined(USE_FITMODEL_V2)
+    auto modelInfoTraj = fdTraj->getModelInfo();
+    EXPECT_EQ(modelInfoTraj.height, 27); // numElems
+    EXPECT_EQ(modelInfoTraj.width, 41); // mNumJointsIn
+    EXPECT_EQ(modelInfoTraj.channels, 2);
+#endif
 
     for (int i = 0; i < joints2d_arr.size(); i++) {
         cv::Mat joints2d_mat(41, 2, CV_32F, joints2d_arr[i].data());
         cv::Mat joints2d_matd;
         joints2d_mat.convertTo( joints2d_matd, CV_64F );
 
-        std::cout << "Pose2D Result imageJoints[idx] " << joints2d_matd.at<double>(0,0) << std::endl;
-
         EXPECT_TRUE(fd->detect(joints2d_matd, descriptor) == aif::kAifOk);
+
+#if defined(USE_FITMODEL_V2)
+        EXPECT_TRUE(fdTraj->detect(joints2d_matd, descriptor) == aif::kAifOk);
+#endif
     }
 
     // output to json file
     std::ofstream output_file("./output_16images.json");
     output_file << foundPose3ds->toStr() << std::endl;
     output_file.close();
-
 }
-

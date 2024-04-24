@@ -16,10 +16,13 @@
 namespace aif {
 
 CpuQuantPose2dDetector::CpuQuantPose2dDetector()
-    : Pose2dDetector("pose2d_mobilenet_full_integer_quant.tflite") {}
+    : Pose2dDetector("pose2d_mobilenet_full_integer_quant.tflite")
+{
+}
 
-CpuQuantPose2dDetector::~CpuQuantPose2dDetector() {}
-
+CpuQuantPose2dDetector::~CpuQuantPose2dDetector()
+{
+}
 
 void CpuQuantPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
 {

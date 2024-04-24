@@ -17,6 +17,8 @@ namespace aif {
 FitTvPoseDescriptor::FitTvPoseDescriptor()
 : PipeDescriptor()
 , m_trackId(1)
+, m_numSkippedFrames(0)
+, m_roiValid(false)
 {
 }
 
@@ -43,15 +45,23 @@ bool FitTvPoseDescriptor::addDetectorOperationResult(
     if ((model.rfind("person_yolov4", 0) == 0) ||
         (model.rfind("person_yolov3", 0) == 0)) {
         auto person = std::dynamic_pointer_cast<PersonDetectDescriptor>(descriptor);
-        return addPersonDetectorResult(nodeId, person);
+        return addPersonDetectorResult(nodeId, std::move(person));
     }
     else if (model.rfind("pose2d_resnet", 0) == 0) {
         auto pose2d = std::dynamic_pointer_cast<Pose2dDescriptor>(descriptor);
-        return addPose2dDetectorResult(nodeId, pose2d);
+        return addPose2dDetectorResult(nodeId, std::move(pose2d));
     }
-    else if (model.rfind("pose3d", 0) == 0) {
+    else if (model.rfind("pose3d_videopose3d_v1", 0) == 0) {
         auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
-        return addPose3dDetectorResult(nodeId, pose3d);
+        return addPose3dDetectorResult(nodeId, std::move(pose3d));
+    }
+    else if (model.rfind("pose3d_videopose3d_v2_pos", 0) == 0 || model.rfind("pose3d_videopose3d_ptq_pos", 0) == 0) {
+        auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+        return addPose3dDetectorPosResult(nodeId, std::move(pose3d));
+    }
+    else if (model.rfind("pose3d_videopose3d_v2_traj", 0) == 0 ||  model.rfind("pose3d_videopose3d_ptq_traj", 0) == 0) {
+        auto pose3d = std::dynamic_pointer_cast<Pose3dDescriptor>(descriptor);
+        return addPose3dDetectorTrajResult(nodeId, std::move(pose3d));
     }
     return false;
 }
@@ -78,10 +88,19 @@ bool FitTvPoseDescriptor::addPersonDetectorResult(
     Logi("addPersonDectectorResult: ", descriptor->toStr());
     m_type.addType(NodeType::INFERENCE);
     for (unsigned int i = 0; i < descriptor->getNumBbox(); i++) {
-        if (!addBBox(descriptor->getScore(i), descriptor->getBbox(i))) {
+        if (!addBBox(descriptor->getScore(i), descriptor->getBbox(i), descriptor->getConfidenceThreshold(), descriptor->getDbgFileName())) {
             return false;
         }
     }
+    // ROI !
+    if (descriptor->isRoiValid()) {
+        m_roiRect = descriptor->getRoiRect();
+        m_roiValid = true;
+    } else {
+        m_roiValid = false;
+    }
+    m_numSkippedFrames = descriptor->getNumNonDetected();
+
     return true;
 }
 
@@ -105,7 +124,27 @@ bool FitTvPoseDescriptor::addPose3dDetectorResult(
             descriptor->getTrajectory());
 }
 
-bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
+bool FitTvPoseDescriptor::addPose3dDetectorPosResult(
+        const std::string& nodeId,
+        const std::shared_ptr<Pose3dDescriptor> descriptor)
+{
+    Logi("addPose3dDetectorResult: ", descriptor->toStr());
+    m_type.addType(NodeType::INFERENCE);
+    return addPose3dPos(descriptor->getTrackId(),
+            descriptor->getPose3dResult());
+}
+
+bool FitTvPoseDescriptor::addPose3dDetectorTrajResult(
+        const std::string& nodeId,
+        const std::shared_ptr<Pose3dDescriptor> descriptor)
+{
+    Logi("addPose3dDetectorResult: ", descriptor->toStr());
+    m_type.addType(NodeType::INFERENCE);
+    return addPose3dTraj(descriptor->getTrackId(),
+            descriptor->getTrajectory());
+}
+
+bool FitTvPoseDescriptor::addBBox(float score, const BBox& box, double confidenceThreshold, const std::string& dbg_fname)
 {
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("poseEstimation")) {
@@ -121,8 +160,12 @@ bool FitTvPoseDescriptor::addBBox(float score, const BBox& box)
     jbox.PushBack(score, allocator); //score
 
     pose.AddMember("bbox", jbox, allocator);
+    pose.AddMember("confidence_thres", confidenceThreshold, allocator);
     pose.AddMember("id", m_trackId++, allocator);
     pose.AddMember("timestamp", m_startTime, allocator);
+    if (!dbg_fname.empty()) {
+        pose.AddMember("dbg_fname", dbg_fname, allocator);
+    }
     m_root["poseEstimation"].PushBack(pose, allocator);
 
     m_boxes.push_back(box);
@@ -199,16 +242,33 @@ bool FitTvPoseDescriptor::addPose2d(int trackId, const std::vector<std::vector<f
     const auto& pose = poses[index].GetObject();
     rj::Value pose2d(rj::kArrayType);
 
+    int numClipped = 0;
     for(auto& pos: m_keyPoints[index]) {
-        if (index < m_cropRects.size()) {
+        if (index < m_cropRects.size()) { // TODO: maybe deprecated... check it later.!!
             pos[1] += m_cropRects[index].x;
             pos[2] += m_cropRects[index].y;
+        }
+        if (m_roiValid) {
+            pos[1] += m_roiRect.x;
+            pos[2] += m_roiRect.y;
+            if(clipKeypointRoiRange(pos)) {
+                numClipped++;
+            }
         }
         rj::Value keyPoint(rj::kArrayType);
         keyPoint.PushBack(static_cast<int>(pos[1]), allocator); // x
         keyPoint.PushBack(static_cast<int>(pos[2]), allocator); // y
         keyPoint.PushBack(pos[0], allocator); // score
         pose2d.PushBack(keyPoint, allocator);
+    }
+
+    if (numClipped > 0) {
+        Logi(__func__, " ", numClipped , " keypoint are clipped by ROI");
+    }
+
+    if (numClipped == m_keyPoints[index].size()) {
+        Logi(__func__, " all keypoints are out of ROI range.");
+        return false;
     }
 
     pose.AddMember("joints2D", pose2d, allocator);
@@ -253,6 +313,100 @@ bool FitTvPoseDescriptor::addPose3d(
     }
     pose.AddMember("joints3D", pose3d, allocator);
 
+    rj::Value pose3dPos(rj::kArrayType);
+    pose3dPos.PushBack(trajectory.x, allocator); // x
+    pose3dPos.PushBack(trajectory.y, allocator); // y
+    pose3dPos.PushBack(trajectory.z, allocator); // z
+    pose.AddMember("joints3DPosition", pose3dPos, allocator);
+
+    return true;
+}
+
+bool FitTvPoseDescriptor::clipKeypointRoiRange(std::vector<float> &pos)
+{
+    bool clipped = false;
+
+    /* check x */
+    if (pos[1] < m_roiRect.x) {
+        pos[1] = m_roiRect.x;
+        clipped = true;
+    }
+    if (pos[1] >= m_roiRect.x + m_roiRect.width) {
+        pos[1] = m_roiRect.x + m_roiRect.width - 1;
+        clipped = true;
+    }
+
+    /* check y */
+    if (pos[2] < m_roiRect.y) {
+        pos[2] = m_roiRect.y;
+        clipped = true;
+    }
+    if (pos[2] >= m_roiRect.y + m_roiRect.height) {
+        pos[2] = m_roiRect.y + m_roiRect.height - 1;
+        clipped = true;
+    }
+
+    if (clipped) {
+        pos[0] = -1.0; // score -1.0
+    }
+
+    return clipped;
+}
+
+bool FitTvPoseDescriptor::addPose3dPos(
+        int trackId,
+        const std::vector<Joint3D>& joint3ds)
+{
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
+        Loge("not exist bbox");
+        return false;
+    }
+
+    const auto& poses = m_root["poseEstimation"].GetArray();
+
+    int index = trackId - 1;
+    if (trackId <= 0 ||
+        poses.Size() < trackId ||
+        !poses[index].HasMember("id")) {
+        Loge("cannot find trackId: ", trackId);
+        return false;
+    }
+
+    const auto& pose = poses[index].GetObject();
+    rj::Value pose3d(rj::kArrayType);
+    for(auto& pos: joint3ds) {
+        rj::Value joint3d(rj::kArrayType);
+        joint3d.PushBack(pos.x, allocator); // x
+        joint3d.PushBack(pos.y, allocator); // y
+        joint3d.PushBack(pos.z, allocator); // z
+        pose3d.PushBack(joint3d, allocator);
+    }
+    pose.AddMember("joints3D", pose3d, allocator);
+    return true;
+}
+
+bool FitTvPoseDescriptor::addPose3dTraj(
+        int trackId,
+        const Joint3D& trajectory)
+{
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("poseEstimation") || m_root["poseEstimation"].Size() <= 0) {
+        Loge("not exist bbox");
+        return false;
+    }
+
+    const auto& poses = m_root["poseEstimation"].GetArray();
+
+    int index = trackId - 1;
+    if (trackId <= 0 ||
+        poses.Size() < trackId ||
+        !poses[index].HasMember("id")) {
+        Loge("cannot find trackId: ", trackId);
+        return false;
+    }
+
+    const auto& pose = poses[index].GetObject();
     rj::Value pose3dPos(rj::kArrayType);
     pose3dPos.PushBack(trajectory.x, allocator); // x
     pose3dPos.PushBack(trajectory.y, allocator); // y

@@ -45,8 +45,8 @@ void Pose2dDetector::getAffinedImage(const cv::Mat& src, const cv::Size& modelSi
     cv::Mat transformedImg = cv::Mat::zeros(modelSize.height, modelSize.width, src.type());
     cv::warpAffine(src, transformedImg, trans, transformedImg.size());
 
-    dst = transformedImg;
-    mTransMat = trans; // mTransArray
+    dst = std::move(transformedImg);
+    mTransMat = std::move(trans); // mTransArray
 }
 
 void Pose2dDetector::getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst)

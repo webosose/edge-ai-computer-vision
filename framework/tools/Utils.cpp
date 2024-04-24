@@ -7,6 +7,7 @@
 #include <aif/log/Logger.h>
 
 #include <boost/beast/core/detail/base64.hpp>
+#include <boost/algorithm/string.hpp>
 
 // #include <opencv2/opencv.hpp>
 // #include <opencv2/imgproc.hpp>
@@ -344,6 +345,128 @@ bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold)
 
     TRACE("IOU : ", (A_and_B / A_or_B));
     return ((A_and_B / A_or_B) > threshold);
+}
+
+struct t_aif_padding_info
+getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst, enum cv::InterpolationFlags flag)
+{
+    float srcW = src.size().width;
+    float srcH = src.size().height;
+    int modelW = modelSize.width;
+    int modelH = modelSize.height;
+    int dstW = 0;
+    int dstH = 0;
+
+    float scaleW = static_cast<float>(modelSize.width) / srcW;
+    float scaleH = static_cast<float>(modelSize.height) / srcH;
+    float scale = std::min(scaleW, scaleH);
+
+    struct t_aif_padding_info padInfo = {0,};
+    padInfo.imgResizingScale = scale;
+    TRACE(__func__, " imgResizingScale = " , padInfo.imgResizingScale);
+
+    int width = srcW * scale;
+    int height = srcH * scale;
+
+    cv::Mat inputImg;
+    cv::resize(src, inputImg, cv::Size(width, height), 0, 0, flag); // default cv::INTER_LINEAR
+
+    if (modelSize.width != width)
+        padInfo.leftBorder = (modelSize.width - width) / 2;
+    if (modelSize.height != height)
+        padInfo.topBorder = (modelSize.height - height) / 2;
+
+    padInfo.rightBorder = modelSize.width - width - padInfo.leftBorder;
+    padInfo.bottomBorder = modelSize.height - height - padInfo.topBorder;
+
+    cv::copyMakeBorder(inputImg, dst, padInfo.topBorder, padInfo.bottomBorder,
+                                      padInfo.leftBorder, padInfo.rightBorder,
+                                      cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    padInfo.paddedSize = cv::Size(
+            srcW * (static_cast<float>(modelSize.width)/width),
+            srcH * (static_cast<float>(modelSize.height)/height)); // this is upscaled paddedImage to orig img. same ratio with model input ratio.
+
+    //TRACE(__func__, " paddingInfo is (l,t,r,b): ", padInfo.leftBorder, " ", padInfo.topBorder, " ", padInfo.rightBorder, " ", padInfo.bottomBorder);
+    //TRACE(__func__, " paddedSize is (W,H): ", padInfo.paddedSize.width, ", ", padInfo.paddedSize.height);
+
+    return padInfo;
+}
+
+bool isRoiValid( const int imgWidth, const int imgHeight, const cv::Rect &roiRect )
+{
+    return ( ( roiRect.x >= 0 ) && ( roiRect.y >= 0 ) &&
+                    ( roiRect.width > 0 ) && ( roiRect.height > 0 ) &&
+                    ( roiRect.x + roiRect.width <= imgWidth ) &&
+                    ( roiRect.y + roiRect.height <= imgHeight ) );
+}
+
+cv::InterpolationFlags stringToInterpolationFlags(const std::string &str)
+{
+    if (str.empty()) {
+        Logw(__func__, " input str is empty");
+        return cv::INTER_LINEAR;
+    }
+
+    std::string str_ = boost::algorithm::to_upper_copy(str);
+    if (str_.compare("AREA") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_AREA;
+    }
+    if (str_.compare("LINEAR_EXACT") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_LINEAR_EXACT;
+    }
+    if (str_.compare("LINEAR") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_LINEAR;
+    }
+    if (str_.compare("CUBIC") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_CUBIC;
+    }
+    if (str_.compare("NEAREST_EXACT") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_NEAREST_EXACT;
+    }
+    if (str_.compare("NEAREST") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_NEAREST;
+    }
+    if (str_.compare("LANCZOS4") == 0) {
+        TRACE(__func__, " ", str_ );
+        return cv::INTER_LANCZOS4;
+    }
+    // ANOTHER OPTION TBD //
+
+    Logw(__func__, " wrong string for interpolation flags ", str_);
+    return cv::INTER_LINEAR;
+}
+
+std::pair<float, int>
+getQuantizationTensorInfo(TfLiteTensor *tensor)
+{
+    std::pair<float, int> error_result(0.0, 0);
+
+    if (tensor == nullptr || tensor->dims == nullptr) {
+        Loge(__func__, " tensor / tensor->dims is nullptr");
+        return error_result;
+    }
+
+    TfLiteAffineQuantization* q_params = reinterpret_cast<TfLiteAffineQuantization*>(tensor->quantization.params);
+    if (!q_params) {
+        Loge(__func__, " tensor doesn't have q_params...");
+        return error_result;
+    }
+
+    if (q_params->scale->size != 1) {
+        Loge(__func__, " tensor should not per-axis quant...");
+        return error_result;
+    }
+
+    float scale = q_params->scale->data[0];
+    int zeropoint = q_params->zero_point->data[0];
+
+    return std::make_pair(scale, zeropoint);
 }
 
 } // end of namespace aif

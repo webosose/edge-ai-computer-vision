@@ -132,13 +132,11 @@ bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
-    // CID9333381, CID9333367, CID9333405
     if (detector == nullptr) {
         Loge("Detector get failed: ", model);
         return false;
     }
 
-    // CID9333381, CID9333367, CID9333405
     if (descriptor == nullptr) {
         Loge("Descriptor get failed: ", model);
         return false;
@@ -169,13 +167,11 @@ bool EdgeAIVision::detectFromFile(DetectorType type,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
-    // CID9333376, CID9333361
     if (detector == nullptr) {
         Loge("Detector get failed: ", model);
         return false;
     }
 
-    // CID9333376, CID9333361
     if (descriptor == nullptr) {
         Loge("Descriptor get failed: ", model);
         return false;
@@ -205,18 +201,51 @@ bool EdgeAIVision::detectFromBase64(DetectorType type, const std::string &input,
     auto detector = DetectorFactory::get().getDetector(model);
     auto descriptor = DetectorFactory::get().getDescriptor(model);
 
-    // CID9333376, CID9333399
     if (detector == nullptr) {
         Loge("Detector get failed: ", model);
         return false;
     }
 
-    // CID9333376, CID9333399
     if (descriptor == nullptr) {
         Loge("Descriptor get failed: ", model);
         return false;
     }
     auto res = detector->detectFromBase64(input, descriptor);
+    descriptor->addReturnCode(res);
+    output = descriptor->toStr();
+
+    return (kAifOk == res);
+}
+
+bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
+                          std::string &output, ExtraOutput& extraOutput) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+    if (m_selectedModels.find(type) == m_selectedModels.end()) {
+        Loge("Detector is not created : ", static_cast<int>(type));
+        return false;
+    }
+
+    std::string model = m_selectedModels[type];
+    auto detector = DetectorFactory::get().getDetector(model);
+    auto descriptor = DetectorFactory::get().getDescriptor(model);
+
+    if (detector == nullptr) {
+        Loge("Detector get failed: ", model);
+        return false;
+    }
+
+    if (descriptor == nullptr) {
+        Loge("Descriptor get failed: ", model);
+        return false;
+    }
+
+    descriptor->initExtraOutput(extraOutput);
+    auto res = detector->detect(input, descriptor);
     descriptor->addReturnCode(res);
     output = descriptor->toStr();
 
@@ -240,7 +269,7 @@ bool EdgeAIVision::pipeCreate(const std::string& id, const std::string& option)
     if (!pipe->build(option))  {
         return false;
     }
-    m_pipeMap[id] = pipe;
+    m_pipeMap[id] = std::move(pipe);
     return true;
 }
 
@@ -279,7 +308,7 @@ bool EdgeAIVision::pipeDetect(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res = pipe->detect(image);
+    auto res = pipe->detect(image) ? kAifOk : kAifError;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
@@ -287,7 +316,39 @@ bool EdgeAIVision::pipeDetect(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
+}
+
+bool EdgeAIVision::pipeDetect(
+            const std::string& id,
+            const cv::Mat& input,
+            std::string& output,
+            const ExtraOutputs& extraOutputs)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+   if (m_pipeMap.find(id) == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+    std::shared_ptr<Pipe> pipe = m_pipeMap[id];
+    if (!pipe) {
+        Loge(id, ": pipe is null");
+        return false;
+    }
+    auto res = pipe->detect(input, extraOutputs) ? kAifOk : kAifError;
+    auto descriptor = pipe->getDescriptor();
+    if (!descriptor) {
+        Loge(id, ": pipe descriptor is null");
+        return false;
+    }
+    descriptor->addReturnCode(res);
+    output = descriptor->getResult();
+    return (res == kAifOk);
 }
 
 bool EdgeAIVision::pipeDetectFromFile(
@@ -308,7 +369,7 @@ bool EdgeAIVision::pipeDetectFromFile(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res = pipe->detectFromFile(imagePath);
+    auto res = pipe->detectFromFile(imagePath) ? kAifOk : kAifError;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
@@ -316,7 +377,7 @@ bool EdgeAIVision::pipeDetectFromFile(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
 }
 
 bool EdgeAIVision::pipeDetectFromBase64(
@@ -337,7 +398,8 @@ bool EdgeAIVision::pipeDetectFromBase64(
         Loge(id, ": pipe is null");
         return false;
     }
-    auto res =  pipe->detectFromBase64(base64Image);
+    auto res =  pipe->detectFromBase64(base64Image) ? kAifOk : kAifError;
+;
     auto descriptor = pipe->getDescriptor();
     if (!descriptor) {
         Loge(id, ": pipe descriptor is null");
@@ -345,7 +407,7 @@ bool EdgeAIVision::pipeDetectFromBase64(
     }
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
-    return true;
+    return (res == kAifOk);
 }
 
 } // namespace aif

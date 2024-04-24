@@ -15,21 +15,21 @@ namespace aif {
 
 class Pose2dParam : public DetectorParam
 {
-public:
-    Pose2dParam();
-    virtual ~Pose2dParam();
-    Pose2dParam(const Pose2dParam& other);
-    Pose2dParam(Pose2dParam&& other) noexcept;
+    public:
+        Pose2dParam();
+        virtual ~Pose2dParam();
+        Pose2dParam(const Pose2dParam& other);
+        Pose2dParam(Pose2dParam&& other) noexcept;
 
-    Pose2dParam& operator=(const Pose2dParam& other) = default;
-    Pose2dParam& operator=(Pose2dParam&& other) noexcept = default;
+        Pose2dParam& operator=(const Pose2dParam& other) = default;
+        Pose2dParam& operator=(Pose2dParam&& other) noexcept = default;
 
-    bool operator==(const Pose2dParam& other) const;
-    bool operator!=(const Pose2dParam& other) const;
+        bool operator==(const Pose2dParam& other) const;
+        bool operator!=(const Pose2dParam& other) const;
 
-    // debug
-    friend std::ostream& operator<<(std::ostream& os, const Pose2dParam& fp);
-    void trace();
+        // debug
+        friend std::ostream& operator<<(std::ostream& os, const Pose2dParam& fp);
+        void trace();
 };
 
 } // end of namespace aif

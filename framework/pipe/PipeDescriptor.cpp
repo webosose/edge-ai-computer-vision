@@ -35,6 +35,12 @@ void PipeDescriptor::setImage(const cv::Mat& image)
     m_image = image;
 }
 
+void PipeDescriptor::copyImage(const cv::Mat& image)
+{
+    m_type.addType(NodeType::IMAGE);
+    m_image = image.clone();
+}
+
 const NodeType& PipeDescriptor::getType() const
 {
     return m_type;
@@ -83,8 +89,8 @@ bool PipeDescriptor::addBridgeOperationResult(
         const std::string& operationType,
         const std::string& result)
 {
-    Logi(nodeId, ": add bridge operation result");
-    Logi(operationType, " : ",  result);
+    //Logd(nodeId, ": add bridge operation result");
+    //Logd(operationType, " : ",  result);
 
     return addStringResult(nodeId, result);
 }
@@ -95,8 +101,8 @@ bool PipeDescriptor::addDetectorOperationResult(
         const std::shared_ptr<Descriptor>& descriptor)
 {
     std::string result = descriptor->toStr();
-    Logi(nodeId, ": add detector operation result - ", result);
-    Logi(model, " : ",  result);
+    //Logd(nodeId, ": add detector operation result - ", result);
+    //Logd(model, " : ",  result);
 
     return addStringResult(nodeId, result);
 }
@@ -122,6 +128,25 @@ bool PipeDescriptor::addStringResult(
 
     m_root["results"].PushBack(res, allocator);
     return true;
+}
+
+const ExtraOutputs& PipeDescriptor::getExtraOutputs() const
+{
+    return m_extraOutputs;
+}
+
+bool PipeDescriptor::getExtraOutput(const std::string& nodeId, ExtraOutput& extraOutput)
+{
+    if (m_extraOutputs.find(nodeId) == m_extraOutputs.end()) {
+        return false;
+    }
+    extraOutput = m_extraOutputs[nodeId];
+    return true;
+}
+
+void PipeDescriptor::initExtraOutputs(const ExtraOutputs& extraOutputs)
+{
+    m_extraOutputs = extraOutputs;
 }
 
 } // end of namespace aif

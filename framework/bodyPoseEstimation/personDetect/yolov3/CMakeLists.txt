@@ -4,8 +4,9 @@ set(YOLOV3_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(YOLOV3_SRC
     ${YOLOV3_SRC_DIR}/Yolov3Param.cpp
     ${YOLOV3_SRC_DIR}/Yolov3Detector.cpp
-    ${YOLOV3_SRC_DIR}/NpuYolov3Detector.cpp
+    ${YOLOV3_SRC_DIR}/Yolov3Detectors.cpp
     ${YOLOV3_SRC_DIR}/Yolov3Descriptor.cpp
+    ${YOLOV3_SRC_DIR}/Yolov3PTQDetector.cpp
 )
 
 IF(WITH_EDGETPU)

@@ -16,7 +16,8 @@ class Renderer {
 public:
     static cv::Mat drawPose2d(
             const cv::Mat &img,
-            const std::vector<std::vector<float>>& keyPoints);
+            const std::vector<std::vector<float>>& keyPoints,
+            bool drawAll = true);
 
     static cv::Mat drawRects(
             const cv::Mat &img,

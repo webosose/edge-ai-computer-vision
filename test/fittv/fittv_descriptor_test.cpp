@@ -37,15 +37,25 @@ protected:
     {
     }
 
-    std::string personId{"person_yolov4_npu"};
+#if defined(USE_FITMODEL_V2)
+    std::string personId{"person_yolov3_v2_npu"};
     std::string cropId{"fittv_person_crop"};
-    std::string pose2dId{"pose2d_resnet_npu"};
-    std::string pose3dId{"pose3d_videopose3d_npu"};
+    std::string pose2dId{"pose2d_resnet_v2_low_npu"};
+    std::string pose2d3dBridgeId{"fittv_pose2d3d"};
+    std::string pose3dPosId{"pose3d_videopose3d_v2_pos_low"};
+    std::string pose3dTrajId{"pose3d_videopose3d_v2_traj_low"};
+#else
+    std::string personId{"person_yolov3_v1_npu"};
+    std::string cropId{"fittv_person_crop"};
+    std::string pose2dId{"pose2d_resnet_v1_npu"};
+    std::string pose2d3dBridgeId{"fittv_pose2d3d"};
+    std::string pose3dId{"pose3d_videopose3d_v1_npu"};
+#endif
 
-    std::shared_ptr<Yolov4Descriptor> makeYoloDescriptor(int numPerson)
+    std::shared_ptr<PersonDetectDescriptor> makeYoloDescriptor(int numPerson)
     {
-        std::shared_ptr<Yolov4Descriptor> yd =
-            std::dynamic_pointer_cast<Yolov4Descriptor>(DetectorFactory::get().getDescriptor(personId));
+        std::shared_ptr<PersonDetectDescriptor> yd =
+            std::dynamic_pointer_cast<PersonDetectDescriptor>(DetectorFactory::get().getDescriptor(personId));
         for (int i = 1; i <= numPerson; i++) {
             int x1 = i * 10; int y1 = i * 20;
             int x2 = i * 100; int y2 = i * 200;
@@ -87,6 +97,24 @@ protected:
         return pds;
     }
 
+    std::vector<cv::Mat> makeJoints2DMats(int numPerson)
+    {
+        std::vector<cv::Mat> joints2dMats;
+        for (int i = 1; i <= numPerson; i++) {
+            std::vector<float> keyPoints;
+            for (int j = 0; j < 41; j++) {
+                keyPoints.push_back((float)i * 10.0f + j);
+                keyPoints.push_back((float)i * 20.0f + j);
+            }
+
+            cv::Mat joints2dMat(41, 2, CV_32F, keyPoints.data());
+            cv::Mat joints2dMatd;
+            joints2dMat.convertTo(joints2dMatd, CV_64F );
+            joints2dMats.push_back(joints2dMatd);
+        }
+        return joints2dMats;
+    }
+
     std::vector<std::shared_ptr<Pose3dDescriptor>> makePose3dDescriptor(int numPerson)
     {
         std::vector<std::shared_ptr<Pose3dDescriptor>> pds;
@@ -96,11 +124,26 @@ protected:
                 joints3d.push_back({(float)j, i * 10.0f + j, i * 20.0f + j});
             }
 
+#if defined(USE_FITMODEL_V2)
+            std::shared_ptr<Pose3dDescriptor> pd =
+                std::dynamic_pointer_cast<Pose3dDescriptor>(DetectorFactory::get().getDescriptor(pose3dPosId));
+            pd->setTrackId(i);
+            pd->addJoints3D(joints3d);
+            pds.emplace_back(pd);
+
+            std::shared_ptr<Pose3dDescriptor> pdTraj =
+                std::dynamic_pointer_cast<Pose3dDescriptor>(DetectorFactory::get().getDescriptor(pose3dTrajId));
+            pdTraj->setTrackId(i);
+            pdTraj->addTraj3D({0.1f, 0.2f, 0.3f});
+            pds.emplace_back(pdTraj);
+#else
             std::shared_ptr<Pose3dDescriptor> pd =
                 std::dynamic_pointer_cast<Pose3dDescriptor>(DetectorFactory::get().getDescriptor(pose3dId));
             pd->setTrackId(i);
-            pd->addJoints3D(joints3d, {0.1f, 0.2f, 0.3f});
+            pd->addJoints3D(joints3d);
+            pd->addTraj3D({0.1f, 0.2f, 0.3f});
             pds.emplace_back(pd);
+#endif
         }
         return pds;
     }
@@ -262,6 +305,29 @@ TEST_F(FitTVPoseDescriptorTest, addPose2dDetectorResult_invalid)
     std::cout << "Output: " << std::endl << fd->getResult() << std::endl;
 }
 
+TEST_F(FitTVPoseDescriptorTest, addPose2d3dBridgeResult)
+{
+    std::shared_ptr<FitTvPoseDescriptor> fd =
+        std::dynamic_pointer_cast<FitTvPoseDescriptor>(PipeDescriptorFactory::get().create("fittv_pose"));
+    EXPECT_TRUE(fd);
+
+    int numPerson = 5;
+    auto yd = makeYoloDescriptor(numPerson);
+    EXPECT_TRUE(fd->addDetectorOperationResult("detect_person", personId, yd));
+
+    auto joints2d_mats = makeJoints2DMats(numPerson);
+    for (int i = 0; i < numPerson; i++) {
+        fd->addPose3dInput(joints2d_mats[i]);
+    }
+
+    auto pose3dInputs = fd->getPose3dInputs();
+    EXPECT_EQ(pose3dInputs.size(), numPerson);
+    for (int i = 1; i <= numPerson; i++) {
+        EXPECT_EQ(pose3dInputs[i-1].rows, 41);
+        EXPECT_EQ(pose3dInputs[i-1].cols, 2);
+    }
+}
+
 TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
 {
     auto fd = PipeDescriptorFactory::get().create("fittv_pose");
@@ -277,9 +343,16 @@ TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
     }
 
     auto p3ds = makePose3dDescriptor(numPerson);
+#if defined(USE_FITMODEL_V2)
+    for (auto i = 0; i < p3ds.size(); i += 2) {
+        EXPECT_TRUE(fd->addDetectorOperationResult("detect_pose3d_pos", pose3dPosId, p3ds[i]));
+        EXPECT_TRUE(fd->addDetectorOperationResult("detect_pose3d_traj", pose3dTrajId, p3ds[i+1]));
+    }
+#else
     for (auto& pd : p3ds) {
         EXPECT_TRUE(fd->addDetectorOperationResult("detect_pose3d", pose3dId, pd));
     }
+#endif
 
     auto json = fd->toStr();
     rj::Document d;
@@ -310,6 +383,8 @@ TEST_F(FitTVPoseDescriptorTest, addPose3dDetectorResult)
             EXPECT_EQ(d["poseEstimation"][i-1]["joints2D"][j][1].GetInt(), i * 20 + j); // y
             EXPECT_FLOAT_EQ(d["poseEstimation"][i-1]["joints2D"][j][2].GetFloat(), (float)j); // score
         }
+
+        EXPECT_TRUE(d["poseEstimation"][i-1].HasMember("joints3D"));
         EXPECT_TRUE(d["poseEstimation"][i-1]["joints3D"].IsArray());
         for (int j = 0; j < 41; j++) {
             EXPECT_TRUE(d["poseEstimation"][i-1]["joints3D"][j][0].GetFloat() - (float)j < aif::EPSILON); // x

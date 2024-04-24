@@ -32,10 +32,10 @@ std::shared_ptr<PipeDescriptor> PipeDescriptorFactory::create(
     }
 
     if (m_generators.find(id) == m_generators.end()) {
-        Logi("create default pipe descriptor");
+        Logd("create default pipe descriptor");
         return std::make_shared<PipeDescriptor>();
     }
-    Logi("create node descriptor: ", id);
+    Logd("create node descriptor: ", id);
     std::shared_ptr<PipeDescriptor> descriptor = m_generators[id]();
     return descriptor;
 }

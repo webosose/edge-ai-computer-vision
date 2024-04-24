@@ -3,12 +3,8 @@
 
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
-
 #include <iostream>
 #include <limits>
-
-namespace {
-} // anonymous namespace
 
 namespace rj = rapidjson;
 

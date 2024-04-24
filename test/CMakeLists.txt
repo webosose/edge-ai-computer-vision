@@ -128,6 +128,7 @@ set(SRC_FILES
     ${SRC_DIR}/signlanguage_descriptor_test.cpp
     ${SRC_DIR}/signlanguage_detector_test.cpp
     ${SRC_DIR}/signlanguage_api_test.cpp
+    ${SRC_DIR}/extra_output_test.cpp
 )
 
 IF(WITH_EXTRA_MODELS)
@@ -154,6 +155,15 @@ IF(WITH_EXTRA_MODELS)
         ${SRC_DIR}/palm_param_test.cpp
         ${SRC_DIR}/yunet_v2_face_detector_test.cpp
         ${SRC_DIR}/yunet_face_detector_test.cpp
+        ${SRC_DIR}/facemesh_descriptor_test.cpp
+        ${SRC_DIR}/facemesh_detector_test.cpp
+        ${SRC_DIR}/facemesh_param_test.cpp
+        ${SRC_DIR}/face_mesh_extract_operation_test.cpp
+        ${SRC_DIR}/rppg_descriptor_test.cpp
+        ${SRC_DIR}/rppg_detector_test.cpp
+        ${SRC_DIR}/rppg_param_test.cpp
+        ${SRC_DIR}/rppg_pre_process_operation_test.cpp
+        ${SRC_DIR}/rppg_post_process_operation_test.cpp
     )
 ENDIF(WITH_EXTRA_MODELS)
 

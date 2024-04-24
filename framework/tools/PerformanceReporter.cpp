@@ -63,7 +63,7 @@ void PerformanceRecorder::stop(Performance::RecordType type)
 
         Stopwatch::tick_t tick = m_stopwatch[utype].getMs();
         if (reportType & Performance::CONSOLE) {
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)), tick, "ms");
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), tick, "ms");
         }
         if ((reportType & Performance::REPORT) &&
                 m_time[utype].size() < Performance::MAX_RECORD_SIZE) {
@@ -78,65 +78,65 @@ void PerformanceRecorder::printFirstInference()
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logi("[First inference]");
+    Logd("[First inference]");
     for (size_t type = Performance::CREATE_DETECTOR; type < m_time.size(); type++) {
         if (m_time[type].size() == 0) {
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
         } else {
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)), m_time[type][0], " ms");
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), m_time[type][0], " ms");
         }
     }
-    Logi("--------------------------------------------");
+    Logd("--------------------------------------------");
 }
 
 void PerformanceRecorder::printAverageInference()
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logi("[Average inference]");
+    Logd("[Average inference]");
     for (size_t type = Performance::PREPROCESS; type < m_time.size(); type++) {
         if (m_time[type].size() == 0) {
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
         } else {
             Stopwatch::tick_t sum =
                 std::accumulate(std::begin(m_time[type]), std::end(m_time[type]), 0.0f);
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)),
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)),
                  "count: ", m_time[type].size(),
                  ", avg: ", sum / m_time[type].size(), " ms");
         }
     }
-    Logi("--------------------------------------------");
+    Logd("--------------------------------------------");
 }
 
 void PerformanceRecorder::printAverageInferenceExceptFirst()
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logi("[Average inference except first try]");
+    Logd("[Average inference except first try]");
     for (size_t type = Performance::PREPROCESS; type < m_time.size(); type++) {
         if (m_time[type].size() <= 1) {
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
         } else {
             Stopwatch::tick_t sum =
                 std::accumulate(std::begin(m_time[type]) + 1, std::end(m_time[type]), 0.0f);
-            Logi(recordTypeToStr(static_cast<Performance::RecordType>(type)),
+            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)),
                     "count: ", m_time[type].size() - 1,
                     ", avg: ", sum / (m_time[type].size() - 1), " ms");
         }
     }
-    Logi("--------------------------------------------");
+    Logd("--------------------------------------------");
 }
 
 void PerformanceRecorder::printAll(bool showRawData)
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) {
-        Logi("Can not print report. Please change the ReportType to REPORT.");
+        Logd("Can not print report. Please change the ReportType to REPORT.");
         return;
     }
-    Logi("Detector Report ============================");
-    Logi("[Model] ", m_name);
-    Logi("[Param] ", m_param);
-    Logi("--------------------------------------------");
+    Logd("Detector Report ============================");
+    Logd("[Model] ", m_name);
+    Logd("[Param] ", m_param);
+    Logd("--------------------------------------------");
     printFirstInference();
     printAverageInference();
     printAverageInferenceExceptFirst();
@@ -149,7 +149,7 @@ void PerformanceRecorder::printRawData()
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logi("[Raw data]");
+    Logd("[Raw data]");
     for (size_t type = Performance::CREATE_DETECTOR; type < m_time.size(); type++) {
         std::cout << recordTypeToStr(static_cast<Performance::RecordType>(type));
         for (const auto& data : m_time[type]) {
@@ -193,11 +193,11 @@ void PerformanceReporter::clear()
 
 void PerformanceReporter::showReport(bool showRawData)
 {
-    Logi("######### Performance Report ###############");
+    Logd("######### Performance Report ###############");
     for (auto& recorder : m_recorders) {
         recorder.second->printAll(showRawData);
     }
-    Logi("############################################");
+    Logd("############################################");
 }
 
 }

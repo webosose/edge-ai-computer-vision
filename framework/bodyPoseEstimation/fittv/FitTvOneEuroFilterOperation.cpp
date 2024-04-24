@@ -91,6 +91,12 @@ bool FitTvOneEuroFilterOperation::runImpl(const std::shared_ptr<NodeInput>& inpu
         }
 
         for (auto& keyPoint : keyPoints) {
+            if (keyPoint[0] < 0) { // for invalid keypoint, skip it.
+                updated_pairXY.push_back( keyPoint );
+                idx++;
+                continue;
+            }
+
             float updatedX = oneEuroFilter(idx, 0, keyPoint[1], cur_time, mincutoff, dcutoff, beta); // x
             float updatedY = oneEuroFilter(idx, 1, keyPoint[2], cur_time, mincutoff, dcutoff, beta); // y
             idx++;
@@ -106,7 +112,6 @@ bool FitTvOneEuroFilterOperation::runImpl(const std::shared_ptr<NodeInput>& inpu
 
 float FitTvOneEuroFilterOperation::lowPassFilter(int idx, int is_y, int is_xflit, float x, float alpha)
 {
-    TRACE(__func__, "Low Pass Filter Idx: " , idx);
     if (idx < 0 || idx >= DEFAULT_NUM_KEYPOINTS) {
         Loge(__func__, "Loss Pass Filter Idx is out of range: ", idx);
         return 0;
@@ -139,7 +144,6 @@ float FitTvOneEuroFilterOperation::lowPassFilter(int idx, int is_y, int is_xflit
 
 float FitTvOneEuroFilterOperation::oneEuroFilter(int idx, int is_y, float x, float t, float mincutoff, float dcutoff, float beta)
 {
-    TRACE(__func__, "Low Pass Filter Idx: " , idx);
     if (idx < 0 || idx >= DEFAULT_NUM_KEYPOINTS) {
         Loge(__func__, "Loss Pass Filter Idx is out of range: ", idx);
         return 0;

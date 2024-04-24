@@ -9,7 +9,7 @@
 #include <aif/pipe/PipeDescriptor.h>
 #include <aif/bodyPoseEstimation/personDetect/PersonDetectDescriptor.h>
 #include <aif/bodyPoseEstimation/pose2d/Pose2dDescriptor.h>
-#include <aif/bodyPoseEstimation/Pose3d/Pose3dDescriptor.h>
+#include <aif/bodyPoseEstimation/pose3d/Pose3dDescriptor.h>
 
 #include <aif/bodyPoseEstimation/common.h>
 #include <aif/log/Logger.h>
@@ -44,12 +44,15 @@ class FitTvPoseDescriptor : public PipeDescriptor
         void addPose3dInput(const cv::Mat& input) { m_pose3dInputs.push_back(input); }
 
         const std::vector<BBox>& getBboxes() const { return m_boxes; }
+        const cv::Rect& getRoiRect() const { return m_roiRect; }
+        bool isRoiValid() const { return m_roiValid; }
         const std::vector<BBox>& getCropBbox() const { return m_cropBox; }
         const std::vector<cv::Rect>& getCropRects() const { return m_cropRects; }
         const std::vector<cv::Mat>& getCropImages() const { return m_cropImgs; }
         const std::vector<Scale>& getCropData() const { return m_cropScales; }
         const std::vector<std::vector<std::vector<float>>>& getKeyPoints() const { return m_keyPoints; }
         const std::vector<cv::Mat>& getPose3dInputs() const { return m_pose3dInputs; }
+        int getNumSkippedFrames() const { return m_numSkippedFrames; }
         bool updateKeyPoints(std::vector<std::vector<std::vector<float>>>& updatedKeyPoints) {
                 m_keyPoints.swap(updatedKeyPoints); // update pose2d keypoints
 
@@ -101,17 +104,33 @@ class FitTvPoseDescriptor : public PipeDescriptor
         bool addPose3dDetectorResult(
                 const std::string& id,
                 const std::shared_ptr<Pose3dDescriptor> descriptor);
+        bool addPose3dDetectorPosResult(
+                const std::string& id,
+                const std::shared_ptr<Pose3dDescriptor> descriptor);
+        bool addPose3dDetectorTrajResult(
+                const std::string& id,
+                const std::shared_ptr<Pose3dDescriptor> descriptor);
 
-        bool addBBox(float scroe, const BBox& box);
+        bool addBBox(float scroe, const BBox& box, double confidenceThreshold=0.0, const std::string &dbg_fname="");
+        bool addRoi(const cv::Rect& rect);
+        void addNumSkippedFrames(int num) { m_numSkippedFrames = num; }
         bool addCropRect(int trackId, const cv::Rect& rect);
         bool addPose2d(int trackId, const std::vector<std::vector<float>>& keyPoints);
         bool addPose3d(int trackId,
                 const std::vector<Joint3D>& keyPoints,
                 const Joint3D& trajectory);
+        bool clipKeypointRoiRange(std::vector<float> &pos);
+        bool addPose3dPos(int trackId,
+                const std::vector<Joint3D>& keyPoints);
+        bool addPose3dTraj(int trackId,
+                const Joint3D& trajectory);
 
     private:
         int m_trackId;
+        int m_numSkippedFrames;
         std::vector<BBox> m_boxes;
+        cv::Rect m_roiRect;
+        bool m_roiValid;
         std::vector<BBox> m_cropBox;
         std::vector<cv::Rect> m_cropRects;
         std::vector<cv::Mat> m_cropImgs;

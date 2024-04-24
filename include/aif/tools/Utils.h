@@ -187,9 +187,11 @@ T sigmoid(T value) {
 }
 
 std::string jsonObjectToString(const rj::Value& object);
-
-
 bool isIOUOver(const cv::Rect2f& cur, const cv::Rect2f& prev, float threshold);
+struct t_aif_padding_info getPaddedImage(const cv::Mat& src, const cv::Size& modelSize, cv::Mat& dst,
+enum cv::InterpolationFlags flag = cv::INTER_LINEAR);
+bool isRoiValid( const int imgWidth, const int imgHeight, const cv::Rect &roiRect );
+cv::InterpolationFlags stringToInterpolationFlags(const std::string &str);
 
 template <typename T>
 void memoryDump(T* outTensor, std::string path, size_t outTotalSize)
@@ -205,9 +207,9 @@ void memoryDump(T* outTensor, std::string path, size_t outTotalSize)
     outdata.write (reinterpret_cast<char*>(outTensor), outTotalSize);
     outdata.close();
     std::cout << "MemoryDump!!! End-of-file reached.. and size is : " << outTotalSize <<  std::endl;
-    std::cout << "[0]: " <<  std::hex << outTensor[0] << std::endl;
-    std::cout << "[1]: " <<  outTensor[1] << std::endl;
-    std::cout << "[2]: " <<  outTensor[2] << std::endl;
+    printf("[0]: 0x%2x ", outTensor[0]);
+    printf("[1]: 0x%2x ", outTensor[1]);
+    printf("[2]: 0x%2x \n", outTensor[2]);
 
     std::cout << std::dec;
 }
@@ -243,6 +245,9 @@ void memoryRestore(T* tensor_data, std::string path)
    delete [] buffer;
    return ;
 }
+
+std::pair<float, int>
+getQuantizationTensorInfo(TfLiteTensor *tensor);
 
 } // end of namespace aif
 

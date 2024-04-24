@@ -16,6 +16,7 @@ namespace aif {
 class NpuDelegate : public Delegate {
 private:
     NpuDelegate(const std::string& option);
+    void setupOptions();
 
 public:
     template<typename T> friend class DelegateFactoryRegistration;

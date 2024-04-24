@@ -1,14 +1,17 @@
+/*
+ * Copyright (c) 2023 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/bodyPoseEstimation/pose2d/XtensorPostProcess.h>
 #include <aif/log/Logger.h>
 #include <aif/tools/Utils.h>
 
 #include <limits>
 #include <cmath>
-#if defined(USE_XTENSOR)
 #include <xtensor/xsort.hpp>
 #include <xtensor/xview.hpp>
 #include <xtensor/xadapt.hpp>
-#endif
 
 namespace aif {
 
@@ -24,17 +27,14 @@ XtensorPostProcess::~XtensorPostProcess()
 bool XtensorPostProcess::execute(std::shared_ptr<Descriptor>& descriptor, float* data)
 {
     Logd("Xtensor Post Process!!!");
-#if defined(USE_XTENSOR)
     int totalVolume = m_numInputs * m_numKeyPoints * m_heatMapHeight * m_heatMapWidth;
     std::vector<int> shape = {m_numInputs, m_numKeyPoints, m_heatMapHeight*m_heatMapWidth};
     xt::xarray<float> batchHeatmaps = xt::adapt(data, totalVolume, xt::no_ownership(), shape);
 
     if(!processHeatMap(descriptor, batchHeatmaps)) return false;
-#endif
     return true;
 }
 
-#if defined(USE_XTENSOR)
 bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor, xt::xarray<float>& batchHeatmaps)
 {
     std::vector<std::vector<float>> keyPoints;
@@ -48,7 +48,6 @@ bool XtensorPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
     xt::xarray<float> coords = xt::stack(xt::xtuple(x, y), 2);
 
 #if defined(GAUSSIANDARK)
-    Logd("GaussianDark!!!");
     gaussianDark(batchHeatmaps, coords); // getFinalPredsNotransform
 #endif
     for (auto i = 0; i < m_numInputs; i++) { // batch = 1
@@ -156,6 +155,5 @@ void XtensorPostProcess::gaussianDark(xt::xarray<float>& batchHeatmaps, xt::xarr
         }
     }
 }
-#endif
 
 } // end of namespace aif

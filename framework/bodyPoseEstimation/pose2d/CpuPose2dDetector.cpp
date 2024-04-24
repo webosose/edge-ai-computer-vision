@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 LG Electronics Inc.
+ * Copyright (c) 2023 LG Electronics Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,10 +16,14 @@
 
 namespace aif {
 
-CpuPose2dDetector::CpuPose2dDetector()
-    : Pose2dDetector("pose2d_mobilenet_float32.tflite") {}
+CpuPose2dDetector::CpuPose2dDetector(const std::string& modelName)
+    : Pose2dDetector(modelName)
+{
+}
 
-CpuPose2dDetector::~CpuPose2dDetector() {}
+CpuPose2dDetector::~CpuPose2dDetector()
+{
+}
 
 
 void CpuPose2dDetector::setModelInfo(TfLiteTensor* inputTensor)
@@ -62,9 +66,9 @@ t_aif_status CpuPose2dDetector::fillInputTensor(const cv::Mat& img)/* override*/
     }
     //cv::imwrite("./pad_input.jpg", inputImg);
 
-    //cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2RGB);
     inputImg.convertTo(inputImg, CV_32FC3);
     normalizeImage(inputImg);
+    //memoryDump(inputImg.data, "./norm_input.bin", width * height * channels * sizeof(float));
 
     float* inputTensor = m_interpreter->typed_input_tensor<float>(0);
     if (inputTensor == nullptr) {
@@ -86,8 +90,12 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 {
     Stopwatch sw;
     sw.start();
+
     const std::vector<int> &outputs = m_interpreter->outputs();
     TfLiteTensor *output = m_interpreter->tensor(outputs[0]);
+    if (output == nullptr) {
+        throw std::runtime_error("can't get tflite tensor_output!!");
+    }
 
     m_heatMapHeight = INT_TO_UINT(output->dims->data[1]);
     m_heatMapWidth = INT_TO_UINT(output->dims->data[2]);
@@ -118,11 +126,9 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
         sw.stop();
         return kAifError;
     }
-#if defined(USE_XTENSOR)
+
     m_postProcess= std::make_shared<XtensorPostProcess>(detector);
-#else
-    m_postProcess= std::make_shared<RegularPostProcess>(detector);
-#endif
+
     if(!m_postProcess->execute(descriptor, buffer)){
         Loge("failed to get position x, y from heatmap");
         delete [] buffer;
@@ -140,17 +146,18 @@ t_aif_status CpuPose2dDetector::postProcessing(const cv::Mat& img, std::shared_p
 
 void CpuPose2dDetector::normalizeImage(cv::Mat& img) const
 {
-    const float meanBGR[3] = { 0.406, 0.456, 0.485 };
+    const float meanBGR[3] = { 0.406, 0.456, 0.485 }; // B,G,R : R is biggest!!
     const float stdBGR[3] = { 4.44, 4.46, 4.36 };
 
     auto dataPtr = reinterpret_cast<float*>(img.data);
     auto total = img.total();
 
+    // Assume img is BGR, normImg is BGR
     for (auto i = 0; i < total; i++ ) {
         float* localPtr = dataPtr + i * 3;
-        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0];
-        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1];
-        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2];
+        localPtr[0] = ( ( localPtr[0] * 0.003921569 ) - meanBGR[0] ) * stdBGR[0]; // B
+        localPtr[1] = ( ( localPtr[1] * 0.003921569 ) - meanBGR[1] ) * stdBGR[1]; // G
+        localPtr[2] = ( ( localPtr[2] * 0.003921569 ) - meanBGR[2] ) * stdBGR[2]; // R
     }
 }
 

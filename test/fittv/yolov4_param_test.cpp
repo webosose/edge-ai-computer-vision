@@ -106,16 +106,7 @@ TEST_F(Yolov4ParamTest, 04_test_fromJson)
                            81,82 ] \
             } \
     }");
-#if 0
-            \"anchors\": [[[81,82], \
-                           [135,169], \
-                           [344,319]], \
-                          [[23,27], \
-                           [37,58], \
-                           [81,82]] \
-                         ],\
 
-#endif
     EXPECT_EQ(yp.bboxBottomThresholdY, -1);
     EXPECT_EQ(yp.useFp16, false);
     EXPECT_EQ(yp.nms_threshold, 0.5);

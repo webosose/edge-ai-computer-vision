@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/bodyPoseEstimation/personDetect/yolov3/Yolov3Descriptor.h>
 #include <aif/log/Logger.h>
 
@@ -10,16 +15,13 @@
 
 #include <opencv2/opencv.hpp>
 
-
-namespace {
-} // anonymous namespace
-
 namespace rj = rapidjson;
 
 namespace aif {
 
 Yolov3Descriptor::Yolov3Descriptor()
     : PersonDetectDescriptor()
+    , m_faceCount(0)
 {
 }
 
@@ -27,10 +29,11 @@ Yolov3Descriptor::~Yolov3Descriptor()
 {
 }
 
-void Yolov3Descriptor::addPerson(float score, const BBox &bbox)
+void Yolov3Descriptor::addPerson(float score, const BBox &bbox, double confidenceThreshold, const std::string &dbg_fname)
 {
     m_scores.push_back(score); /* only for person detect */
     m_boxes.push_back(bbox);
+    m_confidenceThreshold = confidenceThreshold;
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
     if (!m_root.HasMember("persons")) {
@@ -40,6 +43,7 @@ void Yolov3Descriptor::addPerson(float score, const BBox &bbox)
 
     rj::Value person(rj::kObjectType);
     person.AddMember("score", score, allocator);
+    person.AddMember("confidenceThreshold", confidenceThreshold, allocator);
 
     /* [xmin, ymin, xmax, ymax, c0, c1] */
     rj::Value Bbox(rj::kArrayType);
@@ -50,6 +54,11 @@ void Yolov3Descriptor::addPerson(float score, const BBox &bbox)
         .PushBack(bbox.c0, allocator)
         .PushBack(bbox.c1, allocator);
     person.AddMember("bbox", Bbox, allocator);
+
+    if (!dbg_fname.empty()) {
+        person.AddMember("dbg_fname", dbg_fname, allocator);
+        m_dbg_fname = dbg_fname;
+    }
 
     m_root["persons"].PushBack(person, allocator);
     m_personCount++;
@@ -102,19 +111,89 @@ void Yolov3Descriptor::drawBbox(std::string imgPath)
     }
 }
 
+void Yolov3Descriptor::addFace(float score, float region_x, float region_y, float region_w, float region_h,
+                               float lefteye_x, float lefteye_y, float righteye_x, float righteye_y, float nosetip_x,
+                               float nosetip_y, float mouth_x, float mouth_y,float leftear_x, float leftear_y,
+                               float rightear_x, float rightear_y, double confidenceThreshold)
+{
+    rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    if (!m_root.HasMember("faces")) {
+        rj::Value faces(rj::kArrayType);
+        m_root.AddMember("faces", faces, allocator);
+    }
+
+    rj::Value face(rj::kObjectType);
+    face.AddMember("score", score, allocator);
+    face.AddMember("confidenceThreshold", confidenceThreshold, allocator);
+
+    // region: [x, y, w, h]
+    rj::Value region(rj::kArrayType);
+    region.PushBack(region_x, allocator)
+          .PushBack(region_y, allocator)
+          .PushBack(region_w, allocator)
+          .PushBack(region_h, allocator);
+    face.AddMember("region", region, allocator);
+
+    // lefteye: [x, y]
+    rj::Value lefteye(rj::kArrayType);
+    lefteye.PushBack(lefteye_x, allocator)
+           .PushBack(lefteye_y, allocator);
+    face.AddMember("lefteye", lefteye, allocator);
+
+    // righteye: [x, y]
+    rj::Value righteye(rj::kArrayType);
+    righteye.PushBack(righteye_x, allocator)
+            .PushBack(righteye_y, allocator);
+    face.AddMember("righteye", righteye, allocator);
+
+    // nosetip: [x, y]
+    rj::Value nosetip(rj::kArrayType);
+    nosetip.PushBack(nosetip_x, allocator)
+           .PushBack(nosetip_y, allocator);
+    face.AddMember("nosetip", nosetip, allocator);
+
+    // mouth: [x, y]
+    rj::Value mouth(rj::kArrayType);
+    mouth.PushBack(mouth_x, allocator)
+         .PushBack(mouth_y, allocator);
+    face.AddMember("mouth", mouth, allocator);
+
+    // leftear: [x, y]
+    rj::Value leftear(rj::kArrayType);
+    leftear.PushBack(leftear_x, allocator)
+           .PushBack(leftear_y, allocator);
+    face.AddMember("leftear", leftear, allocator);
+
+    // rightear: [x, y]
+    rj::Value rightear(rj::kArrayType);
+    rightear.PushBack(rightear_x, allocator)
+            .PushBack(rightear_y, allocator);
+    face.AddMember("rightear", rightear, allocator);
+
+    m_root["faces"].PushBack(face, allocator);
+    m_faceCount++;
+}
+
 void Yolov3Descriptor::clear()
 {
     FaceDescriptor::clear();
 
     m_personCount = 0;
+    m_faceCount = 0;
 
     m_scores.clear();
     m_boxes.clear();
+    m_dbg_fname.clear();
 
     rj::Document::AllocatorType& allocator = m_root.GetAllocator();
+    // clear body
     m_root.RemoveMember("persons");
     rj::Value persons(rj::kArrayType);
     m_root.AddMember("persons", persons, allocator);
+    // clear face
+    m_root.RemoveMember("faces");
+    rj::Value faces(rj::kArrayType);
+    m_root.AddMember("faces", faces, allocator);
 }
 
-}
+} // end of namespace aif

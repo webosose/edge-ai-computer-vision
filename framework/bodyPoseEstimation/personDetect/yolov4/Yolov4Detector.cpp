@@ -52,9 +52,11 @@ t_aif_status Yolov4Detector::fillInputTensor(const cv::Mat& img)/* override*/
 
     cv::Mat img_resized;
     if ( isRoiValid(img.cols, img.rows) ) {
+        m_roiValid = true;
         cv::Mat roi_img = img( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight) );
         img_resized = staticResize(roi_img, width, height);
     } else {
+        m_roiValid = false;
         img_resized = staticResize(img, width, height);
     }
 
@@ -90,6 +92,12 @@ t_aif_status Yolov4Detector::preProcessing()
     mOrigImgRoiWidth = param->origImgRoiWidth;
     mOrigImgRoiHeight = param->origImgRoiHeight;
 
+    if (param->thresh_confidence > -aif::EPSILON && param->thresh_confidence - 1.0 < aif::EPSILON) { // if 0.0 <= thresh_confidence <= 1.0
+        mConfidenceThreshold = param->thresh_confidence;
+    } else {
+        mConfidenceThreshold = 0.7;
+    }
+
     return kAifOk;
 }
 
@@ -97,130 +105,149 @@ t_aif_status Yolov4Detector::postProcessing(const cv::Mat& img, std::shared_ptr<
 {
     float *outConcatTensor_deq = nullptr; /* for dequantized output tensors */
 
-    Stopwatch sw;
-    sw.start();
-
-    std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
-    if (param == nullptr) {
-        Loge(__func__, " failed to convert DetectorParam to Yolov4Param");
-        return kAifError;
-    }
-
-    std::shared_ptr<Yolov4Descriptor> yolov4Descriptor = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
-    if (yolov4Descriptor == nullptr) {
-        Loge(__func__, " failed to convert Descriptor to Yolov4Descriptor");
-        return kAifError;
-    }
-
-
-    uint8_t* outTensorDataArr[2];
-    size_t outConcatDimSize = 0;
-
-    t_aif_status res = getOutputTensorInfo(outTensorDataArr, outConcatDimSize);
-    if (res != kAifOk) {
-        return res;
-    }
-
-    size_t outConcatTotalSize = outConcatDimSize * sizeof(float);
-
-    // alloc for new dequantized concated outTensor
-    outConcatTensor_deq = reinterpret_cast<float*>(std::malloc(outConcatTotalSize));
-    if (outConcatTensor_deq == nullptr) {
-        Loge(__func__, " can't get new dequantized output memory !!");
-        return kAifError;
-    }
-
-    TRACE(__func__, " outConcatTotalSize: ", outConcatTotalSize, " outConcatDimSize: " , outConcatDimSize, " outConcatTensor_deq: ", outConcatTensor_deq);
-    res = transformToImageCoordinates(outTensorDataArr, outConcatTensor_deq, param);
-    if (res != kAifOk) {
-        ::free(outConcatTensor_deq);
-        return kAifError;
-    }
-
-    std::vector<Object> proposals;
-    generateYolov4Proposals( proposals , param, outConcatTensor_deq, outConcatDimSize);
-    qsortDescentInplace( proposals );
-
-    std::vector<unsigned int> picked;
-    nmsSortedBboxes( param, proposals, picked );
-
-    size_t count = picked.size();
-    auto img_width = static_cast<float>(img.cols);
-    auto img_height = static_cast<float>(img.rows);
-    auto off_x = 0.0f;
-    auto off_y = 0.0f;
-    auto roi_img_width = img_width;
-    auto roi_img_height = img_height;
-    if (isRoiValid(img_width, img_height)) {
-        off_x = static_cast<float>( mOrigImgRoiX );
-        off_y = static_cast<float>( mOrigImgRoiY );
-        roi_img_width = static_cast<float>( mOrigImgRoiWidth );
-        roi_img_height = static_cast<float>( mOrigImgRoiHeight );
-    }
-    auto rx = static_cast<float>(m_modelInfo.width) / roi_img_width;
-    auto ry = static_cast<float>(m_modelInfo.height) / roi_img_height;
-    auto scale = std::min( rx, ry );
-
-    TRACE(__func__, " count: ", count);
-    std::vector<std::pair<BBox,float>> before_filtered;
-    for (auto i = 0; i < count; i++ )
-    {
-        auto obj = proposals[picked[i]];
-
-        float x0 = ( ( obj.rect.x ) / scale ) + off_x;
-        float y0 = ( ( obj.rect.y ) / scale ) + off_y;
-        float x1 = ( ( obj.rect.x + obj.rect.width ) / scale ) + off_x;
-        float y1 = ( ( obj.rect.y + obj.rect.height ) / scale ) + off_y;
-        x0 = std::max( std::min( x0, img_width - 1.0f ), 0.f );
-        y0 = std::max( std::min( y0, img_height - 1.0f ), 0.f );
-        x1 = std::max( std::min( x1, img_width - 1.0f ), 0.f );
-        y1 = std::max( std::min( y1, img_height - 1.0f  ), 0.f );
-
-        auto score = obj.prob;
-        obj.rect.x = x0;
-        obj.rect.y = y0;
-        obj.rect.width = x1 - x0;
-        obj.rect.height = y1 - y0;
-
-        if ( ( obj.rect.width < 48.f ) || ( ( obj.rect.height / obj.rect.width ) > 7.f ) )
-        {
-            continue;
+    try {
+        Stopwatch sw;
+        sw.start();
+        std::shared_ptr<Yolov4Param> param = std::dynamic_pointer_cast<Yolov4Param>(m_param);
+        if (param == nullptr) {
+            throw std::runtime_error("failed to convert DetectorParam to Yolov4Param");
+            return kAifError;
         }
 
-        BBox current_bbox( img_width, img_height );
-        current_bbox.addTlhw( obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height );
-        before_filtered.emplace_back( current_bbox , score ); // ???
-    }
+        uint8_t* outTensorDataArr[2];
+        size_t outConcatDimSize = 0;
 
-    // filter box bottom threshold y
-    std::vector<std::pair<BBox,float>> after_filtered;
-    for ( const auto& d : before_filtered )
-    {
-        if ( d.first.ymax > param->bboxBottomThresholdY )
-        {
-            after_filtered.push_back( d );
+        getOutputTensorInfo(outTensorDataArr, outConcatDimSize);
+
+        size_t outConcatTotalSize = outConcatDimSize * sizeof(float);
+
+        // alloc for new dequantized concated outTensor
+        outConcatTensor_deq = reinterpret_cast<float*>(std::malloc(outConcatTotalSize));
+        if (outConcatTensor_deq == nullptr) {
+            throw std::runtime_error("can't get new dequantized output memory !!");
         }
+
+        TRACE(__func__, " outConcatTotalSize: ", outConcatTotalSize, " outConcatDimSize: " , outConcatDimSize, " outConcatTensor_deq: ", outConcatTensor_deq);
+        transformToImageCoordinates(outTensorDataArr, outConcatTensor_deq, param);
+
+        std::vector<Object> proposals;
+        generateYolov4Proposals( proposals , param, outConcatTensor_deq, outConcatDimSize);
+        qsortDescentInplace( proposals );
+
+        std::vector<int> picked;
+        nmsSortedBboxes( param, proposals, picked );
+
+        int count = picked.size();
+        auto img_width = static_cast<float>(img.cols);
+        auto img_height = static_cast<float>(img.rows);
+        auto off_x = 0.0f;
+        auto off_y = 0.0f;
+        auto roi_img_width = img_width;
+        auto roi_img_height = img_height;
+        if ( m_roiValid ) {
+            off_x = static_cast<float>( mOrigImgRoiX );
+            off_y = static_cast<float>( mOrigImgRoiY );
+            roi_img_width = static_cast<float>( mOrigImgRoiWidth );
+            roi_img_height = static_cast<float>( mOrigImgRoiHeight );
+        }
+        auto rx = static_cast<float>(m_modelInfo.width) / roi_img_width;
+        auto ry = static_cast<float>(m_modelInfo.height) / roi_img_height;
+        auto scale = std::min( rx, ry );
+
+        TRACE(__func__, " count: ", count);
+        std::vector<std::pair<BBox,float>> before_filtered;
+        for (auto i = 0; i < count; i++ )
+        {
+            auto obj = proposals[picked[i]];
+
+            float x0 = ( ( obj.rect.x ) / scale ) + off_x;
+            float y0 = ( ( obj.rect.y ) / scale ) + off_y;
+            float x1 = ( ( obj.rect.x + obj.rect.width ) / scale ) + off_x;
+            float y1 = ( ( obj.rect.y + obj.rect.height ) / scale ) + off_y;
+
+            float roi_img_x1 = roi_img_width + off_x;
+            float roi_img_y1 = roi_img_height + off_y;
+
+            x0 = std::max( std::min( x0, roi_img_x1 - 1.0f ), 0.f );
+            y0 = std::max( std::min( y0, roi_img_y1 - 1.0f ), 0.f );
+            x1 = std::max( std::min( x1, roi_img_x1 - 1.0f ), 0.f );
+            y1 = std::max( std::min( y1, roi_img_y1 - 1.0f  ), 0.f );
+
+            auto score = obj.prob;
+            obj.rect.x = x0;
+            obj.rect.y = y0;
+            obj.rect.width = x1 - x0;
+            obj.rect.height = y1 - y0;
+
+            if ( ( obj.rect.width < 48.f ) || ( ( obj.rect.height / obj.rect.width ) > 7.f ) )
+            {
+                continue;
+            }
+
+            BBox current_bbox( img_width, img_height );
+            current_bbox.addTlhw( obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height );
+            before_filtered.emplace_back( current_bbox , score ); // ???
+        }
+
+        // filter box bottom threshold y
+        std::vector<std::pair<BBox,float>> after_filtered;
+        for ( const auto& d : before_filtered )
+        {
+            if ( d.first.ymax > param->bboxBottomThresholdY )
+            {
+                after_filtered.push_back( d );
+            }
+        }
+
+        // sort boxes with area descending order
+        std::sort( after_filtered.begin(), after_filtered.end(),
+                   []( const std::pair<BBox,float> &a, const std::pair<BBox,float> &b )
+                   {
+                       return a.first.width * a.first.height > b.first.width * b.first.height;
+                   } );
+
+        // limit the maximum detections
+        std::shared_ptr<Yolov4Descriptor> yolov4Descriptor = std::dynamic_pointer_cast<Yolov4Descriptor>(descriptor);
+        if (yolov4Descriptor == nullptr) {
+            throw std::runtime_error("failed to convert Descriptor to Yolov4Descriptor");
+        }
+
+        for ( auto i = 0;
+                        ( i < static_cast<int>( after_filtered.size() ) ) && ( i < param->numMaxPerson ); i++ )
+        {
+            // TODO: implement to add result into descriptor
+            yolov4Descriptor->addPerson(after_filtered[i].second, after_filtered[i].first, mConfidenceThreshold);
+        }
+        free(outConcatTensor_deq);
+
+        if (m_roiValid) {
+            yolov4Descriptor->addRoiRect( cv::Rect(mOrigImgRoiX, mOrigImgRoiY, mOrigImgRoiWidth, mOrigImgRoiHeight), true );
+        } else {
+            yolov4Descriptor->addRoiRect( cv::Rect(0,0,0,0), false );
+        }
+
+        if (static_cast<int>( after_filtered.size() == 0)) {
+            mNumNonDetected++;
+        } else {
+            yolov4Descriptor->addNumNonDetected(mNumNonDetected);
+            mNumNonDetected = 0;
+        }
+
+        TRACE("postProcessing(): ", sw.getMs(), "ms");
+        sw.stop();
+    } catch(const std::exception& e) {
+        Loge(__func__,"Error: ", e.what());
+        if (outConcatTensor_deq) {
+            free(outConcatTensor_deq);
+        }
+        return kAifError;
+    } catch(...) {
+        Loge(__func__,"Error: Unknown exception occured!!");
+        if (outConcatTensor_deq) {
+            free(outConcatTensor_deq);
+        }
+        return kAifError;
     }
-
-    // sort boxes with area descending order
-    std::sort( after_filtered.begin(), after_filtered.end(),
-               []( const std::pair<BBox,float> &a, const std::pair<BBox,float> &b )
-               {
-                   return a.first.width * a.first.height > b.first.width * b.first.height;
-               } );
-
-    // limit the maximum detections
-    for ( unsigned int i = 0;
-                    ( i < after_filtered.size() ) && ( i < param->numMaxPerson ); i++ )
-    {
-        // TODO: implement to add result into descriptor
-        yolov4Descriptor->addPerson(after_filtered[i].second, after_filtered[i].first);
-    }
-    free(outConcatTensor_deq);
-
-    TRACE("postProcessing(): ", sw.getMs(), "ms");
-    sw.stop();
-
     return kAifOk;
 }
 

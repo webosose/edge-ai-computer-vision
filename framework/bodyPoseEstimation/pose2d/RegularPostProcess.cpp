@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aif/bodyPoseEstimation/pose2d/RegularPostProcess.h>
 #include <aif/log/Logger.h>
 
@@ -52,7 +57,6 @@ bool RegularPostProcess::processHeatMap(std::shared_ptr<Descriptor>& descriptor,
         float y = ((float)argMaxIndex / (float)m_heatMapWidth);
     //--------------------------------------------
 #if defined(GAUSSIANDARK)
-        Logd("GaussianDark!!!");
         gaussianDark(heatMap, x, y);
 #endif
         if (m_useUDP) {

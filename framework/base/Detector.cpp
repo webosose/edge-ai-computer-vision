@@ -72,6 +72,14 @@ void Detector::setModelInfo(TfLiteTensor* inputTensor)
     }
 }
 
+void Detector::setModelInOutInfo(const std::vector<int> &t_inputs,
+                                 const std::vector<int> &t_outputs)
+{
+    // get TfLiteTensor like below.
+    // TfLiteTensor *tensor_input = m_interpreter->tensor(t_inputs[i]);
+    // TfLiteTensor *tensor_output = m_interpreter->tensor(t_outputs[i]);
+}
+
 std::string Detector::getModelPath() const
 {
     return AIVision::getModelPath(m_modelName);
@@ -82,7 +90,7 @@ t_aif_status Detector::compile() {
     m_model = tflite::FlatBufferModel::BuildFromFile(path.c_str());
     if (m_model == nullptr) {
         Loge("Can't get tflite model: ",  path);
-        return kAifError; 
+        return kAifError;
     }
 
     Logi("compile: ", path);
@@ -90,47 +98,51 @@ t_aif_status Detector::compile() {
     tflite::ops::builtin::BuiltinOpResolver resolver;
     if (compileModel(resolver) != kAifOk) {
         Loge("tflite model compile failed: ", path);
-        return kAifError; 
+        return kAifError;
     }
 
     if (m_interpreter->SetNumThreads(m_param->getNumThreads()) != kTfLiteOk) {
         Loge("failed to set num threads : ", m_param->getNumThreads());
-        return kAifError; 
-    } 
+        return kAifError;
+    }
 
     Logi("set num threads : ", m_param->getNumThreads());
     if (compileDelegates(resolver) != kAifOk) {
         Loge("tflite model compile delegates failed: ", path);
-        return kAifError; 
+        return kAifError;
     }
 
     TfLiteStatus res = kTfLiteError;
     res = m_interpreter->AllocateTensors();
     if (res != kTfLiteOk) {
         Loge("tflite allocate tensors failed!!");
-        return kAifError; 
+        return kAifError;
     }
 
+    const std::vector<int> &t_outputs = m_interpreter->outputs();
     const std::vector<int> &t_inputs = m_interpreter->inputs();
     for(int i=0; i < t_inputs.size(); i++){
         TfLiteTensor *tensor_input = m_interpreter->tensor(t_inputs[i]);
         if (tensor_input == nullptr || tensor_input->dims == nullptr) {
             Loge("tflite tensor_input invalid!!");
-            return kAifError; 
+            return kAifError;
         }
 
         if (tensor_input->dims == nullptr) {
             Loge("invalid tensor_input dimension!");
-            return kAifError; 
+            return kAifError;
         }
 
         m_modelInfo.inputSize = tensor_input->dims->size;
         if (m_modelInfo.inputSize <= 0) {
             Loge("this model input require > 0 tensors");
-            return kAifError; 
+            return kAifError;
         }
         setModelInfo(tensor_input);
     }
+#if 1
+    setModelInOutInfo(t_inputs, t_outputs);
+#endif
 
     return kAifOk;
 }
@@ -142,7 +154,7 @@ Detector::compileModel(tflite::ops::builtin::BuiltinOpResolver &resolver) {
 
     if (res != kTfLiteOk || m_interpreter == nullptr) {
         Loge("tflite interpreter build failed!!");
-        return kAifError; 
+        return kAifError;
     }
     return kAifOk;
 }

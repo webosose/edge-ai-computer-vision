@@ -26,6 +26,7 @@ Yolov4Param::Yolov4Param()
     , useFp16(false)
     , nms_threshold(0.5)
     , bbox_conf_threshold(0.1)
+    , thresh_confidence(-1.0)
     , numClasses(80)     /* from yolo4_tiny_relu.json */
     , numOutChannels(85) /* numClasses + 5 : x, y, w, h, score + classes */
     , strides{32, 16}
@@ -71,6 +72,7 @@ Yolov4Param::Yolov4Param(const Yolov4Param& other)
     , useFp16(other.useFp16)
     , nms_threshold(other.nms_threshold)
     , bbox_conf_threshold(other.bbox_conf_threshold)
+    , thresh_confidence(other.thresh_confidence)
     , numClasses(other.numClasses)
     , numOutChannels(other.numOutChannels)
     , strides(other.strides)
@@ -90,6 +92,7 @@ Yolov4Param::Yolov4Param(Yolov4Param&& other) noexcept
     , useFp16(std::move(other.useFp16))
     , nms_threshold(std::move(other.nms_threshold))
     , bbox_conf_threshold(std::move(other.bbox_conf_threshold))
+    , thresh_confidence(std::move(other.thresh_confidence))
     , numClasses(std::move(other.numClasses))
     , numOutChannels(std::move(other.numOutChannels))
     , strides(std::move(other.strides))
@@ -115,6 +118,7 @@ Yolov4Param& Yolov4Param::operator=(const Yolov4Param& other)
     useFp16 = other.useFp16;
     nms_threshold = other.nms_threshold;
     bbox_conf_threshold = other.bbox_conf_threshold;
+    thresh_confidence = other.thresh_confidence;
     numClasses = other.numClasses;
     numOutChannels = other.numOutChannels;
     strides = other.strides;
@@ -140,6 +144,7 @@ Yolov4Param& Yolov4Param::operator=(Yolov4Param&& other) noexcept
     useFp16 = std::move(other.useFp16);
     nms_threshold = std::move(other.nms_threshold);
     bbox_conf_threshold = std::move(other.bbox_conf_threshold);
+    thresh_confidence = std::move(other.thresh_confidence);
     numClasses = std::move(other.numClasses);
     numOutChannels = std::move(other.numOutChannels);
     strides = std::move(other.strides);
@@ -161,6 +166,7 @@ bool Yolov4Param::operator==(const Yolov4Param& other) const
         (useFp16 == other.useFp16) &&
         (std::abs(nms_threshold - other.nms_threshold) < aif::EPSILON) &&
         (std::abs(bbox_conf_threshold - other.bbox_conf_threshold) < aif::EPSILON) &&
+        (std::abs(thresh_confidence - other.thresh_confidence) < aif::EPSILON) &&
         (numClasses == other.numClasses) &&
         (numOutChannels == other.numOutChannels) &&
         (std::equal(strides.begin(), strides.end(), other.strides.begin())) &&
@@ -187,6 +193,7 @@ std::ostream& operator<<(std::ostream& os, const Yolov4Param& fp)
     os << "\tuseFp16: " << fp.useFp16 << ",\n";
     os << "\tnms_threshold: " << fp.nms_threshold << ",\n";
     os << "\tbbox_conf_threshold: " << fp.bbox_conf_threshold << ",\n";
+    os << "\tthresh_confidence: " << fp.thresh_confidence << ",\n";
     os << "\tnumClasses: " << fp.numClasses << ",\n";
     os << "\tnumOutChannels: " << fp.numOutChannels << ",\n";
     os << "\tstrides: [";
@@ -264,6 +271,9 @@ t_aif_status Yolov4Param::fromJson(const std::string& param)
         }
         if (modelParam.HasMember("bbox_conf_threshold")) {
             bbox_conf_threshold = modelParam["bbox_conf_threshold"].GetDouble();
+        }
+        if (modelParam.HasMember("thresh_confidence")) {
+            thresh_confidence = modelParam["thresh_confidence"].GetDouble();
         }
         if (modelParam.HasMember("numClasses")) {
             numClasses = modelParam["numClasses"].GetUint();

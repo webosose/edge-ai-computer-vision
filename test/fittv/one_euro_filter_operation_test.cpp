@@ -42,7 +42,7 @@ protected:
     }
 
     std::string personId{"person_yolov4_npu"};
-    std::string pose2dId{"pose2d_resnet_npu"};
+    std::string pose2dId{"pose2d_resnet_v1_npu"};
     std::string use_one_euro_filter {
         "{"
         "  \"type\": \"fittv_oneEuro\","

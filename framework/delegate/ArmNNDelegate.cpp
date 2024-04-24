@@ -32,7 +32,7 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
                     optStr += optValue;
                 }
             }
-            optionMap[opt.name.GetString()] = optStr;
+            optionMap[opt.name.GetString()] = std::move(optStr);
         }
         else if (opt.value.IsString()) {
             optionMap[opt.name.GetString()] = opt.value.GetString();
@@ -72,7 +72,7 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
         armnnDelegate::DelegateOptions options(
                 keys.get(), values.get(), numOptions, nullptr);
 
-        m_delegateOptions = options;
+        m_delegateOptions = std::move(options);
     }
 }
 

@@ -7,6 +7,7 @@
 #define AIF_DESCRIPTOR_H
 
 #include <aif/base/Types.h>
+#include <aif/facade/EdgeAIVision.h>
 #ifndef RAPIDJSON_HAS_STDSTRING
 #define RAPIDJSON_HAS_STDSTRING 1
 #endif
@@ -28,8 +29,15 @@ public:
 
     bool hasMember(const std::string& member) const;
 
+    void initExtraOutput(const ExtraOutput& extraOutput);
+    const ExtraOutput& getExtraOutput() const;
+
+    bool addExtraOutput(ExtraOutputType type, void* buffer, size_t size);
+
 protected:
     rapidjson::Document m_root;
+    ExtraOutput m_extraOutput;
+
 };
 
 } // end of namespace aif
