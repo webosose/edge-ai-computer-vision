@@ -13,12 +13,26 @@ void ExtensionInspector::init()
   Logger::init(Logger::strToLogLevel(config->getOption(KEY_LOG_LEVEL)));
 }
 
-void ExtensionInspector::inspect()
+t_aif_status ExtensionInspector::inspect()
 {
   init();
-  ExtensionLoader::get().init(false, m_pluginPath);
+  if (ExtensionLoader::get().init(false, m_pluginPath) != kAifOk)
+  {
+    Loge("Failed to initialize ExtensionLoader");
+    return kAifError;
+  }
   m_pluginInfos = ExtensionLoader::get().getPluginInfos();
+  if (m_pluginInfos.empty())
+  {
+    Loge("No plugins found");
+    return kAifError;
+  }
   m_featureInfos = ExtensionLoader::get().getFeatureInfos();
+  if (m_featureInfos.empty())
+  {
+    Loge("No features found");
+    return kAifError;
+  }
   std::sort(m_pluginInfos.begin(), m_pluginInfos.end(), [](const t_aif_plugin_info &a, const t_aif_plugin_info &b)
             { return a.name < b.name; });
   std::sort(m_featureInfos.begin(), m_featureInfos.end(), [](const t_aif_feature_info &a, const t_aif_feature_info &b)
@@ -27,9 +41,11 @@ void ExtensionInspector::inspect()
       return a.type < b.type;
     }
     return a.plugin_name < b.plugin_name; });
+
+  return kAifOk;
 }
 
-std::string ExtensionInspector::json(int formatVersion)
+std::string ExtensionInspector::json()
 {
   if (m_pluginInfos.empty() && m_featureInfos.empty())
   {

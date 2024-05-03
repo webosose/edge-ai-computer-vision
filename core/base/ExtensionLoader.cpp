@@ -18,6 +18,12 @@ namespace aif
 
 t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath)
 {
+  if (!std::filesystem::exists(pluginPath))
+  {
+    Loge("Plugin path does not exist: ", pluginPath);
+    return kAifError;
+  }
+
   if (initDone)
     return kAifOk;
 
@@ -35,20 +41,28 @@ t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath
   {
     if (!std::filesystem::exists(EDGEAI_VISION_PLUGIN_INFO_DUMP_PATH))
     {
-      std::string cmd = EDGEAI_VISION_INSPECTOR_PATH + " " + pluginPath;
+      std::string cmd = EDGEAI_VISION_INSPECTOR_PATH;
+      std::string arg = pluginPath;
       Logi("Executing command: ", cmd);
       pid_t pid = fork();
-      if (pid == -1) {
+      if (pid == -1)
+      {
         Logi("Failed to fork process");
         return kAifError;
-      } else if (pid == 0) {
-        execl(cmd.c_str(), (char *)NULL);
-        Logi("Failed to execute command: ", cmd);
+      }
+      else if (pid == 0)
+      {
+        char *args[] = {(char *)cmd.c_str(), (char *)arg.c_str(), NULL};
+        execv(args[0], args);
+        Logi("Failed to execute command: ", cmd + " " + arg);
         exit(1);
-      } else {
+      }
+      else
+      {
         int status;
         waitpid(pid, &status, 0);
-        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+        {
           Logi("Command exited with error status");
           return kAifError;
         }
@@ -205,7 +219,7 @@ t_aif_status ExtensionLoader::enableFeature(std::string feature_name, t_feature_
 
       break;
     }
-    auto& reg = RegistrationJob::get().getRegistration(plugin_name, feature_name);
+    auto &reg = RegistrationJob::get().getRegistration(plugin_name, feature_name);
     if (reg)
       reg->doRegister();
     break;

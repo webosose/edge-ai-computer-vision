@@ -24,7 +24,11 @@ int main(int argc, char *argv[])
     }
     std::cout << "Inspecting path: " << pluginPath << std::endl;
     aif::ExtensionInspector::get().setPluginPath(pluginPath);
-    aif::ExtensionInspector::get().inspect();
+    if (aif::ExtensionInspector::get().inspect() != aif::kAifOk)
+    {
+      std::cerr << "Error: Failed to inspect plugins" << std::endl;
+      return 1;
+    }
     std::string dumpJson = aif::ExtensionInspector::get().json();
     std::cout << dumpJson << std::endl;
     if (!dumpJson.empty())

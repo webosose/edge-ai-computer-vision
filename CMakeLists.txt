@@ -7,6 +7,7 @@ OPTION(WITH_EXAMPLES "Enable Examples" OFF)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
 
+set(SRC_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 
 IF("${AIF_INSTALL_DIR}" STREQUAL "")
@@ -35,6 +36,8 @@ IF(WITH_HOST_TEST)        ### for meta-shift unit test ###
 ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test)
     add_subdirectory(test/test-dl)
+    add_subdirectory(test/test-plugin)
+    add_subdirectory(test/test-inspector)
 ENDIF()
 
 add_subdirectory(third_party)
