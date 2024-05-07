@@ -16,7 +16,9 @@ namespace rj = rapidjson;
 class ApiFacadeTest : public ::testing::Test
 {
 protected:
-    ApiFacadeTest() = default;
+    ApiFacadeTest() {
+        m_detectorOption = "{ \"model\" : \"face_short_range_cpu\" }";
+    };
     ~ApiFacadeTest() = default;
     void SetUp() override
     {
@@ -25,6 +27,7 @@ protected:
     void TearDown() override
     {
     }
+    std::string m_detectorOption;
 };
 
 
@@ -53,6 +56,8 @@ TEST_F(ApiFacadeTest, 02_createDetector_default)
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::POSE));
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+    EXPECT_FALSE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM));
+    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM, m_detectorOption));
     ai.shutdown();
 }
 
@@ -64,14 +69,17 @@ TEST_F(ApiFacadeTest, 03_deleteDetector_default)
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::POSE));
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+    EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::CUSTOM));
 
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::POSE));
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM, m_detectorOption));
 
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::POSE));
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+    EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::CUSTOM));
     ai.shutdown();
 }
 

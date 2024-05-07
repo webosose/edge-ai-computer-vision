@@ -23,11 +23,11 @@ public:
     {
         RegistrationJob::get().addRegistration(m_extension, m_id, this);
     }
-    void doRegister() override
+    void doRegister(std::string prefixId = "") override
     {
-        Logi("doRegister: ", m_id);
+        Logi("doRegister: ", prefixId + m_id);
         if (kAifOk != NodeOperationFactory::get().registerGenerator(
-             m_id,
+             prefixId + m_id,
              [](const std::string& id) {
                  std::shared_ptr<NodeOperation> operation(new T1(id));
                  return operation;
@@ -37,9 +37,9 @@ public:
                  return config;
              }
         ) ) {
-            return Loge("Failed to register NodeOperation: ", m_id);
+            return Loge("Failed to register NodeOperation: ", prefixId + m_id);
         }
-        Logi("Success to register NodeOperation: ", m_id);
+        Logi("Success to register NodeOperation: ", prefixId + m_id);
     }
 
     ~NodeOperationFactoryRegistration()

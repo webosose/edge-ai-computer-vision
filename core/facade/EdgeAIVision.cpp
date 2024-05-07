@@ -53,7 +53,7 @@ bool EdgeAIVision::shutdown() {
 }
 
 std::string EdgeAIVision::getDefaultModel(DetectorType type) const {
-    std::string model;
+    std::string model = "";
     if (type == DetectorType::FACE) {
         model = DEFAULT_FACE_MODEL;
     } else if (type == DetectorType::POSE) {
@@ -94,6 +94,10 @@ bool EdgeAIVision::createDetector(DetectorType type,
                 param = jsonObjectToString(json["param"]);
             }
         }
+    }
+    if (type == DetectorType::CUSTOM && model.empty()) {
+        Loge("To use Custom DetectorType, option should have 'model' field");
+        return false;
     }
     m_selectedModels[type] = model;
     auto detector = DetectorFactory::get().getDetector(model, param);

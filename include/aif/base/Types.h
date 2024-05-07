@@ -306,7 +306,7 @@ struct t_aif_feature_info
 {
     std::string name;
     t_feature_type type;
-    std::string plugin_name;
+    std::string pluginName;
 };
 
 } // end of namespace aif

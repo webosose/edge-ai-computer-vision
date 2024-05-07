@@ -14,7 +14,7 @@ namespace aif
   class IRegistration
   {
   public:
-    virtual void doRegister() = 0;
+    virtual void doRegister(std::string prefixId = "") = 0;
     virtual ~IRegistration() {}
     std::string getId() { return m_id; }
     t_feature_type getType() { return m_type; }

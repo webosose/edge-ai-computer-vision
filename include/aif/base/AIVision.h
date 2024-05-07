@@ -21,6 +21,8 @@
 #define KEY_LOG_LEVEL "LogLevel"
 #define KEY_BASE_PATH "BasePath"
 #define KEY_REPORT_TYPE "ReportType"
+#define KEY_EXTENSION_PATH "ExtensionPath"
+#define KEY_ALLOWED_EXTENSIONS "AllowedExtensions"
 
 namespace aif {
 

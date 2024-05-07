@@ -37,10 +37,10 @@ t_aif_status ExtensionInspector::inspect()
             { return a.name < b.name; });
   std::sort(m_featureInfos.begin(), m_featureInfos.end(), [](const t_aif_feature_info &a, const t_aif_feature_info &b)
             {
-    if (a.plugin_name == b.plugin_name) {
+    if (a.pluginName == b.pluginName) {
       return a.type < b.type;
     }
-    return a.plugin_name < b.plugin_name; });
+    return a.pluginName < b.pluginName; });
 
   return kAifOk;
 }
@@ -82,7 +82,7 @@ std::string ExtensionInspector::json()
     writer.StartArray();
     for (auto &featureInfo : m_featureInfos)
     {
-      if (featureInfo.plugin_name == pluginInfo.name)
+      if (featureInfo.pluginName == pluginInfo.name)
       {
         writer.StartObject();
         writer.Key("name");

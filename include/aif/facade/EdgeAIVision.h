@@ -30,6 +30,7 @@ class EdgeAIVision {
         TEXT,               ///< Text Detector (Default Model: paddleocr)
         SIGNLANGUAGEAREA,   ///< Sign Language Area Detector (Default Model:
                             ///< yolov5n custom)
+        CUSTOM = 999,       ///< Custom Detector Type
     };
 
     EdgeAIVision(const EdgeAIVision& other) = delete;

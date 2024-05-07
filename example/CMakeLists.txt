@@ -16,6 +16,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apis/sign-language-area)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pipe-sample)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-detect-sample)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/posenet-sample)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dynamic-loading-sample)
 
 IF(WITH_EXTRA_MODELS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/face-websocket-server)

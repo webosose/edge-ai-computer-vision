@@ -18,7 +18,11 @@ int main()
     EdgeAIVision& ai = EdgeAIVision::getInstance();
 
     ai.startup();
+    std::cout << "EdgeAIVision version isInitialized" << std::endl;
+    std::getchar();
     ai.createDetector(type);
+    std::cout << "Detector created" << std::endl;
+    std::getchar();
 
     for (int i = 0; i < 10; i++) {
         ai.detect(type, input, output);
@@ -30,6 +34,8 @@ int main()
 
     ai.deleteDetector(type);
     ai.shutdown();
+    std::cout << "EdgeAIVision shutdowned" << std::endl;
+    std::getchar();
 
     PerformanceReporter::get().showReport();
     return 0;

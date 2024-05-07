@@ -44,7 +44,15 @@ void AIVision::init(const std::string& basePath)
         s_basePath = s_config->getOption(KEY_BASE_PATH);
     }
 
-    ExtensionLoader::get().init(true);
+    std::string extensionPath = s_config->getOption(KEY_EXTENSION_PATH);
+    std::vector<std::string> allowedExtensions = s_config->getOptionArray(KEY_ALLOWED_EXTENSIONS);
+    if (extensionPath.empty()) {
+        extensionPath = EDGEAI_VISION_PLUGIN_PATH;
+    }
+    if (allowedExtensions.size() == 0) {
+        allowedExtensions = {};
+    }
+    ExtensionLoader::get().init(true, extensionPath, allowedExtensions);
 
     s_initialized = true;
     Logi("AIVision is initialized");

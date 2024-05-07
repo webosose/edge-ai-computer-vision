@@ -25,11 +25,11 @@ public:
         RegistrationJob::get().addRegistration(m_extension, m_id, this);
     }
 
-    void doRegister() override
+    void doRegister(std::string prefixId = "") override
     {
-        Logi("doRegister: ", m_id);
+        Logi("doRegister: ", prefixId + m_id);
         if (kAifOk != DetectorFactory::get().registerGenerator(
-                m_id,
+                prefixId + m_id,
                 []() {
                     std::shared_ptr<Detector> detector(new T1());
                     return detector;
@@ -39,9 +39,9 @@ public:
                     return descriptor;
                 }
         ) ) {
-            return Loge("Failed to register detector: ", m_id);
+            return Loge("Failed to register detector: ", prefixId + m_id);
         }
-        Logi("Success to register detector: ", m_id);
+        Logi("Success to register detector: ", prefixId + m_id);
     }
 
     ~DetectorFactoryRegistration()

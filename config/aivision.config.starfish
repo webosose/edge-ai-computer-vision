@@ -1,4 +1,9 @@
 {
-"LogLevel" : "INFO",
-"BasePath" : "/mnt/lg/others/aif"
+  "LogLevel" : "INFO",
+  "BasePath" : "/mnt/lg/others/aif",
+  "ExtensionPath" : "/usr/lib/edgeai-extensions",
+  "AllowedExtensions" : [
+    "libedgeai-vision-base",
+    "libedgeai-vision-intelli-fit"
+  ]
 }

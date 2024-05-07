@@ -23,19 +23,19 @@ public:
         RegistrationJob::get().addRegistration(m_extension, m_id, this);
     }
 
-    void doRegister() override
+    void doRegister(std::string prefixId = "") override
     {
         Logi("doRegister: ", m_id);
         if (kAifOk != PipeDescriptorFactory::get().registerGenerator(
-             m_id,
+             prefixId + m_id,
              []() {
                  std::shared_ptr<PipeDescriptor> descriptor(new T());
                  return descriptor;
              }
         ) ) {
-            return Loge("Failed to register PipeDescriptor: ", m_id);
+            return Loge("Failed to register PipeDescriptor: ", prefixId + m_id);
         }
-        Logi("Success to register PipeDescriptor: ", m_id);
+        Logi("Success to register PipeDescriptor: ", prefixId + m_id);
     }
 
     ~PipeDescriptorFactoryRegistration()

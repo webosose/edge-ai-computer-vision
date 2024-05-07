@@ -16,23 +16,25 @@
 namespace aif
 {
 
-t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath)
+t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath, std::vector<std::string> allowedExtensionNames)
 {
   if (!std::filesystem::exists(pluginPath))
   {
     Loge("Plugin path does not exist: ", pluginPath);
     return kAifError;
   }
+  setAllowedExtensionNames(allowedExtensionNames);
 
-  if (initDone)
+  if (m_initDone)
     return kAifOk;
 
   if (!RegistrationJob::get().getRegistrations(DEFAULT_EXTENSION_NAME).empty())
   {
     for (auto const &[id, reg] : RegistrationJob::get().getRegistrations(DEFAULT_EXTENSION_NAME))
     {
-      t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .plugin_name = DEFAULT_EXTENSION_NAME};
-      feature_infos.push_back(feature_info);
+      t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = DEFAULT_EXTENSION_NAME};
+      Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", DEFAULT_EXTENSION_NAME);
+      m_featureInfos.push_back(feature_info);
       reg->doRegister(); // This is needed for unittests (i.e. unittests link libraries directly and not via dlopen)
     }
   }
@@ -82,20 +84,21 @@ t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath
     }
   }
 
-  for (auto &plugin_info : plugin_infos)
+  for (auto &plugin_info : m_pluginInfos)
   {
     if (!RegistrationJob::get().getRegistrations(plugin_info.name).empty())
     {
       for (auto const &[id, reg] : RegistrationJob::get().getRegistrations(plugin_info.name))
       {
-        t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .plugin_name = plugin_info.name};
-        feature_infos.push_back(feature_info);
+        t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = plugin_info.name};
+        Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", plugin_info.name);
+        m_featureInfos.push_back(feature_info);
       }
     }
   }
 
   unloadAllExtension();
-  initDone = true;
+  m_initDone = true;
   return kAifOk;
 }
 
@@ -122,12 +125,27 @@ t_aif_status ExtensionLoader::initFromFile(std::string extensionInfoFilePath)
   Logi("Successfully parsed json: ", json);
   for (auto &plugin : doc.GetArray())
   {
-    t_aif_plugin_info plugin_info = {.name = plugin["name"].GetString(), .path = plugin["path"].GetString(), .handle = nullptr};
-    plugin_infos.push_back(plugin_info);
+    if (!isAllowedExtension(plugin["name"].GetString())) {
+      Logi("Skipping plugin: ", plugin["name"].GetString(), " because it is not allowed");
+      continue;
+    }
+    t_aif_plugin_info plugin_info = {
+      .name = plugin["name"].GetString(),
+      .path = plugin["path"].GetString(),
+      .handle = nullptr
+    };
+    if (plugin.HasMember("alias"))
+      plugin_info.alias = plugin["alias"].GetString();
+    if (plugin.HasMember("version"))
+      plugin_info.version = plugin["version"].GetString();
+    if (plugin.HasMember("description"))
+      plugin_info.description = plugin["description"].GetString();
+    m_pluginInfos.push_back(plugin_info);
+
     for (auto &feature : plugin["features"].GetArray())
     {
-      t_aif_feature_info feature_info = {.name = feature["name"].GetString(), .type = stringToFeatureType(feature["type"].GetString()), .plugin_name = plugin["name"].GetString()};
-      feature_infos.push_back(feature_info);
+      t_aif_feature_info feature_info = {.name = feature["name"].GetString(), .type = stringToFeatureType(feature["type"].GetString()), .pluginName = plugin["name"].GetString()};
+      m_featureInfos.push_back(feature_info);
     }
   }
   return kAifOk;
@@ -180,35 +198,108 @@ t_aif_status ExtensionLoader::loadExtension(std::string extensionFilePath)
     RegistrationJob::get().removeRegistration(extensionName, hiddenFeature);
   }
 
-  plugin_infos.push_back(plugin_info);
+  m_pluginInfos.push_back(plugin_info);
   unsetenv("AIF_EXTENSION_NAME");
   return kAifOk;
 }
 
-t_aif_status ExtensionLoader::isAvailable(std::string feature_name, t_feature_type type)
+bool ExtensionLoader::isFeatureNameHasPluginAlias(std::string featureName)
 {
-  for (auto feature_info : feature_infos)
+  return featureName.find(FEATURE_NAME_DELIMITER) != std::string::npos;
+}
+
+t_aif_parsed_feature_name ExtensionLoader::parseFeatureName(std::string featureName)
+{
+  t_aif_parsed_feature_name parsedFeatureName;
+  size_t pos = featureName.find(FEATURE_NAME_DELIMITER);
+  if (pos == std::string::npos)
   {
-    if (feature_info.name == feature_name && feature_info.type == type)
-      return kAifOk;
+    parsedFeatureName.pluginAlias = "";
+    parsedFeatureName.featureName = featureName;
   }
+  else
+  {
+    parsedFeatureName.pluginAlias = featureName.substr(0, pos);
+    parsedFeatureName.featureName = featureName.substr(pos + 2);
+  }
+  return parsedFeatureName;
+}
+
+std::string ExtensionLoader::getPluginNameByAlias(std::string alias)
+{
+  for (auto plugin_info : m_pluginInfos)
+  {
+    if (plugin_info.alias == alias)
+      return plugin_info.name;
+  }
+  return "";
+}
+
+std::string ExtensionLoader::getPluginAliasByName(std::string name)
+{
+  for (auto plugin_info : m_pluginInfos)
+  {
+    if (plugin_info.name == name)
+      return plugin_info.alias;
+  }
+  return "";
+}
+
+t_aif_status ExtensionLoader::isAvailable(std::string featureName, t_feature_type type, std::string pluginName)
+{
+  if (isFeatureNameHasPluginAlias(featureName))
+  {
+    auto parsedFeatureName = parseFeatureName(featureName);
+    auto pluginName = getPluginNameByAlias(parsedFeatureName.pluginAlias);
+    if (pluginName.empty())
+    {
+      Loge("Plugin alias not found: ", parsedFeatureName.pluginAlias);
+      return kAifError;
+    }
+    return isAvailable(parsedFeatureName.featureName, type, pluginName);
+  }
+
+  for (auto feature_info : m_featureInfos)
+  {
+    if (feature_info.name == featureName && feature_info.type == type)
+    {
+      if (pluginName.empty() || feature_info.pluginName == pluginName)
+        return kAifOk;
+    }
+  }
+
+  Loge("Feature not found: ", featureName, ", type: ", featureTypeToString(type), ", pluginName: ", pluginName);
   return kAifError;
 }
 
-t_aif_status ExtensionLoader::enableFeature(std::string feature_name, t_feature_type type)
+t_aif_status ExtensionLoader::enableFeature(std::string featureName, t_feature_type type, std::string pluginName)
 {
-  if (isAvailable(feature_name, type) != kAifOk)
+  if (isAvailable(featureName, type) != kAifOk)
     return kAifError;
 
-  for (auto feature_info : feature_infos)
+  if (isFeatureNameHasPluginAlias(featureName)) {
+    auto parsedFeatureName = parseFeatureName(featureName);
+    auto pluginName = getPluginNameByAlias(parsedFeatureName.pluginAlias);
+    if (pluginName.empty())
+    {
+      Loge("Plugin alias not found: ", parsedFeatureName.pluginAlias);
+      return kAifError;
+    }
+    return enableFeature(parsedFeatureName.featureName, type, pluginName);
+  }
+
+  for (auto feature_info : m_featureInfos)
   {
-    if (feature_info.name != feature_name || feature_info.type != type)
+    if (feature_info.name != featureName || feature_info.type != type)
       continue;
 
-    std::string plugin_name = feature_info.plugin_name;
-    for (auto plugin_info : plugin_infos)
+    std::string pName = feature_info.pluginName;
+    if (!pluginName.empty() && pName != pluginName)
+      continue;
+
+    for (auto plugin_info : m_pluginInfos)
     {
-      if (plugin_info.name != plugin_name)
+      if (plugin_info.name != pName)
         continue;
 
       if (plugin_info.handle != nullptr)
@@ -219,9 +310,16 @@ t_aif_status ExtensionLoader::enableFeature(std::string feature_name, t_feature_
 
       break;
     }
-    auto &reg = RegistrationJob::get().getRegistration(plugin_name, feature_name);
-    if (reg)
-      reg->doRegister();
+    auto &reg = RegistrationJob::get().getRegistration(pName, featureName);
+    if (reg) {
+      std::string pluginAlias = getPluginAliasByName(pluginName);
+      Logd("pluginAlias: ", pluginAlias);
+      if (pluginAlias.empty())
+        reg->doRegister();
+      else
+        reg->doRegister(pluginAlias + FEATURE_NAME_DELIMITER);
+    }
+
     break;
   }
 
@@ -236,7 +334,7 @@ ExtensionLoader::~ExtensionLoader()
 
 t_aif_status ExtensionLoader::unloadAllExtension()
 {
-  for (auto &plugin_info : plugin_infos)
+  for (auto &plugin_info : m_pluginInfos)
   {
     if (plugin_info.handle != nullptr)
     {
@@ -250,9 +348,9 @@ t_aif_status ExtensionLoader::unloadAllExtension()
 
 t_aif_status ExtensionLoader::clear()
 {
-  plugin_infos.clear();
-  feature_infos.clear();
-  initDone = false;
+  m_pluginInfos.clear();
+  m_featureInfos.clear();
+  m_initDone = false;
   return kAifOk;
 }
 
@@ -280,6 +378,49 @@ t_feature_type ExtensionLoader::stringToFeatureType(std::string type)
   if (type == "PipeDescriptor")
     return kPipeDescriptor;
   return kUnknown;
+}
+
+t_aif_status ExtensionLoader::setAllowedExtensionNames(std::vector<std::string> allowedExtensionNames)
+{
+  if (allowedExtensionNames.empty())
+  {
+    m_allowAllExtensions = true;
+    return kAifOk;
+  }
+
+  for (auto &extensionName : allowedExtensionNames)
+  {
+    if (extensionName.empty())
+    {
+      Loge("Empty extension name is not allowed");
+      continue;
+    }
+    if (extensionName.find("lib") != 0)
+    {
+      extensionName = "lib" + extensionName;
+    }
+    if (extensionName.find(".so") != extensionName.size() - 3)
+    {
+      extensionName = extensionName + ".so";
+    }
+  }
+
+  m_allowAllExtensions = false;
+  m_allowedExtensionNames = allowedExtensionNames;
+  return kAifOk;
+}
+
+bool ExtensionLoader::isAllowedExtension(std::string extensionName)
+{
+  if (m_allowAllExtensions)
+    return true;
+
+  for (auto &allowedExtensionName : m_allowedExtensionNames)
+  {
+    if (extensionName == allowedExtensionName)
+      return true;
+  }
+  return false;
 }
 
 } // namespace aif
