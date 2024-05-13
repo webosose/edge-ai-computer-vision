@@ -1,5 +1,6 @@
 #include "ExtensionInspector.h"
 
+#include <boost/filesystem.hpp>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
 
@@ -98,6 +99,24 @@ std::string ExtensionInspector::json()
   writer.EndArray();
 
   return s.GetString();
+}
+
+t_aif_status ExtensionInspector::dump(std::string dumpPath)
+{
+  if (m_pluginInfos.empty() && m_featureInfos.empty())
+  {
+    inspect();
+  }
+  std::string dir = dumpPath.substr(0, dumpPath.find_last_of("/"));
+  if (!boost::filesystem::exists(dir)) {
+    boost::filesystem::create_directories(dir);
+  }
+  std::ofstream ofs(dumpPath);
+  ofs << json();
+  ofs.close();
+
+  ExtensionLoader::get().getRegistryStampFilePath(true);
+  return kAifOk;
 }
 
 } // namespace aif

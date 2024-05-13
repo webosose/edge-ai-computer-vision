@@ -1,5 +1,6 @@
 #include <aif/base/ExtensionLoader.h>
 #include <aif/log/Logger.h>
+#include <aif/tools/ProcessRunner.h>
 
 #include <aif/base/IPlugin.h>
 #include <aif/base/IRegistration.h>
@@ -9,6 +10,7 @@
 #include <dlfcn.h>
 #include <filesystem>
 #include <fstream>
+#include <initializer_list>
 #include <sstream>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -16,7 +18,7 @@
 namespace aif
 {
 
-t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath, std::vector<std::string> allowedExtensionNames)
+t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath, std::vector<std::string> allowedExtensionNames)
 {
   if (!std::filesystem::exists(pluginPath))
   {
@@ -39,38 +41,14 @@ t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath
     }
   }
 
-  if (readFromDumpFile)
+  if (readRegistryFile)
   {
-    if (!std::filesystem::exists(EDGEAI_VISION_PLUGIN_INFO_DUMP_PATH))
+    if (isNeededToGenRegistryFile())
     {
-      std::string cmd = EDGEAI_VISION_INSPECTOR_PATH;
-      std::string arg = pluginPath;
-      Logi("Executing command: ", cmd);
-      pid_t pid = fork();
-      if (pid == -1)
-      {
-        Logi("Failed to fork process");
+      if (runInspector(pluginPath) != kAifOk)
         return kAifError;
-      }
-      else if (pid == 0)
-      {
-        char *args[] = {(char *)cmd.c_str(), (char *)arg.c_str(), NULL};
-        execv(args[0], args);
-        Logi("Failed to execute command: ", cmd + " " + arg);
-        exit(1);
-      }
-      else
-      {
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-        {
-          Logi("Command exited with error status");
-          return kAifError;
-        }
-      }
     }
-    return initFromFile(EDGEAI_VISION_PLUGIN_INFO_DUMP_PATH);
+    return initFromRegistryFile();
   }
 
   for (const auto &entry : std::filesystem::directory_iterator(pluginPath))
@@ -102,12 +80,13 @@ t_aif_status ExtensionLoader::init(bool readFromDumpFile, std::string pluginPath
   return kAifOk;
 }
 
-t_aif_status ExtensionLoader::initFromFile(std::string extensionInfoFilePath)
+t_aif_status ExtensionLoader::initFromRegistryFile()
 {
-  std::ifstream ifs(extensionInfoFilePath);
+  Logi("Reading registry file: ", m_registryFilePath);
+  std::ifstream ifs(m_registryFilePath);
   if (!ifs.is_open())
   {
-    Logi("Failed to open file: ", extensionInfoFilePath);
+    Logi("Failed to open file: ", m_registryFilePath);
     return kAifError;
   }
   std::stringstream buffer;
@@ -421,6 +400,66 @@ bool ExtensionLoader::isAllowedExtension(std::string extensionName)
       return true;
   }
   return false;
+}
+
+bool ExtensionLoader::isNeededToGenRegistryFile()
+{
+  if (!std::filesystem::exists(m_registryFilePath))
+    return true;
+
+  std::string registryStampFilePath = getRegistryStampFilePath(false);
+  if (registryStampFilePath.empty())
+    return true;
+
+  if (!std::filesystem::exists(registryStampFilePath))
+  {
+    std::string dir = m_registryFilePath.substr(0, m_registryFilePath.find_last_of("/"));
+    for (const auto &entry : std::filesystem::directory_iterator(dir))
+    {
+      if (entry.path().string().find(m_registryFilePath+".done.") == 0)
+      {
+        std::filesystem::remove(entry.path());
+      }
+    }
+    std::filesystem::remove(m_registryFilePath);
+    return true;
+  }
+
+  return false;
+}
+
+std::string ExtensionLoader::getRegistryStampFilePath(bool create) {
+  std::initializer_list<std::string> args = {"OSInfo", "query", "--format=json", "webos_release", "webos_build_id"};
+  ProcessRunner processRunner(NYX_CMD_PATH, args);
+  std::string output = processRunner.getResult();
+
+  rapidjson::Document doc;
+  doc.Parse(output.c_str());
+  if (doc.HasParseError())
+  {
+    Loge("Failed to parse json: ", output);
+    return "";
+  }
+  std::string webosReleaseVersion = doc["webos_release"].GetString();
+  std::string webosBuildId = doc["webos_build_id"].GetString();
+  Logi("webosReleaseVersion: ", webosReleaseVersion, ", webosBuildId: ", webosBuildId);
+  std::string stampExtensionInfoFilePath = m_registryFilePath + ".done." + webosReleaseVersion + "-" + webosBuildId;
+  if (!create) {
+    return stampExtensionInfoFilePath;
+  }
+
+  std::ofstream ofs(stampExtensionInfoFilePath);
+  ofs.close();
+  return stampExtensionInfoFilePath;
+}
+
+t_aif_status ExtensionLoader::runInspector(std::string pluginPath)
+{
+  std::string arg = pluginPath;
+  ProcessRunner processRunner(EDGEAI_VISION_INSPECTOR_PATH, {pluginPath});
+  std::string output = processRunner.getResult();
+  Logd("Inspector output: ", output);
+  return kAifOk;
 }
 
 } // namespace aif

@@ -1,0 +1,6 @@
+{
+  "ExtensionPath" : "/usr/lib/edgeai-extensions",
+  "AllowedExtensions" : [
+    AIF_ALLOWED_EXTENSIONS
+  ]
+}

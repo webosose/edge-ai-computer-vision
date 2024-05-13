@@ -31,13 +31,8 @@ int main(int argc, char *argv[])
     }
     std::string dumpJson = aif::ExtensionInspector::get().json();
     std::cout << dumpJson << std::endl;
-    if (!dumpJson.empty())
-    {
-      std::ofstream ofs(EDGEAI_VISION_PLUGIN_INFO_DUMP_PATH);
-      ofs << dumpJson;
-      ofs.close();
-    }
-    std::cout << "Dumped plugin info to: " << EDGEAI_VISION_PLUGIN_INFO_DUMP_PATH << std::endl;
+    aif::ExtensionInspector::get().dump(EXTENSION_REGISTRY_PATH);
+    std::cout << "Dumped plugin info to: " << EXTENSION_REGISTRY_PATH << std::endl;
   }
   catch (const std::exception &e)
   {
