@@ -8,7 +8,7 @@
 #endif
 
 #ifndef EXTENSION_REGISTRY_PATH
-#define EXTENSION_REGISTRY_PATH "/mnt/lg/cmn_data/edgeai/edgeai_plugin_registry.json"
+#define EXTENSION_REGISTRY_PATH "/tmp/edgeai_plugin_registry.json"
 #endif
 
 #ifndef EDGEAI_VISION_INSPECTOR_PATH
