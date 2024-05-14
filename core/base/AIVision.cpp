@@ -130,14 +130,17 @@ void AIVision::mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_pt
     if (!target || !source) {
         return;
     }
-
     for (auto& member : source->m_document.GetObject()) {
         // If the member exists in the target, replace with source value
-        if (member.name.IsString() && target->m_document.HasMember(member.name.GetString())) {
-            target->m_document[member.name] = member.value;
+        if (target->m_document.HasMember(member.name)) {
+            rapidjson::Value value(member.value, target->m_document.GetAllocator());
+            target->m_document[member.name] = value;
             continue;
         }
-        target->m_document.AddMember(member.name, member.value, target->m_document.GetAllocator());
+        // If the member doesn't exist in the target, add it
+        rapidjson::Value name(member.name, target->m_document.GetAllocator());
+        rapidjson::Value value(member.value, target->m_document.GetAllocator());
+        target->m_document.AddMember(name, value, target->m_document.GetAllocator());
     }
 }
 

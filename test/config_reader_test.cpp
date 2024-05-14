@@ -71,6 +71,7 @@ TEST_F(ConfigReaderTest, 03_MainConfigTest)
     }
     ConfigReader mainConfig(mainConfigPath);
     //print all key and value of mainConfigPath
+    std::cout << "Config in "<< mainConfigPath << std::endl;
     for (auto& member : mainConfig.m_document.GetObject()) {
         if (member.name.IsString()) {
             std::cout << member.name.GetString() << ": " << mainConfig.getOption(member.name.GetString()) << std::endl;
@@ -92,6 +93,7 @@ TEST_F(ConfigReaderTest, 04_SubConfigTest)
     }
     ConfigReader subConfig(subConfigPath);
     //print all key and value of subConfigPath
+    std::cout << "Config in "<< subConfigPath << std::endl;
     for (auto& member : subConfig.m_document.GetObject()) {
         if (member.name.IsString()) {
             std::cout << member.name.GetString() << ": " << subConfig.getOption(member.name.GetString()) << std::endl;
@@ -117,9 +119,13 @@ TEST_F(ConfigReaderTest, 05_MergeConfigTest)
     auto override_config = std::make_unique<ConfigReader>(subConfigPath);
     AIVision::mergeConfig(config, override_config);
     for (auto& member : override_config->m_document.GetObject()) {
-        EXPECT_EQ(config->m_document.HasMember(member.name.GetString()), true);
+        if (member.name.IsString()) {
+            EXPECT_EQ(config->m_document.HasMember(member.name), true);
+            EXPECT_EQ(config->getOption(member.name.GetString()), override_config->getOption(member.name.GetString()));
+        }
     }
     //print all key and value of config
+    std::cout << "Merged Config" << std::endl;
     for (auto& member : config->m_document.GetObject()) {
         if (member.name.IsString()) {
             std::cout << member.name.GetString() << ": " << config->getOption(member.name.GetString()) << std::endl;
