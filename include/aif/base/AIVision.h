@@ -14,6 +14,10 @@
 #define EDGEAI_VISION_HOME "/usr/share/aif"
 #endif
 
+#ifndef EDGEAI_VISION_HOME_SUB
+#define EDGEAI_VISION_HOME_SUB "/home/root"
+#endif
+
 #ifndef EDGEAI_VISION_CONFIG
 #define EDGEAI_VISION_CONFIG "edgeai.config"
 #endif
@@ -33,6 +37,7 @@ public:
     static bool isInitialized();
     static std::string getBasePath();
     static std::string getModelPath(const std::string& modelName);
+    static void mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_ptr<ConfigReader>& source);
 #ifdef USE_UPDATABLE_MODELS
     static int getUpdatableModelIndex(const std::string& modelName);
 #endif
@@ -41,6 +46,7 @@ private:
     static bool s_initialized;
     static std::string s_basePath;
     static std::unique_ptr<ConfigReader> s_config;
+    static std::unique_ptr<ConfigReader> s_override_config;
 };
 
 } // end of namespace aif

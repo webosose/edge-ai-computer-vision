@@ -25,7 +25,7 @@ public:
 private:
     void loadFromString(const std::string& config);
 
-private:
+public:
     rapidjson::Document m_document;
 
 };

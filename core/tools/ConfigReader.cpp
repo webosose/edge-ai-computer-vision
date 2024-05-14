@@ -53,7 +53,40 @@ std::string ConfigReader::getOption(const std::string& optionName) const
     if (!m_document.HasMember(optionName.c_str())) {
         return "";
     }
-    return m_document[optionName.c_str()].GetString();
+    if (m_document[optionName.c_str()].IsArray()) {
+        return jsonObjectToString(m_document[optionName.c_str()]);
+    }
+    if (m_document[optionName.c_str()].IsObject()) {
+        return jsonObjectToString(m_document[optionName.c_str()]);
+    }
+    if (m_document[optionName.c_str()].IsString()) {
+        return m_document[optionName.c_str()].GetString();
+    }
+    if (m_document[optionName.c_str()].IsInt()) {
+        return std::to_string(m_document[optionName.c_str()].GetInt());
+    }
+    if (m_document[optionName.c_str()].IsBool()) {
+        return std::to_string(m_document[optionName.c_str()].GetBool());
+    }
+    if (m_document[optionName.c_str()].IsDouble()) {
+        return std::to_string(m_document[optionName.c_str()].GetDouble());
+    }
+    if (m_document[optionName.c_str()].IsUint()) {
+        return std::to_string(m_document[optionName.c_str()].GetUint());
+    }
+    if (m_document[optionName.c_str()].IsInt64()) {
+        return std::to_string(m_document[optionName.c_str()].GetInt64());
+    }
+    if (m_document[optionName.c_str()].IsUint64()) {
+        return std::to_string(m_document[optionName.c_str()].GetUint64());
+    }
+    if (m_document[optionName.c_str()].IsFloat()) {
+        return std::to_string(m_document[optionName.c_str()].GetFloat());
+    }
+    if (m_document[optionName.c_str()].IsNumber()) {
+        return std::to_string(m_document[optionName.c_str()].GetDouble());
+    }
+    return "";
 }
 
 std::string ConfigReader::getOptionObject(const std::string& optionName) const

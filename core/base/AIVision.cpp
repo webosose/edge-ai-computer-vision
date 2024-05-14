@@ -19,6 +19,7 @@ namespace aif {
 bool AIVision::s_initialized = false;
 std::string AIVision::s_basePath = "";
 std::unique_ptr<ConfigReader> AIVision::s_config;
+std::unique_ptr<ConfigReader> AIVision::s_override_config;
 
 void AIVision::init(const std::string& basePath)
 {
@@ -27,6 +28,10 @@ void AIVision::init(const std::string& basePath)
 
     s_config = std::make_unique<ConfigReader>(
             std::string(EDGEAI_VISION_HOME) + "/" + std::string(EDGEAI_VISION_CONFIG));
+    s_override_config = std::make_unique<ConfigReader>(
+            std::string(EDGEAI_VISION_HOME_SUB) + "/" + std::string(EDGEAI_VISION_CONFIG));
+
+    mergeConfig(s_config, s_override_config);
     Logger::init(Logger::strToLogLevel(s_config->getOption(KEY_LOG_LEVEL)));
 
     std::vector<std::string> reportTypes = s_config->getOptionArray(KEY_REPORT_TYPE);
@@ -120,4 +125,21 @@ std::string AIVision::getModelPath(const std::string& modelName)
 }
 
 
+void AIVision::mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_ptr<ConfigReader>& source)
+{
+    if (!target || !source) {
+        return;
+    }
+
+    for (auto& member : source->m_document.GetObject()) {
+        // If the member exists in the target, replace with source value
+        if (member.name.IsString() && target->m_document.HasMember(member.name.GetString())) {
+            target->m_document[member.name] = member.value;
+            continue;
+        }
+        target->m_document.AddMember(member.name, member.value, target->m_document.GetAllocator());
+    }
 }
+
+} // end of namespace aif
+
