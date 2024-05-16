@@ -16,6 +16,44 @@ class Pipe;
 class ExtraOutput;
 using ExtraOutputs = std::map<std::string, ExtraOutput>;
 
+class EdgeAISolution {
+  public:
+
+    enum class SolutionPriority : unsigned int {
+        PRIORITY_NONE = 0x0,   // not defined.
+        MIN_LATENCY = 0x1,    // NPU
+        MAX_PRECISION = 0x2,  // CPU or GPU
+
+        MID_MODEL = 0x10, // mid
+        LOW_MODEL = 0x20, // low
+
+        MIN_LATENCY_MID_MODEL = (MIN_LATENCY | MID_MODEL), // NPU mid = 0x11
+        MIN_LATENCY_LOW_MODEL = (MIN_LATENCY | LOW_MODEL), // NPU low = 0x21
+
+        MAX_PRECISION_MID_MODEL = (MAX_PRECISION | MID_MODEL), // GPU mid = 0x12
+        MAX_PRECISION_LOW_MODEL = (MAX_PRECISION | LOW_MODEL), // GPU low = 0x22
+    };
+
+
+    struct SolutionConfig {
+        std::vector<int> roi_region;  ///< roi_x, roi_y, roi_w, roi_h
+        int targetFps;                ///< minimum requested fps
+        SolutionPriority priority;
+        int numMaxPerson;
+    };
+
+    EdgeAISolution()
+        : m_solutionType("") {}
+    EdgeAISolution(const std::string &name)
+        : m_solutionType(name) {}
+    virtual ~EdgeAISolution() {}
+    virtual std::string makeSolutionConfig(SolutionConfig config) = 0;
+
+  private:
+    std::string m_solutionType;
+};
+
+
 /**
  *  API Facade class for Edge AI Computer Vision
  */
@@ -32,6 +70,7 @@ class EdgeAIVision {
                             ///< yolov5n custom)
         CUSTOM = 999,       ///< Custom Detector Type
     };
+
 
     EdgeAIVision(const EdgeAIVision& other) = delete;
     EdgeAIVision& operator=(const EdgeAIVision& rhs) = delete;
@@ -179,6 +218,43 @@ class EdgeAIVision {
             const std::string& input,
             std::string& output);
 
+    /**
+     * @brief return capable solution list by string vector type.
+     * @return return capable solution list by string vector type.
+     */
+    std::vector<std::string> getCapableSolutionList();
+
+    /**
+     * @brief return default SolutionConfig
+     * @return return default SolutionConfig to be used in User.
+     */
+    EdgeAISolution::SolutionConfig getDefaultSolutionConfig();
+
+    /**
+     * @brief generate Default AIF Param json to be used in User.
+     * @param solutionName Solution Name to be used in User.
+     * @return json string of option to be used in createDetector() / PipeCreate() API.
+     */
+    std::string generateAIFParam(const std::string &solutionName);
+
+    /**
+     * @brief generate Default AIF Param json to be used in User.
+     * @param solutionName Solution Name to be used in User.
+     * @param outputPath output json path wher the result will be written.
+     * @return json string of option to be used in createDetector() / PipeCreate() API.
+     */
+    std::string generateAIFParam(const std::string &solutionName, const std::string &outputPath);
+
+    /**
+     * @brief generate Default AIF Param json to be used in User.
+     * @param solutionName Solution Name to be used in User.
+     * @param config Solution Config including roi region, fps, ...
+     * @param outputPath output json path wher the result will be written.
+       @return json string of option to be used in createDetector() / PipeCreate() API.
+     */
+    std::string generateAIFParam(const std::string &solutionName,
+                                 EdgeAISolution::SolutionConfig config, const std::string &outputPath = "");
+
   private:
     static std::once_flag s_onceFlag;
     static std::unique_ptr<EdgeAIVision> s_instance;
@@ -219,6 +295,7 @@ class ExtraOutput {
         void* m_buffer;
         size_t m_bytes;
 };
+
 
 } // end of namespace aif
 

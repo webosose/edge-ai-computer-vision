@@ -10,6 +10,7 @@ set(FACE_SRC
     ${FACE_SRC_DIR}/YuNetFaceDetector.cpp
     ${FACE_SRC_DIR}/YuNetFaceDetectorV2.cpp
     ${FACE_SRC_DIR}/YuNetFaceDetectorV2s.cpp
+    ${FACE_SRC_DIR}/YuNetSolutionRegistration.cpp
 )
 
 IF(WITH_EDGETPU)

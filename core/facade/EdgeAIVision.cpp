@@ -5,9 +5,11 @@
 
 #include <aif/base/AIVision.h>
 #include <aif/base/DetectorFactory.h>
+#include <aif/base/SolutionFactory.h>
 #include <aif/pipe/Pipe.h>
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
+#include <fstream>
 
 #define DEFAULT_FACE_MODEL "face_yunet_360_640"
 #define DEFAULT_POSE_MODEL "posenet_mobilenet_cpu"
@@ -412,6 +414,58 @@ bool EdgeAIVision::pipeDetectFromBase64(
     descriptor->addReturnCode(res);
     output = descriptor->getResult();
     return (res == kAifOk);
+}
+
+std::vector<std::string> EdgeAIVision::getCapableSolutionList()
+{
+    return SolutionFactory::get().getCapableSolutions();
+}
+
+EdgeAISolution::SolutionConfig EdgeAIVision::getDefaultSolutionConfig() {
+    EdgeAISolution::SolutionConfig config;
+
+    config.roi_region = {0,0,0,0};
+    config.targetFps = -1;
+    config.priority = EdgeAISolution::SolutionPriority::PRIORITY_NONE;
+    config.numMaxPerson = 1;
+
+    return config;
+}
+
+std::string EdgeAIVision::generateAIFParam(const std::string &solutionName)
+{
+    return generateAIFParam(solutionName, getDefaultSolutionConfig());
+}
+
+std::string EdgeAIVision::generateAIFParam(const std::string &solutionName, const std::string &outputPath)
+{
+    if (outputPath.empty()) {
+        return generateAIFParam(solutionName);
+    }
+
+    return generateAIFParam(solutionName, getDefaultSolutionConfig(), outputPath);
+}
+
+std::string EdgeAIVision::generateAIFParam(const std::string &solutionName, EdgeAISolution::SolutionConfig config, const std::string &outputPath)
+{
+    std::shared_ptr<EdgeAISolution> solution = SolutionFactory::get().getSolution(solutionName);
+
+    if (!solution) {
+        Loge(__func__, solutionName, " : solution is not supported");
+        return solutionName + " is not supported";
+    }
+
+    if (!outputPath.empty()) {
+        auto res = solution->makeSolutionConfig(std::move(config));
+        std::ofstream fout;
+        fout.open(outputPath);
+        fout << res << std::endl;
+        fout.close();
+
+        return res;
+    }
+
+    return solution->makeSolutionConfig(std::move(config));
 }
 
 } // namespace aif

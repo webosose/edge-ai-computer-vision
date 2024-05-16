@@ -112,6 +112,7 @@ set(SRC_FILES
     ${SRC_DIR}/short_range_face_detector_test.cpp
     ${SRC_DIR}/face_descriptor_test.cpp
     ${SRC_DIR}/face_param_test.cpp
+    ${SRC_DIR}/face_aifparam_test.cpp
     ${SRC_DIR}/posenet_descriptor_test.cpp
     ${SRC_DIR}/posenet_detector_test.cpp
     ${SRC_DIR}/posenet_param_test.cpp

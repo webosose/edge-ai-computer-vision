@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8.7)
 project (edgeai-vision)
 
 OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
-OPTION(WITH_EXTRA_MODELS "Enable Extra Models" OFF)
 OPTION(WITH_EXAMPLES "Enable Examples" OFF)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
 OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
+OPTION(WITH_NNAPI "Enable Nnapi Delegate Support" OFF)
 
 set(SRC_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
@@ -29,6 +29,10 @@ ENDIF(WITH_EXTRA_MODELS)
 add_subdirectory(core)
 add_subdirectory(extensions)
 add_subdirectory(bin)
+
+IF(WITH_NNAPI)
+    ADD_DEFINITIONS(-DUSE_NNAPI)
+ENDIF()
 
 IF(WITH_EXAMPLES)
     add_subdirectory(example)

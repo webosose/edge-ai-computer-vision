@@ -10,6 +10,7 @@ set(BASE_SRC
     ${BASE_SRC_DIR}/Delegate.cpp
     ${BASE_SRC_DIR}/DelegateFactory.cpp
     ${BASE_SRC_DIR}/ExtensionLoader.cpp
+    ${BASE_SRC_DIR}/SolutionFactory.cpp
 )
 
 target_include_directories(${CORE_NAME} PRIVATE ${BASE_SRC_DIR})

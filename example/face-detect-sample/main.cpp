@@ -76,10 +76,11 @@ class FaceDetectSample : public ImageSample {
 } // namespace aif
 
 int main(int argc, char *argv[]) {
+
     std::string defaultConfig("{\n"
                               "    \"LogLevel\" : \"TRACE4\",\n"
-                              "    \"ImagePath\" : \"./images/mona.jpg\",\n"
-                              "    \"model\" : \"face_short_range_cpu\",\n"
+                              "    \"ImagePath\" : \"/usr/share/aif/images/person.jpg\",\n"
+                              "    \"model\" : \"face_yunet_360_640\",\n"
                               "    \"param\" : { \n"
                               "        \"common\" : {\n"
                               "            \"useXnnpack\": true,\n"

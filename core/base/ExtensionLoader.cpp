@@ -101,7 +101,7 @@ t_aif_status ExtensionLoader::initFromRegistryFile()
     return kAifError;
   }
 
-  Logi("Successfully parsed json: ", json);
+  Logd("Successfully parsed json: ", json);
   for (auto &plugin : doc.GetArray())
   {
     if (!isAllowedExtension(plugin["name"].GetString())) {
@@ -343,6 +343,8 @@ std::string ExtensionLoader::featureTypeToString(t_feature_type type)
     return "NodeOperation";
   case kPipeDescriptor:
     return "PipeDescriptor";
+  case kSolution:
+    return "Solution";
   default:
     return "Unknown";
   }
@@ -356,6 +358,8 @@ t_feature_type ExtensionLoader::stringToFeatureType(std::string type)
     return kNodeOperation;
   if (type == "PipeDescriptor")
     return kPipeDescriptor;
+  if (type == "Solution")
+    return kSolution;
   return kUnknown;
 }
 

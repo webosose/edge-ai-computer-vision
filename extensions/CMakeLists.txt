@@ -16,7 +16,6 @@ OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
 OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
 OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 OPTION(WITH_NPU "Enable Npu Delegate Support" OFF)
-OPTION(WITH_NNAPI "Enable Nnapi Delegate Support" OFF)
 
 IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
     set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
@@ -26,6 +25,7 @@ include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
 find_package(xtensor REQUIRED)
 find_package(xtl REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -38,6 +38,7 @@ pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
 pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
+pkg_check_modules(NLOHMANN_JSON REQUIRED nlohmann_json)
 
 # include directories
 include_directories(
@@ -45,6 +46,7 @@ include_directories(
     ${OPENCV_INCLUDE_DIRS}
     ${RAPIDJSON_INCLUDE_DIRS}
     ${PMLOGLIB_INCLUDE_DIRS}
+    ${NLOHMANN_JSON_INCLUDE_DIRS}
 )
 
 # link directories
@@ -228,7 +230,7 @@ install(FILES ${CMAKE_SOURCE_DIR}/files/edgeai-vision-base.pc.in
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig RENAME edgeai-vision-base.pc)
 install(FILES ${CMAKE_SOURCE_DIR}/files/edgeai-vision-all.pc.in
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig RENAME edgeai-vision-all.pc)
-install(DIRECTORY 
+install(DIRECTORY
         ${CMAKE_SOURCE_DIR}/include/aifex
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(TARGETS ${EXTENSION_NAME}
@@ -244,3 +246,4 @@ IF(WITH_EXTRA_MODELS)
     file(GLOB EXTRA_MODELS "${CMAKE_SOURCE_DIR}/extra_models/*.tflite")
     install(FILES ${EXTRA_MODELS} DESTINATION ${AIF_INSTALL_DIR}/model)
 ENDIF(WITH_EXTRA_MODELS)
+

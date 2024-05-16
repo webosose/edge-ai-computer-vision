@@ -283,3 +283,15 @@ TEST_F(ApiFacadeTest, 12_use_api_before_startup)
     EXPECT_FALSE(ai.detect(EdgeAIVision::DetectorType::FACE, input, output));
     ai.shutdown();
 }
+
+TEST_F(ApiFacadeTest, 13_getCapableSolutionList)
+{
+    EdgeAIVision& ai = EdgeAIVision::getInstance();
+    ai.startup();
+    auto list = ai.getCapableSolutionList();
+    auto it = find_if(list.begin(), list.end(), [](const std::string& sol) {
+                                    return (sol.find("face") != std::string::npos) ? true : false;
+                                });
+
+    EXPECT_NE(it, list.end());
+}

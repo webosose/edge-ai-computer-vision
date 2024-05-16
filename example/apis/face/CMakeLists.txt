@@ -9,6 +9,7 @@ OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
 
 include(FindPkgConfig)
 find_package(Boost REQUIRED COMPONENTS system thread filesystem date_time iostreams)
+find_package(nlohmann_json REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -20,12 +21,14 @@ find_package(PkgConfig)
 pkg_check_modules(TFLITE REQUIRED tensorflowlite)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 pkg_check_modules(RAPIDJSON REQUIRED RapidJSON)
+pkg_check_modules(NLOHMANN_JSON REQUIRED nlohmann_json)
 
 # include directories
 include_directories(
     ${TFLITE_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIRS}
     ${RAPIDJSON_INCLUDE_DIRS}
+    ${NLOHMANN_JSON_INCLUDE_DIRS}
 )
 
 # link directories

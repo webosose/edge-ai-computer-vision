@@ -214,6 +214,7 @@ typedef enum
     kDetector = 0,
     kNodeOperation = 1,
     kPipeDescriptor = 2,
+    kSolution = 3,
     kUnknown = 999
 } t_feature_type;
 

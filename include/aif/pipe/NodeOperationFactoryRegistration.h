@@ -25,7 +25,7 @@ public:
     }
     void doRegister(std::string prefixId = "") override
     {
-        Logi("doRegister: ", prefixId + m_id);
+        Logd("doRegister: ", prefixId + m_id);
         if (kAifOk != NodeOperationFactory::get().registerGenerator(
              prefixId + m_id,
              [](const std::string& id) {
@@ -39,7 +39,7 @@ public:
         ) ) {
             return Loge("Failed to register NodeOperation: ", prefixId + m_id);
         }
-        Logi("Success to register NodeOperation: ", prefixId + m_id);
+        Logd("Success to register NodeOperation: ", prefixId + m_id);
     }
 
     ~NodeOperationFactoryRegistration()
