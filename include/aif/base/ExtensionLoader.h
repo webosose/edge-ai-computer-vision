@@ -3,12 +3,12 @@
 
 #include <memory>
 
-#ifndef EDGEAI_VISION_PLUGIN_PATH
-#define EDGEAI_VISION_PLUGIN_PATH "/usr/lib/edgeai-extensions"
+#ifndef EDGEAI_VISION_EXTENSION_PATH
+#define EDGEAI_VISION_EXTENSION_PATH "/usr/lib/edgeai-extensions"
 #endif
 
-#ifndef EXTENSION_REGISTRY_PATH
-#define EXTENSION_REGISTRY_PATH "/tmp/edgeai_plugin_registry.json"
+#ifndef EDGEAI_VISION_EXTENSION_REGISTRY_PATH
+#define EDGEAI_VISION_EXTENSION_REGISTRY_PATH "/tmp/edgeai_extension_registry.json"
 #endif
 
 #ifndef EDGEAI_VISION_INSPECTOR_PATH
@@ -38,7 +38,7 @@ public:
     return instance;
   }
 
-  t_aif_status init(bool readRegistryFile=false, std::string pluginPath = EDGEAI_VISION_PLUGIN_PATH, std::vector<std::string> allowedExtensionNames = {});
+  t_aif_status init(bool readRegistryFile=false, std::string pluginPath = EDGEAI_VISION_EXTENSION_PATH, std::vector<std::string> allowedExtensionNames = {});
   bool isInitialized() { return m_initDone; }
   t_aif_status isAvailable(std::string featureName, t_feature_type type, std::string pluginName="");
   t_aif_status enableFeature(std::string featureName, t_feature_type type, std::string pluginName="");
@@ -52,9 +52,9 @@ public:
   std::string getRegistryStampFilePath(bool create=false);
 
 private:
-  ExtensionLoader(): m_registryFilePath(EXTENSION_REGISTRY_PATH)
+  ExtensionLoader(): m_registryFilePath(EDGEAI_VISION_EXTENSION_REGISTRY_PATH)
   {}
-  ExtensionLoader(const ExtensionLoader&): m_registryFilePath(EXTENSION_REGISTRY_PATH)
+  ExtensionLoader(const ExtensionLoader&): m_registryFilePath(EDGEAI_VISION_EXTENSION_REGISTRY_PATH)
   {}
   ~ExtensionLoader();
 

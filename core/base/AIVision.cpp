@@ -52,7 +52,7 @@ void AIVision::init(const std::string& basePath)
     std::string extensionPath = s_config->getOption(KEY_EXTENSION_PATH);
     std::vector<std::string> allowedExtensions = s_config->getOptionArray(KEY_ALLOWED_EXTENSIONS);
     if (extensionPath.empty()) {
-        extensionPath = EDGEAI_VISION_PLUGIN_PATH;
+        extensionPath = EDGEAI_VISION_EXTENSION_PATH;
     }
     if (allowedExtensions.size() == 0) {
         allowedExtensions = {};
