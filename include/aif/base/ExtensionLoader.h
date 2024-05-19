@@ -64,6 +64,7 @@ private:
   bool isNeededToGenRegistryFile();
   std::string getPluginNameByAlias(std::string alias);
   std::string getPluginAliasByName(std::string name);
+  std::string getBaseFileName(std::string& name);
   t_aif_status runInspector(std::string pluginPath);
   t_aif_parsed_feature_name parseFeatureName(std::string feature_name);
   t_aif_status setAllowedExtensionNames(std::vector<std::string> allowedExtensionNames);

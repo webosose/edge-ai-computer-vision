@@ -11,16 +11,19 @@
 #include <filesystem>
 #include <fstream>
 #include <initializer_list>
+#include <regex>
 #include <sstream>
 #include <sys/wait.h>
 #include <unistd.h>
+
+namespace fs = std::filesystem;
 
 namespace aif
 {
 
 t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath, std::vector<std::string> allowedExtensionNames)
 {
-  if (!std::filesystem::exists(pluginPath))
+  if (!fs::exists(pluginPath))
   {
     Loge("Plugin path does not exist: ", pluginPath);
     return kAifError;
@@ -51,14 +54,17 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath
     return initFromRegistryFile();
   }
 
-  for (const auto &entry : std::filesystem::directory_iterator(pluginPath))
+  for (const auto &entry : fs::directory_iterator(pluginPath))
   {
     Logi("ExtensionLoader::init()", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
-    if (entry.is_regular_file() && entry.path().extension() == ".so" &&
-        entry.path().filename().string().find("libedgeai-") == 0)
+    if (!entry.is_regular_file() ||
+        fs::is_symlink(entry.path()) ||
+        entry.path().filename().string().find("libedgeai-") != 0)
     {
-      if (loadExtension(entry.path().c_str()) != kAifOk)
-        continue;
+      continue;
+    }
+    if (loadExtension(entry.path().c_str()) != kAifOk) {
+      Loge("ExtensionLoader::loadExtension() failed.", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
     }
   }
 
@@ -132,7 +138,8 @@ t_aif_status ExtensionLoader::initFromRegistryFile()
 
 t_aif_status ExtensionLoader::loadExtension(std::string extensionFilePath)
 {
-  std::string extensionName = std::filesystem::path(extensionFilePath).filename().string();
+  std::string fileName =  fs::path(extensionFilePath).filename().string();
+  std::string extensionName = getBaseFileName(fileName);
   setenv("AIF_EXTENSION_NAME", extensionName.c_str(), 1);
   void *handle = dlopen(extensionFilePath.c_str(), RTLD_NOW | RTLD_GLOBAL | RTLD_DEEPBIND);
   if (handle == nullptr)
@@ -382,10 +389,7 @@ t_aif_status ExtensionLoader::setAllowedExtensionNames(std::vector<std::string> 
     {
       extensionName = "lib" + extensionName;
     }
-    if (extensionName.find(".so") != extensionName.size() - 3)
-    {
-      extensionName = extensionName + ".so";
-    }
+    extensionName = getBaseFileName(extensionName);
   }
 
   m_allowAllExtensions = false;
@@ -408,24 +412,24 @@ bool ExtensionLoader::isAllowedExtension(std::string extensionName)
 
 bool ExtensionLoader::isNeededToGenRegistryFile()
 {
-  if (!std::filesystem::exists(m_registryFilePath))
+  if (!fs::exists(m_registryFilePath))
     return true;
 
   std::string registryStampFilePath = getRegistryStampFilePath(false);
   if (registryStampFilePath.empty())
     return true;
 
-  if (!std::filesystem::exists(registryStampFilePath))
+  if (!fs::exists(registryStampFilePath))
   {
     std::string dir = m_registryFilePath.substr(0, m_registryFilePath.find_last_of("/"));
-    for (const auto &entry : std::filesystem::directory_iterator(dir))
+    for (const auto &entry : fs::directory_iterator(dir))
     {
       if (entry.path().string().find(m_registryFilePath+".done.") == 0)
       {
-        std::filesystem::remove(entry.path());
+        fs::remove(entry.path());
       }
     }
-    std::filesystem::remove(m_registryFilePath);
+    fs::remove(m_registryFilePath);
     return true;
   }
 
@@ -464,6 +468,12 @@ t_aif_status ExtensionLoader::runInspector(std::string pluginPath)
   std::string output = processRunner.getResult();
   Logd("Inspector output: ", output);
   return kAifOk;
+}
+
+std::string ExtensionLoader::getBaseFileName(std::string& name)
+{
+  std::regex so_regex(R"(\.so.*$)");
+  return std::regex_replace(name, so_regex, "");
 }
 
 } // namespace aif
