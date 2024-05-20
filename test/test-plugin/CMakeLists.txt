@@ -41,7 +41,6 @@ link_directories(
 )
 
 add_definitions(
-    -std=c++14
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
     -DEDGEAI_VISION_HOME="${AIF_INSTALL_DIR}"

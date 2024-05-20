@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.7)
 project (edgeai-vision)
 
+set(CMAKE_CXX_STANDARD 17)  # for C++17
+
 OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
 OPTION(WITH_EXAMPLES "Enable Examples" OFF)
 OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)

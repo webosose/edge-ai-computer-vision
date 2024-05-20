@@ -36,7 +36,6 @@ link_directories(
 )
 
 add_definitions(
-    -std=c++14
     -DENABLE_DEBUG
     -DLOG_APPLICATION="AIF"
 )
