@@ -127,7 +127,7 @@ std::string AIVision::getModelPath(const std::string& modelName)
 
 void AIVision::mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_ptr<ConfigReader>& source)
 {
-    if (!target || !source) {
+    if (!target || !source || source->m_document.IsObject() == false) {
         return;
     }
     for (auto& member : source->m_document.GetObject()) {
