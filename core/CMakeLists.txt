@@ -137,7 +137,6 @@ set(LIBS
     ${PMLOGLIB_LDFLAGS}
     pthread
     xtensor
-    xtensor::optimize
     xtensor::use_xsimd
 )
 
