@@ -245,7 +245,7 @@ set_target_properties(${EXE_NAME}
 
 IF(WITH_HOST_TEST)
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test/tmp)
-  file(COPY ${CMAKE_SOURCE_DIR}/images DESTINATION ${CMAKE_BINARY_DIR}/test/tmp)
+  file(COPY ${CMAKE_SOURCE_DIR}/test_images/* DESTINATION ${CMAKE_BINARY_DIR}/test/tmp/images)
   file(COPY ${CMAKE_SOURCE_DIR}/model DESTINATION ${CMAKE_BINARY_DIR}/test/tmp)
   file(COPY ${CMAKE_SOURCE_DIR}/extra_models/ DESTINATION ${CMAKE_BINARY_DIR}/test/tmp/model/)
 
@@ -255,5 +255,6 @@ ENDIF(WITH_HOST_TEST)
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/pipe")
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/images DESTINATION ${AIF_INSTALL_DIR})
+file(GLOB TEST_IMAGES "${CMAKE_SOURCE_DIR}/test_images/*")
+install(FILES ${TEST_IMAGES} DESTINATION ${AIF_INSTALL_DIR}/images)
 install(TARGETS ${EXE_NAME} DESTINATION ${AIF_INSTALL_TEST_DIR})
