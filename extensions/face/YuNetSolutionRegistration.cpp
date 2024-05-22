@@ -27,7 +27,7 @@ std::string FaceSolution::makeSolutionConfig(SolutionConfig config)
         param["modelParam"]["origImgRoiHeight"] = config.roi_region[3];
     }
 
-#if defined(USE_NNAPI_ONLINE) /* K24 */ // TODO: naming again !!!!
+#if defined(USE_NNAPI) /* K24 */ // TODO: naming again !!!!
     /* TODO: use autodelegate instead of nnapi delegate */
     param["delegates"] = json::array({{
         {"name", "nnapi_delegate"},

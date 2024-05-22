@@ -28,13 +28,13 @@ IF(WITH_EXTRA_MODELS)
     ADD_DEFINITIONS(-DUSE_EXTRA_MODELS)
 ENDIF(WITH_EXTRA_MODELS)
 
-add_subdirectory(core)
-add_subdirectory(extensions)
-add_subdirectory(bin)
-
 IF(WITH_NNAPI)
     ADD_DEFINITIONS(-DUSE_NNAPI)
 ENDIF()
+
+add_subdirectory(core)
+add_subdirectory(extensions)
+add_subdirectory(bin)
 
 IF(WITH_EXAMPLES)
     add_subdirectory(example)

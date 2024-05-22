@@ -29,7 +29,7 @@ protected:
     {
     }
 
-#if defined(USE_NNAPI_ONLINE) /* K24 */ // TODO: naming again!!!
+#if defined(USE_NNAPI) /* K24 */ // TODO: naming again!!!
     std::string face = R"(
                 {
                     "model": "face_yunet_360_640",
