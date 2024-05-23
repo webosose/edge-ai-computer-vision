@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
+#include <fstream>
 
 namespace aif
 {
