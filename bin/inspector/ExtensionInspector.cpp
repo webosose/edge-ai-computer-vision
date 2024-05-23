@@ -112,7 +112,8 @@ t_aif_status ExtensionInspector::dump(std::string dumpPath)
     boost::filesystem::create_directories(dir);
   }
   std::ofstream ofs(dumpPath);
-  ofs << json();
+  std::string dumpJson = json();
+  ofs << dumpJson;
   ofs.close();
 
   ExtensionLoader::get().getRegistryStampFilePath(true);

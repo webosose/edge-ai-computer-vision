@@ -29,8 +29,6 @@ int main(int argc, char *argv[])
       std::cerr << "Error: Failed to inspect plugins" << std::endl;
       return 1;
     }
-    std::string dumpJson = aif::ExtensionInspector::get().json();
-    std::cout << dumpJson << std::endl;
     aif::ExtensionInspector::get().dump(EDGEAI_VISION_EXTENSION_REGISTRY_PATH);
     std::cout << "Dumped plugin info to: " << EDGEAI_VISION_EXTENSION_REGISTRY_PATH << std::endl;
   }
