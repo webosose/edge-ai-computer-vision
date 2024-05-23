@@ -25,7 +25,6 @@ public:
 
     void doRegister(std::string prefixId = "") override
     {
-        Logd("doRegister: ", m_id);
         if (kAifOk != PipeDescriptorFactory::get().registerGenerator(
              prefixId + m_id,
              []() {
@@ -35,7 +34,6 @@ public:
         ) ) {
             return Loge("Failed to register PipeDescriptor: ", prefixId + m_id);
         }
-        Logd("Success to register PipeDescriptor: ", prefixId + m_id);
     }
 
     ~PipeDescriptorFactoryRegistration()

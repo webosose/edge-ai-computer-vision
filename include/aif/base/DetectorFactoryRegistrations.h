@@ -27,7 +27,6 @@ public:
 
     void doRegister(std::string prefixId = "") override
     {
-        Logd("doRegister: ", prefixId + m_id);
         if (kAifOk != DetectorFactory::get().registerGenerator(
                 prefixId + m_id,
                 []() {
@@ -42,7 +41,6 @@ public:
             Loge("Failed to register detector: ", prefixId + m_id);
             return;
         }
-        Logd("Success to register detector: ", prefixId + m_id);
     }
 
     ~DetectorFactoryRegistration()

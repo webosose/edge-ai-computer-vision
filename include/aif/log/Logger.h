@@ -18,7 +18,7 @@ namespace aif {
 class Logger
 {
 public:
-    static void init(LogLevel loglevel = LogLevel::DEBUG);
+    static void init(LogLevel loglevel = LogLevel::INFO);
 
 //    static std::shared_ptr<Logger> get();
     static Logger& getInstance();
@@ -34,7 +34,7 @@ public:
     void printLog(const char* app, const char* ctx, const char* functioName, const char* fileName, int line, const Args&... args)
     {
         std::ostringstream msg;
-        //msg << app << " " << ctx << " ";
+        // msg << app << " " << ctx << " ";
         writer<loglevel>(functioName, fileName, line, msg, args...);
     }
 

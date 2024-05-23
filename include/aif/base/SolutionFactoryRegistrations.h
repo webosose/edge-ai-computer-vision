@@ -26,7 +26,6 @@ public:
 
     void doRegister(std::string prefixId = "") override
     {
-        Logd("doRegister: ", prefixId + m_id);
         if (kAifOk != SolutionFactory::get().registerGenerator(
             prefixId + m_id,
             [](const std::string& name) {
@@ -37,7 +36,6 @@ public:
             Loge("Failed to register solution: ", prefixId + m_id);
             return;
         }
-        Logd("Success to register solution: ", prefixId + m_id);
     }
 
     ~SolutionFactoryRegistration()

@@ -38,7 +38,7 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath
     for (auto const &[id, reg] : RegistrationJob::get().getRegistrations(DEFAULT_EXTENSION_NAME))
     {
       t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = DEFAULT_EXTENSION_NAME};
-      Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", DEFAULT_EXTENSION_NAME);
+      //Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", DEFAULT_EXTENSION_NAME);
       m_featureInfos.push_back(feature_info);
       reg->doRegister(); // This is needed for unittests (i.e. unittests link libraries directly and not via dlopen)
     }
@@ -75,7 +75,7 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath
       for (auto const &[id, reg] : RegistrationJob::get().getRegistrations(plugin_info.name))
       {
         t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = plugin_info.name};
-        Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", plugin_info.name);
+        //Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", plugin_info.name);
         m_featureInfos.push_back(feature_info);
       }
     }
@@ -92,7 +92,7 @@ t_aif_status ExtensionLoader::initFromRegistryFile()
   std::ifstream ifs(m_registryFilePath);
   if (!ifs.is_open())
   {
-    Logi("Failed to open file: ", m_registryFilePath);
+    Loge("Failed to open file: ", m_registryFilePath);
     return kAifError;
   }
   std::stringstream buffer;
@@ -103,7 +103,7 @@ t_aif_status ExtensionLoader::initFromRegistryFile()
   doc.Parse(json.c_str());
   if (doc.HasParseError())
   {
-    Logi("Failed to parse json: ", json);
+    Loge("Failed to parse json: ", json);
     return kAifError;
   }
 

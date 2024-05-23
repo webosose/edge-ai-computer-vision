@@ -58,7 +58,7 @@ LogLevel Logger::strToLogLevel(const std::string& str)
         { "TRACE4", LogLevel::TRACE4 }
     };
     if (levelMap.find(str) == levelMap.end())
-        return LogLevel::DEBUG;
+        return LogLevel::INFO;
 
     return levelMap[str];
 }
