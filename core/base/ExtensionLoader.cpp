@@ -17,6 +17,7 @@
 #include <dlfcn.h>
 #include <exception>
 #include <filesystem>
+#include <fstream>
 #include <initializer_list>
 #include <regex>
 #include <sstream>
