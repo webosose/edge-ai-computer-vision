@@ -62,6 +62,7 @@ private:
   bool isFeatureNameHasPluginAlias(std::string feature_name);
   bool isAllowedExtension(std::string extensionName);
   bool isNeededToGenRegistryFile();
+  bool isReadableDirectory(std::string path);
   std::string getPluginNameByAlias(std::string alias);
   std::string getPluginAliasByName(std::string name);
   std::string getBaseFileName(std::string& name);

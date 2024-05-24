@@ -23,11 +23,9 @@ namespace aif
 
 t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath, std::vector<std::string> allowedExtensionNames)
 {
-  if (!fs::exists(pluginPath))
-  {
-    Loge("Plugin path does not exist: ", pluginPath);
+  if (!isReadableDirectory(pluginPath))
     return kAifError;
-  }
+
   setAllowedExtensionNames(allowedExtensionNames);
 
   if (m_initDone)
@@ -422,11 +420,13 @@ bool ExtensionLoader::isNeededToGenRegistryFile()
   if (!fs::exists(registryStampFilePath))
   {
     std::string dir = m_registryFilePath.substr(0, m_registryFilePath.find_last_of("/"));
-    for (const auto &entry : fs::directory_iterator(dir))
-    {
-      if (entry.path().string().find(m_registryFilePath+".done.") == 0)
+    if(isReadableDirectory(dir)) {
+      for (const auto &entry : fs::directory_iterator(dir))
       {
-        fs::remove(entry.path());
+        if (entry.path().string().find(m_registryFilePath+".done.") == 0)
+        {
+          fs::remove(entry.path());
+        }
       }
     }
     fs::remove(m_registryFilePath);
@@ -474,6 +474,15 @@ std::string ExtensionLoader::getBaseFileName(std::string& name)
 {
   std::regex so_regex(R"(\.so.*$)");
   return std::regex_replace(name, so_regex, "");
+}
+
+bool ExtensionLoader::isReadableDirectory(std::string path)
+{
+  if (!fs::exists(path) || !fs::is_directory(path)) {
+    Loge("Directory does not exist or is not readable: ", path);
+    return false;
+  }
+  return true;
 }
 
 } // namespace aif
