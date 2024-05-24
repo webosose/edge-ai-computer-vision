@@ -35,7 +35,7 @@ protected:
                     "model": "face_yunet_360_640",
                     "param": {
                         "commonParam": {
-                            "numMaxPerson": 5
+                            "numMaxPerson": 1
                         },
                         "modelParam": {
                             "scoreThreshold": 0.7,
