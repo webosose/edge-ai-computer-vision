@@ -8,6 +8,7 @@
 #include <rapidjson/stringbuffer.h>
 
 #include <dlfcn.h>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <initializer_list>
@@ -52,18 +53,23 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath
     return initFromRegistryFile();
   }
 
-  for (const auto &entry : fs::directory_iterator(pluginPath))
-  {
-    Logi("ExtensionLoader::init()", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
-    if (!entry.is_regular_file() ||
-        fs::is_symlink(entry.path()) ||
-        entry.path().filename().string().find("libedgeai-") != 0)
+  try {
+    for (const auto &entry : fs::directory_iterator(pluginPath))
     {
-      continue;
+      Logi("ExtensionLoader::init()", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
+      if (!entry.is_regular_file() ||
+          fs::is_symlink(entry.path()) ||
+          entry.path().filename().string().find("libedgeai-") != 0)
+      {
+        continue;
+      }
+      if (loadExtension(entry.path().c_str()) != kAifOk) {
+        Loge("ExtensionLoader::loadExtension() failed.", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
+      }
     }
-    if (loadExtension(entry.path().c_str()) != kAifOk) {
-      Loge("ExtensionLoader::loadExtension() failed.", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
-    }
+  } catch (const std::exception &e) {
+      Loge("Exception occurred while iterating directory: ", e.what());
+      return kAifError;
   }
 
   for (auto &plugin_info : m_pluginInfos)
@@ -419,17 +425,22 @@ bool ExtensionLoader::isNeededToGenRegistryFile()
 
   if (!fs::exists(registryStampFilePath))
   {
+    fs::remove(m_registryFilePath);
     std::string dir = m_registryFilePath.substr(0, m_registryFilePath.find_last_of("/"));
     if(isReadableDirectory(dir)) {
-      for (const auto &entry : fs::directory_iterator(dir))
-      {
-        if (entry.path().string().find(m_registryFilePath+".done.") == 0)
+      try {
+        for (const auto &entry : fs::directory_iterator(dir))
         {
-          fs::remove(entry.path());
+          if (entry.path().string().find(m_registryFilePath+".done.") == 0)
+          {
+            fs::remove(entry.path());
+          }
         }
+      } catch (const std::exception &e) {
+        Loge("Exception occurred while iterating directory: ", e.what());
+        return true; //Although exception occurs, the file should be re-gen.
       }
     }
-    fs::remove(m_registryFilePath);
     return true;
   }
 
