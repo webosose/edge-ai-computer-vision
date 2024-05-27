@@ -56,7 +56,7 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath
   try {
     for (const auto &entry : fs::directory_iterator(pluginPath))
     {
-      if (!entry)
+      if (!entry.exists() || entry.is_directory())
         continue;
       Logi("ExtensionLoader::init()", "pluginPath:", pluginPath, ", entry.path:", entry.path().c_str());
       if (!entry.is_regular_file() ||
@@ -433,7 +433,7 @@ bool ExtensionLoader::isNeededToGenRegistryFile()
       try {
         for (const auto &entry : fs::directory_iterator(dir))
         {
-          if (!entry)
+          if (!entry.exists())
             continue;
           if (entry.path().string().find(m_registryFilePath+".done.") == 0)
           {
