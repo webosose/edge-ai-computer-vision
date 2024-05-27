@@ -7,17 +7,17 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
+#include <boost/filesystem.hpp>
 #include <dlfcn.h>
 #include <exception>
 #include <filesystem>
-#include <fstream>
 #include <initializer_list>
 #include <regex>
 #include <sstream>
 #include <sys/wait.h>
 #include <unistd.h>
 
-namespace fs = std::filesystem;
+namespace fs = boost::filesystem;
 
 namespace aif
 {
@@ -55,22 +55,20 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile, std::string pluginPath
 
   try {
     fs::directory_iterator itr(pluginPath);
-    while (itr != fs::end(itr))
+    for (; itr != fs::directory_iterator(); ++itr)
     {
-      if (!itr->is_regular_file() ||
+      if (!fs::is_regular_file(itr->path()) ||
           fs::is_symlink(itr->path()) ||
           itr->path().filename().string().find("libedgeai-") != 0)
       {
-        itr++;
         continue;
       }
       Logi("ExtensionLoader::init(),", " pluginPath:", pluginPath, ", itr->path:", itr->path().c_str());
       if (loadExtension(itr->path().c_str()) != kAifOk) {
         Loge("ExtensionLoader::loadExtension() failed.", "pluginPath:", pluginPath, ", itr->path:", itr->path().c_str());
       }
-      itr++;
     }
-  } catch (const std::exception &e) {
+  } catch (const fs::filesystem_error& e) {
       Loge("Exception occurred while iterating directory: ", e.what());
       return kAifError;
   }
@@ -433,19 +431,17 @@ bool ExtensionLoader::isNeededToGenRegistryFile()
     if(isReadableDirectory(dir)) {
       try {
         fs::directory_iterator itr(dir);
-        while (itr != fs::end(itr))
+        for (; itr != fs::directory_iterator(); ++itr)
         {
-          if (!itr->exists()) {
-            itr++;
+          if (!fs::exists(itr->path())) {
             continue;
           }
           if (itr->path().string().find(m_registryFilePath+".done.") == 0)
           {
             fs::remove(itr->path());
           }
-          itr++;
         }
-      } catch (const std::exception &e) {
+      } catch (const fs::filesystem_error& e) {
         Loge("Exception occurred while iterating directory: ", e.what());
         return true; //Although exception occurs, the file should be re-gen.
       }
