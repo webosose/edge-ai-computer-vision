@@ -47,7 +47,7 @@ public:
     }
 
     template<LogLevel loglevel>
-    void writer(const char* functioName, const char* fileName, int line, std::ostringstream& msg);
+    void writer(const char* functioName, const char* fileName, int line, std::ostringstream& msg) noexcept;
 
 
 private:

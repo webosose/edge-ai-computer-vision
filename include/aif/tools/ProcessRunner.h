@@ -15,7 +15,7 @@ namespace aif
 class ProcessRunner
 {
 public:
-  ProcessRunner(std::string cmd, std::initializer_list<std::string> args);
+  ProcessRunner(std::string cmd, std::initializer_list<std::string> args) noexcept;
   ~ProcessRunner() = default;
   std::string getResult() const { return m_result; }
 

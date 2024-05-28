@@ -95,50 +95,66 @@ PmLogContext Logger::getPmLogContext() {
 }
 
 template<>
-void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     PmLogCritical(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
 
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::FATAL) return;
-    AIF_FATAL << msg.str();
+    try {
+        AIF_FATAL << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::FATAL>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     PmLogError(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
 
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::ERROR) return;
-    AIF_ERROR << msg.str();
+    try {
+        AIF_ERROR << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::ERROR>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     PmLogWarning(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
 
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::WARNING) return;
-    AIF_WARNING << msg.str();
+    try  {
+        AIF_WARNING << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::WARNING>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::INFO>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::INFO>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     PmLogInfo(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::INFO) return;
-    AIF_INFO << msg.str();
+    try {
+        AIF_INFO << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::INFO>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::DEBUG>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::DEBUG>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     std::string logStr =
         std::string(fileName) +
@@ -147,32 +163,44 @@ void Logger::writer<LogLevel::DEBUG>(const char* functionName, const char* fileN
     PmLogDebug(getPmLogContext(), logStr.c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::DEBUG) return;
-    AIF_DEBUG << msg.str();
+    try {
+        AIF_DEBUG << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::DEBUG>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::VERBOSE>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::VERBOSE>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     PmLogDebug(getPmLogContext(), msg.str().c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::VERBOSE) return;
-    AIF_VERBOSE << msg.str();
+    try {
+        AIF_VERBOSE << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::VERBOSE>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::TRACE1>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::TRACE1>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     PmLogDebug(getPmLogContext(), msg.str().c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE1) return;
-    AIF_TRACE1 << msg.str();
+    try {
+        AIF_TRACE1 << msg.str();
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::TRACE1>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::TRACE2>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::TRACE2>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     std::ostringstream ss;
     ss << std::this_thread::get_id();
@@ -180,12 +208,16 @@ void Logger::writer<LogLevel::TRACE2>(const char* functionName, const char* file
     PmLogDebug(getPmLogContext(), logStr.c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE2) return;
-    AIF_TRACE1 << logStr;
+    try {
+        AIF_TRACE1 << logStr;
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::TRACE2>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::TRACE3>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::TRACE3>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     std::string logStr =
         std::string(fileName) +
@@ -194,12 +226,16 @@ void Logger::writer<LogLevel::TRACE3>(const char* functionName, const char* file
     PmLogDebug(getPmLogContext(), logStr.c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE3) return;
-    AIF_TRACE1 << logStr;
+    try {
+        AIF_TRACE1 << logStr;
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::TRACE3>" << std::endl;
+    }
 #endif
 }
 
 template<>
-void Logger::writer<LogLevel::TRACE4>(const char* functionName, const char* fileName, int line, std::ostringstream& msg)
+void Logger::writer<LogLevel::TRACE4>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
     std::ostringstream ss;
     ss << std::this_thread::get_id();
@@ -212,7 +248,11 @@ void Logger::writer<LogLevel::TRACE4>(const char* functionName, const char* file
     PmLogDebug(getPmLogContext(), logStr.c_str());
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE4) return;
-    AIF_TRACE1 << logStr;
+    try {
+        AIF_TRACE1 << logStr;
+    } catch (...) {
+        std::cout << "Exception in Logger::writer<LogLevel::TRACE4>" << std::endl;
+    }
 #endif
 }
 

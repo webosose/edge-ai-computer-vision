@@ -117,10 +117,12 @@ t_aif_status ExtensionInspector::dump(std::string dumpPath)
   if (!boost::filesystem::exists(dir)) {
     boost::filesystem::create_directories(dir);
   }
-  std::ofstream ofs(dumpPath);
-  std::string dumpJson = json();
-  ofs << dumpJson;
-  ofs.close();
+  {
+    std::ofstream ofs(dumpPath);
+    ofs << json();
+    ofs.flush();
+    ofs.close();
+  }
 
   ExtensionLoader::get().getRegistryStampFilePath(true);
   return kAifOk;

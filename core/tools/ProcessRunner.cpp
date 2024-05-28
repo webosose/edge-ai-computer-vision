@@ -16,7 +16,7 @@ namespace bp = boost::process;
 namespace aif
 {
 
-ProcessRunner::ProcessRunner(std::string cmd, std::initializer_list<std::string> args)
+ProcessRunner::ProcessRunner(std::string cmd, std::initializer_list<std::string> args) noexcept
     : m_pid(0), m_result("")
 {
     std::string arg = "";

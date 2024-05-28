@@ -52,11 +52,11 @@ namespace aif
       return instance;
     }
 
-    void addRegistration(std::string extensionName, std::string id, IRegistration *registration)
+    void addRegistration(const std::string extensionName, const std::string id, IRegistration *registration)
     {
       m_registrations[extensionName][id] = std::move(registration);
     }
-    void removeRegistration(std::string extensionName, std::string id)
+    void removeRegistration(const std::string extensionName, const std::string id)
     {
       if (m_registrations[extensionName].find(id) != m_registrations[extensionName].end())
       {
@@ -64,12 +64,12 @@ namespace aif
       }
     }
 
-    IRegistration *&getRegistration(std::string extensionName, std::string id)
+    IRegistration *&getRegistration(const std::string extensionName, const std::string id)
     {
       return m_registrations[extensionName][id];
     }
 
-    std::map<std::string, IRegistration *> &getRegistrations(std::string extensionName)
+    std::map<std::string, IRegistration *> &getRegistrations(const std::string extensionName)
     {
       return m_registrations[extensionName];
     }

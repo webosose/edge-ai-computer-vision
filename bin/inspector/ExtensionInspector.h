@@ -21,7 +21,7 @@ public:
     static ExtensionInspector instance;
     return instance;
   }
-  void setPluginPath(std::string pluginPath=EDGEAI_VISION_EXTENSION_PATH) { m_pluginPath = pluginPath; }
+  void setPluginPath(const std::string& pluginPath=EDGEAI_VISION_EXTENSION_PATH) { m_pluginPath = pluginPath; }
   t_aif_status inspect();
   std::string json();
   t_aif_status dump(std::string dumpPath);

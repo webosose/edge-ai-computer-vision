@@ -6,41 +6,60 @@
 #include "ExtensionInspector.h"
 
 #include <cstring>
+#include <exception>
 #include <fstream>
 #include <iostream>
 
-int main(int argc, char *argv[])
+
+static void help() noexcept
 {
-  try
-  {
-    std::string pluginPath = "";
-    if (argc > 1)
-    {
-      if (!std::strcmp(argv[1], "-h") || !std::strcmp(argv[1], "--help"))
-      {
-        std::cout << "Usage: edgeai-inspector <edgeai-extension-path>" << std::endl;
-        return 0;
-      }
-      pluginPath = argv[1];
-    }
-    if (pluginPath.empty())
-    {
-      pluginPath = "/usr/lib/edgeai-extensions";
-    }
-    std::cout << "Inspecting path: " << pluginPath << std::endl;
+  try {
+    std::cout << "Usage: edgeai-inspector <edgeai-extension-path>" << std::endl;
+  } catch(const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+  } catch(...) {
+    std::cerr << "Caught unknown exception" << std::endl;
+  }
+}
+
+static int inspectPlugins(const std::string& pluginPath) noexcept {
+  try {
     aif::ExtensionInspector::get().setPluginPath(pluginPath);
-    if (aif::ExtensionInspector::get().inspect() != aif::kAifOk)
-    {
+    if (aif::ExtensionInspector::get().inspect() != aif::kAifOk) {
       std::cerr << "Error: Failed to inspect plugins" << std::endl;
       return 1;
     }
     aif::ExtensionInspector::get().dump(EDGEAI_VISION_EXTENSION_REGISTRY_PATH);
     std::cout << "Dumped plugin info to: " << EDGEAI_VISION_EXTENSION_REGISTRY_PATH << std::endl;
-  }
-  catch (const std::exception &e)
-  {
+    return 0;
+  } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << std::endl;
     return 1;
+  } catch (...) {
+    std::cerr << "Caught unknown exception" << std::endl;
+    return 1;
   }
-  return 0;
+}
+
+int main(int argc, char *argv[]) noexcept
+{
+  try {
+    std::string pluginPath = EDGEAI_VISION_EXTENSION_PATH;
+    if (argc > 1)
+    {
+      if (!std::strcmp(argv[1], "-h") || !std::strcmp(argv[1], "--help"))
+      {
+        help();
+        return 0;
+      }
+      pluginPath = argv[1];
+    }
+    return inspectPlugins(pluginPath);
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return 1;
+  } catch (...) {
+    std::cerr << "Caught unknown exception" << std::endl;
+    return 1;
+  }
 }

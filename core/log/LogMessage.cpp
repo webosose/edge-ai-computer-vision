@@ -23,7 +23,7 @@ LogMessage::LogMessage(LogLevel level)
     m_when = boost::posix_time::microsec_clock::universal_time();
 }
 
-LogMessage::~LogMessage()
+LogMessage::~LogMessage() noexcept
 {
     std::lock_guard<std::mutex> itsLock(s_mutex);
 

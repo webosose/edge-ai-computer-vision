@@ -43,17 +43,19 @@ public:
     return instance;
   }
 
-  t_aif_status init(bool readRegistryFile=false, std::string pluginPath = EDGEAI_VISION_EXTENSION_PATH, std::vector<std::string> allowedExtensionNames = {});
+  t_aif_status init(bool readRegistryFile=false, const std::string& extensionDirectoryPath = EDGEAI_VISION_EXTENSION_PATH,
+    const std::vector<std::string>& allowedExtensionNames = {}) noexcept;
+
   bool isInitialized() { return m_initDone; }
-  t_aif_status isAvailable(std::string featureName, t_feature_type type, std::string pluginName="");
-  t_aif_status enableFeature(std::string featureName, t_feature_type type, std::string pluginName="");
-  t_aif_status loadExtension(std::string extensionFilePath);
+  t_aif_status isAvailable(const std::string& featureName, t_feature_type type, const std::string& pluginName="");
+  t_aif_status enableFeature(const std::string& featureName, t_feature_type type, const std::string& pluginName="");
+  t_aif_status loadExtension(const std::string& extensionFilePath);
   t_aif_status unloadAllExtension();
   t_aif_status clear();
   std::vector<aif::t_aif_plugin_info> getPluginInfos() { return m_pluginInfos; }
   std::vector<aif::t_aif_feature_info> getFeatureInfos() { return m_featureInfos; }
   std::string featureTypeToString(t_feature_type type);
-  t_feature_type stringToFeatureType(std::string type);
+  t_feature_type stringToFeatureType(const std::string& type);
   std::string getRegistryStampFilePath(bool create=false);
 
 private:
@@ -64,24 +66,30 @@ private:
   ~ExtensionLoader();
 
   t_aif_status initFromRegistryFile();
-  bool isFeatureNameHasPluginAlias(std::string feature_name);
-  bool isAllowedExtension(std::string extensionName);
-  bool isNeededToGenRegistryFile();
-  bool isReadableDirectory(std::string path);
-  std::string getPluginNameByAlias(std::string alias);
-  std::string getPluginAliasByName(std::string name);
-  std::string getBaseFileName(std::string& name);
-  t_aif_status runInspector(std::string pluginPath);
-  t_aif_parsed_feature_name parseFeatureName(std::string feature_name);
-  t_aif_status setAllowedExtensionNames(std::vector<std::string> allowedExtensionNames);
+  bool isFeatureNameHasPluginAlias(const std::string& feature_name);
+  bool isAllowedExtension(const std::string& extensionName);
+  bool isNeededToGenRegistryFile() noexcept;
+  bool isReadableDirectory(const std::string& path);
+  std::string getPluginNameByAlias(const std::string& alias);
+  std::string getPluginAliasByName(const std::string& name);
+  std::string getBaseFileName(const std::string& name);
+  bool compareExtensionName(const std::string& name1, const std::string& name2);
+  t_aif_status runInspector();
+  t_aif_parsed_feature_name parseFeatureName(const std::string& feature_name);
+
+  t_aif_status setExtensionDirectory(const std::string& extensionDirectoryPath);
+  t_aif_status setAllowedExtensionNames(const std::vector<std::string>& allowedExtensionNames);
 
 private:
   bool m_initDone = false;
   bool m_allowAllExtensions = true;
+
   std::string m_registryFilePath;
+  std::string m_extensionDirectoryPath;
+  std::vector<std::string> m_allowedExtensionNames;
+
   std::vector<aif::t_aif_plugin_info> m_pluginInfos;
   std::vector<aif::t_aif_feature_info> m_featureInfos;
-  std::vector<std::string> m_allowedExtensionNames;
 };
 
 } // namespace aif

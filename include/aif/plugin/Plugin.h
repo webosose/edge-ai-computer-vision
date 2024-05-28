@@ -31,24 +31,24 @@ public:
    * @brief Add a feature to be not exposed.
    * @param featureName
    */
-  void makeHidden(std::string featureName) { m_hiddenFeatures.insert(featureName); }
+  void makeHidden(const std::string& featureName) { m_hiddenFeatures.insert(featureName); }
   /**
    * @brief Set the plugin alias name
    * @param alias
    */
-  void setAlias(std::string alias) { m_alias = alias; }
+  void setAlias(const std::string& alias) { m_alias = alias; }
 
   /**
    * @brief Set the plugin version
    * @param version
    */
-  void setVersion(std::string version)  { m_version = version; }
+  void setVersion(const std::string& version)  { m_version = version; }
 
   /**
    * @brief Set the plugin description
    * @param description
    */
-  void setDescription(std::string description) { m_description = description; }
+  void setDescription(const std::string& description) { m_description = description; }
 };
 
 } // namespace aif

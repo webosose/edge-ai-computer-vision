@@ -35,7 +35,7 @@ class LogMessage : public std::ostream
 {
 public:
     LogMessage(LogLevel level);
-    ~LogMessage();
+    ~LogMessage() noexcept;
 
 private:
     class Buffer : public std::streambuf

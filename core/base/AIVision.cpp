@@ -134,7 +134,7 @@ void AIVision::mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_pt
         // If the member exists in the target, replace with source value
         if (target->m_document.HasMember(member.name)) {
             rapidjson::Value value(member.value, target->m_document.GetAllocator());
-            target->m_document[member.name] = value;
+            target->m_document[member.name] = std::move(value);
             continue;
         }
         // If the member doesn't exist in the target, add it
