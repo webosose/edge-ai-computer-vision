@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef FACE_WSSERVER_SESSION_H
 #define FACE_WSSERVER_SESSION_H
 

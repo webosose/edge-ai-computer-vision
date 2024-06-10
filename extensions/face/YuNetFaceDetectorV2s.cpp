@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <aifex/face/YuNetFaceDetectorV2s.h>
 #include <aifex/face/YuNetFaceParam.h>
 #include <aif/log/Logger.h>

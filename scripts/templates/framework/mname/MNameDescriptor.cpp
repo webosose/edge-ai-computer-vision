@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
 #include <aif/mname/MNameDescriptor.h>
 #include <aif/log/Logger.h>
 

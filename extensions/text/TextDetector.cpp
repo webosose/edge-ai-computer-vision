@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 LG Electronics Inc.
+ * Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 

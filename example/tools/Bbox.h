@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef AIF_BODYPOSEESTIMATION_COMMON_H
 #define AIF_BODYPOSEESTIMATION_COMMON_H
 

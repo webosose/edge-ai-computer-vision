@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include "EdgeAIServerSession.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1

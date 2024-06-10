@@ -8,4 +8,4 @@ Description: webos edge ai computer vision core c++ shared library
 Version: 1.0.0
 Requires:
 Libs: -L${libdir} -ledgeai-vision
-Cflags: -I${includedir} -I${includedir}/aif
+Cflags: -I${includedir} -I${includedir}/aif -I${includedir}/third_party

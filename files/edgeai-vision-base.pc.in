@@ -8,4 +8,4 @@ Description: webos edge ai computer vision base extension c++ shared library
 Version: 1.0.0
 Requires:
 Libs: -L${libdir}/edgeai-extensions -ledgeai-vision-base
-Cflags: -I${includedir} -I${includedir}/aifex
+Cflags: -I${includedir} -I${includedir}/aifex -I${includedir}/third_party

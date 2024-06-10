@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2022 LG Electronics Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
 #include <aif/mname/MNameDetector.h>
 #include <aif/tools/Stopwatch.h>
 #include <aif/tools/Utils.h>
@@ -90,7 +96,7 @@ t_aif_status MNameDetector::postProcessing(const cv::Mat& img, std::shared_ptr<D
 
     // TODO: implement to add result into descriptor
     // mnameDescriptor->add()
-    
+
     return kAifOk;
 }
 

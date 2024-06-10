@@ -1,20 +1,115 @@
 Open Source Software Package:
-- name: webOSOSE
-  source: https://github.com/webosose
-  license: Apache-2.0
 - name: mediapipe
-  version: 0.8.10
-  source: https://github.com/google/mediapipe
-  license: Apache-2.0
-- name: edgetpu
-  version: eel
-  source: https://github.com/google-coral/edgetpu
-  license: Apache-2.0
+  version: "0.8.10"
+  source: "https://github.com/google/mediapipe"
+  license:
+  - Apache-2.0
+  file:
+  - face_detection_short_range.tflite
+  - selfie_segmentation.tflite
+  - third_party/mediapipe/selfie/transpose_conv_bias.h
+  - third_party/mediapipe/selfie/transpose_conv_bias.cpp
+  - extensions/face/FaceDetector.cpp
+  - include/aifex/face/FaceDetector.h
+  yocto_recipe: edgeai-vision
+
+- name: project-posenet
+  version: ""
+  source: "https://github.com/google-coral/project-posenet"
+  license:
+  - Apache-2.0
+  file:
+  - posenet_mobilenet_v1_075_353_481_quant_decoder.tflite
+  - third_party/posenet/posenet_decoder.h
+  - third_party/posenet/posenet_decoder.cc
+  - third_party/posenet/posenet_decoder_op.h
+  - third_party/posenet/posenet_decoder_op.cc
+  yocto_recipe: edgeai-vision
+
 - name: opencv
-  version: 4.5.5
-  source: https://github.com/opencv/opencv
-  license: Apache-2.0
+  version: "4.5.5"
+  source: "https://github.com/opencv/opencv"
+  license:
+  - Apache-2.0
+  file:
+  - extensions/face/YuNetFaceDetectorV2.cpp
+  - extensions/face/YuNetFaceDetector.cpp
+  - include/aifex/face/YuNetFaceDetector.h
+  - include/aifex/face/YuNetFaceDetectorV2.h
+  yocto_recipe: edgeai-vision
+
+- name: opencv_zoo
+  version: ""
+  source: "https://github.com/opencv/opencv_zoo/blob/master/models/face_detection_yunet/face_detection_yunet_2022mar.onnx"
+  license:
+  - Apache-2.0
+  file:
+  - yunet_yunet_final_360_640_simplify_float32.tflite
+  yocto_recipe: edgeai-vision
+
+- name: openvino2tensorflow
+  version: ""
+  source: "https://github.com/PINTO0309/openvino2tensorflow"
+  license:
+  - MIT
+  file:
+  - yunet_yunet_final_360_640_simplify_float32.tflite
+  yocto_recipe: edgeai-vision
+
+- name: onnx-tensorflow
+  version: ""
+  source: "https://github.com/onnx/onnx-tensorflow"
+  license:
+  - Apache-2.0
+  file:
+  - yunet_yunet_final_360_640_simplify_float32.tflite
+  yocto_recipe: edgeai-vision
+
+- name: PaddleOCR
+  version: ""
+  source: "https://github.com/PaddlePaddle/PaddleOCR"
+  license:
+  - Apache-2.0
+  file:
+  - paddleocr_320_320_float32.tflite
+  - extensions/text/TextDetector.cpp
+  - include/aifex/text/TextDetector.h
+  yocto_recipe: edgeai-vision
+
+- name: dusty-nv-pytorch-ssd
+  version: ""
+  source: "https://github.com/dusty-nv/pytorch-ssd/"
+  license:
+  - MIT
+  file:
+  - signlanguagearea_mb2_ssd_lite_float32.tflite
+  yocto_recipe: edgeai-vision
+
+- name: jetson-inference
+  version: ""
+  source: "https://github.com/dusty-nv/jetson-inference"
+  license:
+  - MIT
+  file:
+  - signlanguagearea_mb2_ssd_lite_float32.tflite
+  yocto_recipe: edgeai-vision
+
 - name: polyclipping
-  version: 6.4.2
-  source: https://sourceforge.net/projects/polyclipping
-  license: BSL-1.0
+  version: "6.4.2"
+  source: "https://sourceforge.net/projects/polyclipping"
+  license:
+  - BSL-1.0
+  file:
+  - third_party/clipper/clipper.cpp
+  - third_party/clipper/clipper.hpp
+  yocto_recipe: edgeai-vision
+
+- name: stackoverflow-67466242-5
+  version: ""
+  source: "https://stackoverflow.com/revisions/67466242/5"
+  license:
+  - CC-BY-SA-4.0
+  file:
+  - third_party/CubicSpline/CubicSpline.h
+  - third_party/CubicSpline/CubicSpline.cpp
+  yocto_recipe: edgeai-vision
