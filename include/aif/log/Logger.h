@@ -6,9 +6,12 @@
 #ifndef AIF_LOGGER_H
 #define AIF_LOGGER_H
 
+#include <algorithm>
+#include <cstring>
 #include <memory>
 #include <mutex>
-#include <cstring>
+#include <string>
+#include <string_view>
 
 #include <aif/log/LogMessage.h>
 #include <PmLogLib.h>
@@ -87,7 +90,13 @@ inline const char *basename(const char *path) {
     return (cp ? cp+1 : path);
 }
 
-#define __FILENAME__ (basename(__FILE__))
+inline std::string truncateLength(const char* path, std::size_t length) {
+    std::string_view fileName = basename(path);
+    return std::string(fileName.substr(0, std::min(fileName.size(), length)));
+}
+
+const std::size_t MAX_FILE_NAME_LENGTH = 31;
+#define __FILENAME__ (truncateLength(__FILE__, MAX_FILE_NAME_LENGTH).c_str())
 
 #if defined(ENABLE_DEBUG)
 

@@ -10,6 +10,7 @@
 #include <map>
 
 #define PMLOG_CONTEXT_NAME "edgeai-vision"
+#define PMLOG_MAX_LOG_LEN 1023
 
 namespace aif {
 
@@ -97,12 +98,15 @@ PmLogContext Logger::getPmLogContext() {
 template<>
 void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    PmLogCritical(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogCritical(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::FATAL) return;
     try {
-        AIF_FATAL << msg.str();
+        AIF_FATAL << logStr;
     } catch (...) {
         std::cout << "Exception in Logger::writer<LogLevel::FATAL>" << std::endl;
     }
@@ -112,12 +116,15 @@ void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileN
 template<>
 void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    PmLogError(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogError(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::ERROR) return;
     try {
-        AIF_ERROR << msg.str();
+        AIF_ERROR << logStr;
     } catch (...) {
         std::cout << "Exception in Logger::writer<LogLevel::ERROR>" << std::endl;
     }
@@ -127,12 +134,15 @@ void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileN
 template<>
 void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    PmLogWarning(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogWarning(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::WARNING) return;
     try  {
-        AIF_WARNING << msg.str();
+        AIF_WARNING << logStr;
     } catch (...) {
         std::cout << "Exception in Logger::writer<LogLevel::WARNING>" << std::endl;
     }
@@ -142,11 +152,14 @@ void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fil
 template<>
 void Logger::writer<LogLevel::INFO>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    PmLogInfo(getPmLogContext(), fileName, 0, "[%s:%d] %s", functionName, line, msg.str().c_str());
+    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogInfo(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::INFO) return;
     try {
-        AIF_INFO << msg.str();
+        AIF_INFO << logStr;
     } catch (...) {
         std::cout << "Exception in Logger::writer<LogLevel::INFO>" << std::endl;
     }
@@ -156,11 +169,11 @@ void Logger::writer<LogLevel::INFO>(const char* functionName, const char* fileNa
 template<>
 void Logger::writer<LogLevel::DEBUG>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::string logStr =
-        std::string(fileName) +
-        " [" + std::string(functionName) + ":" + std::to_string(line) + "] " +
-        msg.str();
-    PmLogDebug(getPmLogContext(), logStr.c_str());
+    std::string logStr = std::string(fileName) +
+        " [" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::DEBUG) return;
     try {
@@ -174,7 +187,10 @@ void Logger::writer<LogLevel::DEBUG>(const char* functionName, const char* fileN
 template<>
 void Logger::writer<LogLevel::VERBOSE>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    PmLogDebug(getPmLogContext(), msg.str().c_str());
+    std::string logStr = msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::VERBOSE) return;
     try {
@@ -188,7 +204,10 @@ void Logger::writer<LogLevel::VERBOSE>(const char* functionName, const char* fil
 template<>
 void Logger::writer<LogLevel::TRACE1>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    PmLogDebug(getPmLogContext(), msg.str().c_str());
+    std::string logStr = msg.str();
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE1) return;
     try {
@@ -205,7 +224,9 @@ void Logger::writer<LogLevel::TRACE2>(const char* functionName, const char* file
     std::ostringstream ss;
     ss << std::this_thread::get_id();
     std::string logStr = "(tid:" + ss.str() + ")" + msg.str();
-    PmLogDebug(getPmLogContext(), logStr.c_str());
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE2) return;
     try {
@@ -223,7 +244,9 @@ void Logger::writer<LogLevel::TRACE3>(const char* functionName, const char* file
         std::string(fileName) +
         "[" + std::string(functionName) + ":" + std::to_string(line) + "]" +
         msg.str();
-    PmLogDebug(getPmLogContext(), logStr.c_str());
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE3) return;
     try {
@@ -245,7 +268,9 @@ void Logger::writer<LogLevel::TRACE4>(const char* functionName, const char* file
         "(tid:" + ss.str() + ")" +
         msg.str();
 
-    PmLogDebug(getPmLogContext(), logStr.c_str());
+    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+    }
 #ifndef NDEBUG
     if (s_logLevel <  LogLevel::TRACE4) return;
     try {
