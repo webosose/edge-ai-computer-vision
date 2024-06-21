@@ -29,7 +29,13 @@ public:
         PREPROCESS,
         PROCESS,
         POSTPROCESS,
+        NODEPROCESS,
         NUM_RECORD_TYPE,
+    };
+
+    enum TargetType {
+        DETECTOR = 0,
+        PIPENODE = 1,
     };
 
     enum {
@@ -40,7 +46,8 @@ public:
 class PerformanceRecorder
 {
 public:
-    PerformanceRecorder(const std::string& name, const std::string& param);
+    PerformanceRecorder(const std::string& name, const std::string& param,
+                        Performance::TargetType type = Performance::TargetType::DETECTOR);
     virtual ~PerformanceRecorder();
 
     const std::string recordTypeToStr(Performance::RecordType type) noexcept;
@@ -49,15 +56,16 @@ public:
     void start(Performance::RecordType type);
     void stop(Performance::RecordType type);
 
-    void printFirstInference();
-    void printAverageInference();
-    void printAverageInferenceExceptFirst();
-    void printRawData();
-    void printAll(bool showRawData);
+    void printFirstInference(Performance::TargetType type);
+    void printAverageInference(Performance::TargetType type);
+    void printAverageInferenceExceptFirst(Performance::TargetType type);
+    void printRawData(Performance::TargetType type);
+    void printAll(bool showRawData, bool simpleReport = false);
 
 private:
     std::string m_name;
     std::string m_param;
+    Performance::TargetType m_targetType;
     std::vector<Stopwatch> m_stopwatch;
     std::vector<std::vector<Stopwatch::tick_t>> m_time;
 
@@ -78,6 +86,7 @@ public:
     void addRecorder(const std::string& name,
             const std::shared_ptr<PerformanceRecorder>& recorder);
     void removeRecorder(const std::string& name);
+    void showSimpleReport();
     void showReport(bool showRawData = true);
 
 private:

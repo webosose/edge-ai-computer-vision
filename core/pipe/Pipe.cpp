@@ -63,7 +63,7 @@ bool Pipe::detect(const cv::Mat& image)
     m_descriptor->setImage(image);
 
     m_descriptor->setStartTimestamp(sw.getTimestamp());
-    
+
     std::shared_ptr<PipeNode> prevNode;
     for (auto& node : m_nodes) {
         if (!prevNode) {
@@ -110,7 +110,7 @@ bool Pipe::detect(const cv::Mat& image, const ExtraOutputs& extraOutputs)
         }
         prevNode = node;
     }
-    Logd(m_name, ": pipe detect time: ", sw.getMs(), "ms");
+    Logi(m_name, ": pipe detect time: ", sw.getMs(), "ms");
 
     sw.stop();
     return true;

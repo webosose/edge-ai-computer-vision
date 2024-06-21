@@ -10,6 +10,7 @@
 #include <aif/facade/EdgeAIVision.h>
 #include <aif/tools/Utils.h>
 #include <fstream>
+#include <aif/tools/PerformanceReporter.h>
 
 #define DEFAULT_FACE_MODEL "face_yunet_360_640"
 #define DEFAULT_POSE_MODEL "posenet_mobilenet_cpu"
@@ -287,11 +288,12 @@ bool EdgeAIVision::pipeDelete(const std::string& id)
         return false;
     }
 
+    PerformanceReporter::get().showSimpleReport();
+
    if (m_pipeMap.find(id) == m_pipeMap.end()) {
         Loge(id, ": pipe is not created");
         return false;
     }
-
     m_pipeMap.erase(id);
     return true;
 }

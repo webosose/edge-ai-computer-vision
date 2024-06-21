@@ -11,9 +11,10 @@
 namespace aif {
 
 PerformanceRecorder::PerformanceRecorder(
-        const std::string& name, const std::string& param)
+        const std::string& name, const std::string& param, Performance::TargetType type)
 : m_name(name)
 , m_param(param)
+, m_targetType(type)
 , m_stopwatch(Performance::NUM_RECORD_TYPE)
 , m_time(Performance::NUM_RECORD_TYPE)
 {
@@ -30,6 +31,7 @@ const std::string PerformanceRecorder::recordTypeToStr(Performance::RecordType t
         case Performance::RecordType::PREPROCESS:      return "PREPROCESS      : ";
         case Performance::RecordType::PROCESS:         return "PROCESS         : ";
         case Performance::RecordType::POSTPROCESS:     return "POSTPROCESS     : ";
+        case Performance::RecordType::NODEPROCESS:     return "NODEPROCESS     : ";
     }
     return "";
 }
@@ -74,83 +76,131 @@ void PerformanceRecorder::stop(Performance::RecordType type)
     }
 }
 
-void PerformanceRecorder::printFirstInference()
+void PerformanceRecorder::printFirstInference(Performance::TargetType target)
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logd("[First inference]");
-    for (size_t type = Performance::CREATE_DETECTOR; type < m_time.size(); type++) {
+    Logw("[First inference]");
+    size_t st_pos, end_pos = 0;
+
+    if (target == Performance::TargetType::DETECTOR) {
+        st_pos = Performance::CREATE_DETECTOR;
+        end_pos = Performance::POSTPROCESS;
+    } else {
+        st_pos = Performance::NODEPROCESS;
+        end_pos = Performance::NODEPROCESS;
+    }
+
+    for (size_t type = st_pos; type < end_pos + 1; type++) {
         if (m_time[type].size() == 0) {
-            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
+            Logw(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
         } else {
-            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), m_time[type][0], " ms");
+            Logw(recordTypeToStr(static_cast<Performance::RecordType>(type)), m_time[type][0], " ms");
         }
     }
-    Logd("--------------------------------------------");
+    Logw("--------------------------------------------");
 }
 
-void PerformanceRecorder::printAverageInference()
+void PerformanceRecorder::printAverageInference(Performance::TargetType target)
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logd("[Average inference]");
-    for (size_t type = Performance::PREPROCESS; type < m_time.size(); type++) {
+    Logw("[Average inference]");
+    size_t st_pos, end_pos = 0;
+
+    if (target == Performance::TargetType::DETECTOR) {
+        st_pos = Performance::PREPROCESS;
+        end_pos = Performance::POSTPROCESS;
+    } else {
+        st_pos = Performance::NODEPROCESS;
+        end_pos = Performance::NODEPROCESS;
+    }
+
+    for (size_t type = st_pos; type < end_pos + 1; type++) {
         if (m_time[type].size() == 0) {
-            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
+            Logw(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
         } else {
             Stopwatch::tick_t sum =
                 std::accumulate(std::begin(m_time[type]), std::end(m_time[type]), 0.0f);
-            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)),
+            Logw(recordTypeToStr(static_cast<Performance::RecordType>(type)),
                  "count: ", m_time[type].size(),
                  ", avg: ", sum / m_time[type].size(), " ms");
         }
     }
-    Logd("--------------------------------------------");
+    Logw("--------------------------------------------");
 }
 
-void PerformanceRecorder::printAverageInferenceExceptFirst()
+void PerformanceRecorder::printAverageInferenceExceptFirst(Performance::TargetType target)
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
-    Logd("[Average inference except first try]");
-    for (size_t type = Performance::PREPROCESS; type < m_time.size(); type++) {
+    Logw("[Average inference except first try]");
+    size_t st_pos, end_pos = 0;
+
+    if (target == Performance::TargetType::DETECTOR) {
+        st_pos = Performance::PREPROCESS;
+        end_pos = Performance::POSTPROCESS;
+    } else {
+        st_pos = Performance::NODEPROCESS;
+        end_pos = Performance::NODEPROCESS;
+    }
+
+    for (size_t type = st_pos; type < end_pos + 1; type++) {
         if (m_time[type].size() <= 1) {
-            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
+            Logw(recordTypeToStr(static_cast<Performance::RecordType>(type)), "None");
         } else {
             Stopwatch::tick_t sum =
                 std::accumulate(std::begin(m_time[type]) + 1, std::end(m_time[type]), 0.0f);
-            Logd(recordTypeToStr(static_cast<Performance::RecordType>(type)),
+            Logw(recordTypeToStr(static_cast<Performance::RecordType>(type)),
                     "count: ", m_time[type].size() - 1,
                     ", avg: ", sum / (m_time[type].size() - 1), " ms");
         }
     }
-    Logd("--------------------------------------------");
+    Logw("--------------------------------------------");
 }
 
-void PerformanceRecorder::printAll(bool showRawData)
+void PerformanceRecorder::printAll(bool showRawData, bool simpleReport)
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) {
-        Logd("Can not print report. Please change the ReportType to REPORT.");
+        Loge("Can not print report. Please change the ReportType to REPORT.");
         return;
     }
-    Logd("Detector Report ============================");
-    Logd("[Model] ", m_name);
-    Logd("[Param] ", m_param);
-    Logd("--------------------------------------------");
-    printFirstInference();
-    printAverageInference();
-    printAverageInferenceExceptFirst();
-    if (showRawData) {
-        printRawData();
+    if (m_targetType == Performance::TargetType::DETECTOR) {
+        Logw("============ Detector Report ===============");
+        Logw("[Model] ", m_name);
+        Logw("[Param] ", m_param);
+    } else {
+        Logw("============ PipeNode Report ===============");
+        Logw("[PipeNode] (", m_name, ")");
     }
+    Logw("--------------------------------------------");
+    if (!simpleReport) {
+        printFirstInference(m_targetType);
+        printAverageInference(m_targetType);
+    }
+    printAverageInferenceExceptFirst(m_targetType);
+    if (showRawData) {
+        printRawData(m_targetType);
+    }
+    Logw("\n");
 }
 
-void PerformanceRecorder::printRawData()
+void PerformanceRecorder::printRawData(Performance::TargetType target)
 {
     if (!(PerformanceReporter::get().getReportType() & Performance::REPORT)) return;
 
     Logd("[Raw data]");
-    for (size_t type = Performance::CREATE_DETECTOR; type < m_time.size(); type++) {
+    size_t st_pos, end_pos = 0;
+
+    if (target == Performance::TargetType::DETECTOR) {
+        st_pos = Performance::CREATE_DETECTOR;
+        end_pos = Performance::POSTPROCESS;
+    } else {
+        st_pos = Performance::NODEPROCESS;
+        end_pos = Performance::NODEPROCESS;
+    }
+
+    for (size_t type = st_pos; type < end_pos + 1; type++) {
         std::cout << recordTypeToStr(static_cast<Performance::RecordType>(type));
         for (const auto& data : m_time[type]) {
             std::cout << data << ", ";
@@ -191,13 +241,27 @@ void PerformanceReporter::clear()
     m_recorders.clear();
 }
 
+void PerformanceReporter::showSimpleReport()
+{
+    if (!(m_reportType & Performance::REPORT)) return;
+
+    Logw("######### Performance Simple Report ###############");
+    for (auto& recorder : m_recorders) {
+        recorder.second->printAll(false, true);
+    }
+    Logw("############################################");
+}
+
+
 void PerformanceReporter::showReport(bool showRawData)
 {
-    Logd("######### Performance Report ###############");
+    if (!(m_reportType & Performance::REPORT)) return;
+
+    Logw("######### Performance Report ###############");
     for (auto& recorder : m_recorders) {
         recorder.second->printAll(showRawData);
     }
-    Logd("############################################");
+    Logw("############################################");
 }
 
 }

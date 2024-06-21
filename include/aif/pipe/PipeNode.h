@@ -9,6 +9,7 @@
 #include <aif/pipe/NodeInput.h>
 #include <aif/pipe/NodeOutput.h>
 #include <aif/pipe/NodeOperation.h>
+#include <aif/tools/PerformanceReporter.h>
 
 namespace aif {
 
@@ -35,7 +36,7 @@ class PipeNode {
         std::shared_ptr<NodeInput> m_input;
         std::shared_ptr<NodeOutput> m_output;
         std::shared_ptr<NodeOperation> m_operation;
-
+        std::shared_ptr<PerformanceRecorder> m_performance;
 };
 
 } // end of namespace aif

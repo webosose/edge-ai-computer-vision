@@ -25,7 +25,7 @@ Detector::~Detector() {
 }
 
 t_aif_status Detector::init(const std::string &param) {
-    m_performance = std::make_shared<PerformanceRecorder>(m_modelName, param);
+    m_performance = std::make_shared<PerformanceRecorder>(m_modelName, param, Performance::TargetType::DETECTOR);
     PerformanceReporter::get().addRecorder(m_modelName, m_performance);
     m_performance->start(Performance::CREATE_DETECTOR);
 

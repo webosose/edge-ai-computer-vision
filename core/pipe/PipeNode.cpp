@@ -40,8 +40,10 @@ bool PipeNode::build(const std::shared_ptr<NodeConfig>& config)
     m_input = std::make_shared<NodeInput>(m_id, config->getInputType());
     m_output = std::make_shared<NodeOutput>(m_id, config->getOutputType());
     m_operation = NodeOperationFactory::get().create(m_id, config->getOperation());
+    m_performance = std::make_shared<PerformanceRecorder>(m_id, "", Performance::TargetType::PIPENODE);
+    PerformanceReporter::get().addRecorder(m_id, m_performance);
 
-    if (!m_input || !m_output || !m_operation) {
+    if (!m_input || !m_output || !m_operation || !m_performance) {
         Loge(m_id, ": failed to build pipe node");
         return false;
     }
@@ -52,6 +54,7 @@ bool PipeNode::run()
 {
     Stopwatch sw;
     sw.start();
+    m_performance->start(Performance::NODEPROCESS);
     if (!m_operation->run(m_input, m_output)) {
         Loge(m_id, ": failed to do operation");
         return false;
@@ -60,9 +63,10 @@ bool PipeNode::run()
         Loge(m_id, ": failed to set node descriptor into NodeOutput");
         return false;
     }
+    m_performance->stop(Performance::NODEPROCESS);
     Logd(m_id, ": node detect time : ", sw.getMs(), "ms");
     sw.stop();
- 
+
     return true;
 }
 
