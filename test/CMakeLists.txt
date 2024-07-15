@@ -129,6 +129,7 @@ set(SRC_FILES
     ${SRC_DIR}/signlanguage_detector_test.cpp
     ${SRC_DIR}/signlanguage_api_test.cpp
     ${SRC_DIR}/extra_output_test.cpp
+    ${SRC_DIR}/extensionloader_test.cpp
 )
 
 IF(WITH_EXTRA_MODELS)

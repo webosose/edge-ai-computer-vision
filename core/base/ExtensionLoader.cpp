@@ -13,6 +13,7 @@
 #include <rapidjson/stringbuffer.h>
 
 #include <boost/filesystem.hpp>
+#include <chrono>
 #include <dlfcn.h>
 #include <exception>
 #include <filesystem>
@@ -20,12 +21,33 @@
 #include <regex>
 #include <sstream>
 #include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 
 namespace fs = boost::filesystem;
 
 namespace aif
 {
+
+t_aif_status ExtensionLoader::initRetry(bool readRegistryFile,
+  const std::string& extensionDirectoryPath, const std::vector<std::string>& allowedExtensionNames, bool forceRetry) noexcept
+{
+  t_aif_status status = kAifError;
+  status = init(readRegistryFile, extensionDirectoryPath, allowedExtensionNames);
+  while ((forceRetry == true && --m_retryCount > 0)
+          || (status != kAifOk && --m_retryCount > 0)) {
+    Logi("Retry count: ", m_retryCount);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    status = init(readRegistryFile, extensionDirectoryPath, allowedExtensionNames);
+  }
+
+  Logi("Fault tolerance: ", getFaultTolerance() ? "true" : "false");
+  if (readRegistryFile && status != kAifOk && getFaultTolerance() == true){
+    Logi("Failed to read registry file, regeneration as well. Trying to load all extensions");
+    status = init(false, extensionDirectoryPath, allowedExtensionNames);
+  }
+  return status;
+}
 
 t_aif_status ExtensionLoader::init(bool readRegistryFile,
   const std::string& extensionDirectoryPath, const std::vector<std::string>& allowedExtensionNames) noexcept
@@ -461,31 +483,55 @@ bool ExtensionLoader::isAllowedExtension(const std::string& extensionName)
 bool ExtensionLoader::isNeededToGenRegistryFile() noexcept
 {
   try {
-    if (!fs::exists(m_registryFilePath))
-      return true;
-
-    std::string registryStampFilePath = getRegistryStampFilePath(false);
-    if (registryStampFilePath.empty())
-      return true;
-
-    if (!fs::exists(registryStampFilePath))
+    // 1. Check if registry file exists and is readable
     {
-      fs::remove(m_registryFilePath);
-      std::string dir = m_registryFilePath.substr(0, m_registryFilePath.find_last_of("/"));
-      if(isReadableDirectory(dir)) {
-        fs::directory_iterator itr(dir);
-        for (; itr != fs::directory_iterator(); ++itr)
-        {
-          if (!fs::exists(itr->path())) {
-            continue;
-          }
-          if (itr->path().string().find(m_registryFilePath+".done.") == 0)
+      std::stringstream buffer;
+      {
+        std::ifstream ifs(m_registryFilePath);
+        if (!ifs.is_open())
+          return true;
+        std::string line;
+        while (std::getline(ifs, line)) {
+            buffer << line << '\n';
+        }
+        ifs.close();
+      }
+      std::string json = buffer.str();
+      rapidjson::Document doc;
+      doc.Parse(json.c_str());
+      if (doc.HasParseError())
+      {
+        Loge("Failed to parse json: ", json);
+        fs::remove(m_registryFilePath);
+        return true;
+      }
+    }
+
+    // 2. Check if stamp file exists
+    {
+      std::string registryStampFilePath = getRegistryStampFilePath(false);
+      if (registryStampFilePath.empty())
+        return true;
+
+      if (!fs::exists(registryStampFilePath))
+      {
+        fs::remove(m_registryFilePath);
+        std::string dir = m_registryFilePath.substr(0, m_registryFilePath.find_last_of("/"));
+        if(isReadableDirectory(dir)) {
+          fs::directory_iterator itr(dir);
+          for (; itr != fs::directory_iterator(); ++itr)
           {
-            fs::remove(itr->path());
+            if (!fs::exists(itr->path())) {
+              continue;
+            }
+            if (itr->path().string().find(m_registryFilePath+".done.") == 0)
+            {
+              fs::remove(itr->path());
+            }
           }
         }
+        return true;
       }
-      return true;
     }
     return false;
   } catch (const fs::filesystem_error& e) {
@@ -504,6 +550,11 @@ bool ExtensionLoader::isNeededToGenRegistryFile() noexcept
 std::string ExtensionLoader::getRegistryStampFilePath(bool create) {
   std::initializer_list<std::string> args = {"OSInfo", "query", "--format=json", "webos_release", "webos_build_id"};
   ProcessRunner processRunner(NYX_CMD_PATH, args);
+  if (processRunner.getExitCode() != 0)
+  {
+    Loge("Failed to get webos_release and webos_build_id");
+    return "";
+  }
   std::string output = processRunner.getResult();
 
   rapidjson::Document doc;
@@ -529,6 +580,11 @@ std::string ExtensionLoader::getRegistryStampFilePath(bool create) {
 t_aif_status ExtensionLoader::runInspector()
 {
   ProcessRunner processRunner(EDGEAI_VISION_INSPECTOR_PATH, {m_extensionDirectoryPath});
+  if (processRunner.getExitCode() != 0)
+  {
+    Loge("Failed to run inspector");
+    return kAifError;
+  }
   std::string output = processRunner.getResult();
   Logd("Inspector output: ", output);
   return kAifOk;

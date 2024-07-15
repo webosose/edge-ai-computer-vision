@@ -18,10 +18,12 @@ public:
   ProcessRunner(std::string cmd, std::initializer_list<std::string> args) noexcept;
   ~ProcessRunner() = default;
   std::string getResult() const { return m_result; }
+  int getExitCode() const { return m_exitCode; }
 
 private:
   pid_t m_pid;
   std::string m_result;
+  int m_exitCode;
 };
 
 } // end of namespace aif

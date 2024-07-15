@@ -21,10 +21,10 @@ std::string AIVision::s_basePath = "";
 std::unique_ptr<ConfigReader> AIVision::s_config;
 std::unique_ptr<ConfigReader> AIVision::s_override_config;
 
-void AIVision::init(const std::string& basePath)
+bool AIVision::init(const std::string& basePath)
 {
     if (s_initialized)
-        return;
+        return true;
 
     s_config = std::make_unique<ConfigReader>(
             std::string(EDGEAI_VISION_HOME) + "/" + std::string(EDGEAI_VISION_CONFIG));
@@ -49,18 +49,32 @@ void AIVision::init(const std::string& basePath)
         s_basePath = s_config->getOption(KEY_BASE_PATH);
     }
 
-    std::string extensionPath = s_config->getOption(KEY_EXTENSION_PATH);
-    std::vector<std::string> allowedExtensions = s_config->getOptionArray(KEY_ALLOWED_EXTENSIONS);
-    if (extensionPath.empty()) {
-        extensionPath = EDGEAI_VISION_EXTENSION_PATH;
+    //ExtensionLoader initialization
+    {
+        std::string extensionPath = s_config->getOption(KEY_EXTENSION_PATH);
+        std::vector<std::string> allowedExtensions = s_config->getOptionArray(KEY_ALLOWED_EXTENSIONS);
+        if (extensionPath.empty())
+            extensionPath = EDGEAI_VISION_EXTENSION_PATH;
+        if (allowedExtensions.size() == 0) 
+            allowedExtensions = {};
+
+        std::string retryCount = s_config->getOption(KEY_EXTENSION_LOADER_RETRY_COUNT);
+        if (!retryCount.empty())
+            ExtensionLoader::get().setRetryCount(std::stoi(retryCount));
+        std::string faultTolerance = s_config->getOption(KEY_EXTENSION_LOADER_FAULT_TOLEARANCE);
+        Logd("FaultTolerance: ", faultTolerance); //TODO: Check why "1" comes, not "true"
+        if (!faultTolerance.empty())
+            ExtensionLoader::get().setFaultTolerance(faultTolerance == "1");
+
+        if (ExtensionLoader::get().initRetry(true, extensionPath, allowedExtensions) != kAifOk) {
+            Loge("Failed to initialize ExtensionLoader");
+            return false;
+        }
     }
-    if (allowedExtensions.size() == 0) {
-        allowedExtensions = {};
-    }
-    ExtensionLoader::get().init(true, extensionPath, allowedExtensions);
 
     s_initialized = true;
     Logi("AIVision is initialized");
+    return true;
 }
 
 void AIVision::deinit()

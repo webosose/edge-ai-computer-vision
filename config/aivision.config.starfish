@@ -5,5 +5,7 @@
   "AllowedExtensions" : [
     "libedgeai-vision-base",
     "libedgeai-vision-intelli-fit"
-  ]
+  ],
+  "ExtensionLoaderRetryCount" : 3,
+  "ExtensionLoaderFaultTolerance": true
 }

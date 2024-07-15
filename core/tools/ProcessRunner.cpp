@@ -15,9 +15,8 @@ namespace bp = boost::process;
 
 namespace aif
 {
-
 ProcessRunner::ProcessRunner(std::string cmd, std::initializer_list<std::string> args) noexcept
-    : m_pid(0), m_result("")
+    : m_pid(0), m_result(""), m_exitCode(0)
 {
     std::string arg = "";
     for (const auto &a : args) {
@@ -35,6 +34,10 @@ ProcessRunner::ProcessRunner(std::string cmd, std::initializer_list<std::string>
       Logi("ProcessRunner::ProcessRunner() result: ", m_result);
 
       c.wait();
+      m_exitCode = c.exit_code();
+      if (m_exitCode != 0) {
+          throw std::runtime_error("ProcessRunner::ProcessRunner() failed with exit code: " + std::to_string(m_exitCode));
+      }
     } catch(const std::exception &e) {
       Loge("Failed to execute command: ", cmd + " " + arg, " Error: ", e.what());
     }

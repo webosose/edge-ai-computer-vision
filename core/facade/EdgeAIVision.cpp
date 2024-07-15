@@ -39,7 +39,9 @@ bool EdgeAIVision::startup(const std::string &basePath) {
     if (AIVision::isInitialized())
         return false;
 
-    AIVision::init(basePath);
+    if (!AIVision::init(basePath))
+        return false;
+
     return isStarted();
 }
 

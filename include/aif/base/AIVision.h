@@ -27,12 +27,14 @@
 #define KEY_REPORT_TYPE "ReportType"
 #define KEY_EXTENSION_PATH "ExtensionPath"
 #define KEY_ALLOWED_EXTENSIONS "AllowedExtensions"
+#define KEY_EXTENSION_LOADER_RETRY_COUNT "ExtensionLoaderRetryCount"
+#define KEY_EXTENSION_LOADER_FAULT_TOLEARANCE "ExtensionLoaderFaultTolerance"
 
 namespace aif {
 
 class AIVision {
 public:
-    static void init(const std::string& basePath = "");
+    static bool init(const std::string& basePath = "");
     static void deinit();
     static bool isInitialized();
     static std::string getBasePath();

@@ -43,6 +43,9 @@ public:
     return instance;
   }
 
+  t_aif_status initRetry(bool readRegistryFile=false, const std::string& extensionDirectoryPath = EDGEAI_VISION_EXTENSION_PATH,
+    const std::vector<std::string>& allowedExtensionNames = {}, bool forceRetry = false) noexcept;
+
   t_aif_status init(bool readRegistryFile=false, const std::string& extensionDirectoryPath = EDGEAI_VISION_EXTENSION_PATH,
     const std::vector<std::string>& allowedExtensionNames = {}) noexcept;
 
@@ -57,6 +60,11 @@ public:
   std::string featureTypeToString(t_feature_type type);
   t_feature_type stringToFeatureType(const std::string& type);
   std::string getRegistryStampFilePath(bool create=false);
+  std::string getRegistryFilePath() { return m_registryFilePath; }
+  void setRetryCount(int retryCount) noexcept { m_retryCount = retryCount;}
+  int getRetryCount() noexcept { return m_retryCount; }
+  void setFaultTolerance(bool faultTolerance) noexcept { m_faultTolerance = faultTolerance; }
+  bool getFaultTolerance() noexcept { return m_faultTolerance; }
 
 private:
   ExtensionLoader(): m_registryFilePath(EDGEAI_VISION_EXTENSION_REGISTRY_PATH)
@@ -83,6 +91,9 @@ private:
 private:
   bool m_initDone = false;
   bool m_allowAllExtensions = true;
+
+  int  m_retryCount = 1;
+  bool m_faultTolerance = false;
 
   std::string m_registryFilePath;
   std::string m_extensionDirectoryPath;
