@@ -50,9 +50,9 @@ cv::Mat alphaBlending(cv::Mat &bgImage, cv::Mat fgImage, cv::Mat &alpha)
     return results;
 }
 
-cv::Mat drawResults(const std::string &output, const ExtraOutput &extraOutput, const cv::Mat &fgImage, bool imageDup)
+cv::Mat drawResults(const std::string &output, const ExtraOutput &extraOutput, const cv::Mat &fgImage)
 {
-    cv::Mat bgImage = (imageDup) ? fgImage : cv::imread("/usr/share/aif/images/beach.jpg", cv::IMREAD_COLOR);
+    cv::Mat bgImage = cv::imread("/usr/share/aif/images/beach.jpg", cv::IMREAD_COLOR);
     cv::Mat res;
 
     // std::cout << output << std:: endl;
@@ -163,7 +163,7 @@ static void timer_handler( int sig, siginfo_t *si, void *uc )
 
 int main(int argc, char** argv)
 {
-    std::cout << "Usage: ./segmentation-sample <input-file-path> <#iternum> <config-file-path> <#imageDup_1_or_0>" << std::endl;
+    std::cout << "Usage: ./segmentation-sample <input-file-path> <#iternum> <config-file-path> <output-file-path>" << std::endl;
 
     std::string inputPath = R"(/usr/share/aif/images/person.jpg)";
     std::string config = "";
@@ -171,7 +171,6 @@ int main(int argc, char** argv)
 
     int num = 1;
     bool isVideoInput = false;
-    bool imageDup = false;
 
     if (argc >= 2) {
         inputPath = argv[1];
@@ -194,11 +193,14 @@ int main(int argc, char** argv)
         std::cout << "fpsNum: " << fpsNum << std::endl;
         config = fileToStr(configPath);
     }
+
+    std::string outputPath = "";
     if (argc >= 5) {
-        imageDup = (std::stoi(argv[4]) > 0) ? true : false;
+        outputPath = argv[4];
+    } else {
+        outputPath = (isVideoInput) ? R"(./alphaBlending.mp4)" : R"(./alphaBlending.jpg)";
     }
 
-    std::string outputPath = (isVideoInput) ? R"(./output.mp4)" : R"(./res.jpg)";
 
     std::cout << "input : " << inputPath << std::endl;
     std::cout << "config : " << config << std::endl;
@@ -232,30 +234,19 @@ int main(int argc, char** argv)
         std::string output;
         for (int i = 0; i < num; i++) {
             ai.detect(type, input, output, extraOutput);
-            cv::Mat results = drawResults(output, extraOutput, input, false);
-            cv::imwrite("./alphaBlending.jpg", results);
+            cv::Mat results = drawResults(output, extraOutput, input);
+            cv::imwrite(outputPath, results);
         }
     } else {
         VideoTester vt;
-#if 0
-        vt.test(inputPath, outputPath,
-                [&](const cv::Mat& src) -> cv::Mat {
-                    std::string output;
-                    ai.detect(type, src, output, extraOutput);
-                    return drawResults(output, extraOutput, src);
-                }
-        );
-#else
         unsigned int frameCount = num;
         vt.testWithFrameCount(inputPath, outputPath,
                 [&](const cv::Mat& src) -> cv::Mat {
                     std::string output;
                     ai.detect(type, src, output, extraOutput);
-                    return drawResults(output, extraOutput, src, imageDup);
+                    return drawResults(output, extraOutput, src);
                 }, frameCount
         );
-
-#endif
     }
 #endif
 
