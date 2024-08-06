@@ -80,7 +80,7 @@ private:
   bool isReadableDirectory(const std::string& path);
   std::string getPluginNameByAlias(const std::string& alias);
   std::string getPluginAliasByName(const std::string& name);
-  std::string getBaseFileName(const std::string& name);
+  std::string getBaseFileName(const std::string& name) noexcept;
   bool compareExtensionName(const std::string& name1, const std::string& name2);
   t_aif_status runInspector();
   t_aif_parsed_feature_name parseFeatureName(const std::string& feature_name);

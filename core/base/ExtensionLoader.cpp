@@ -590,10 +590,15 @@ t_aif_status ExtensionLoader::runInspector()
   return kAifOk;
 }
 
-std::string ExtensionLoader::getBaseFileName(const std::string& name)
+std::string ExtensionLoader::getBaseFileName(const std::string& name) noexcept
 {
-  std::regex so_regex(R"(\.so.*$)");
-  return std::regex_replace(name, so_regex, "");
+  try {
+    std::regex so_regex(R"(\.so.*$)");
+    return std::regex_replace(name, so_regex, "");
+  } catch (const std::regex_error& e) {
+    Loge("Regex error: ", e.what());
+    return name;
+  }
 }
 
 bool ExtensionLoader::compareExtensionName(const std::string& name1, const std::string& name2)
@@ -608,7 +613,9 @@ bool ExtensionLoader::compareExtensionName(const std::string& name1, const std::
   if (name2_.find("lib") == 0)
     name2_ = name2_.substr(3);
 
-  return getBaseFileName(name1_) == getBaseFileName(name2_);
+  std::string baseName1 = getBaseFileName(name1_);
+  std::string baseName2 = getBaseFileName(name2_);
+  return baseName1 == baseName2;
 }
 
 bool ExtensionLoader::isReadableDirectory(const std::string& path)

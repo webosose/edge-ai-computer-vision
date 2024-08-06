@@ -43,23 +43,15 @@ static int inspectPlugins(const std::string& pluginPath) noexcept {
 
 int main(int argc, char *argv[]) noexcept
 {
-  try {
-    std::string pluginPath = EDGEAI_VISION_EXTENSION_PATH;
-    if (argc > 1)
+  std::string pluginPath = EDGEAI_VISION_EXTENSION_PATH;
+  if (argc > 1)
+  {
+    if (!std::strcmp(argv[1], "-h") || !std::strcmp(argv[1], "--help"))
     {
-      if (!std::strcmp(argv[1], "-h") || !std::strcmp(argv[1], "--help"))
-      {
-        help();
-        return 0;
-      }
-      pluginPath = argv[1];
+      help();
+      return 0;
     }
-    return inspectPlugins(pluginPath);
-  } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
-  } catch (...) {
-    std::cerr << "Caught unknown exception" << std::endl;
-    return 1;
+    pluginPath = argv[1];
   }
+  return inspectPlugins(pluginPath);
 }

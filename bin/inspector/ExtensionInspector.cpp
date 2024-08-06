@@ -118,7 +118,8 @@ t_aif_status ExtensionInspector::dump(std::string dumpPath)
     boost::filesystem::create_directories(dir);
   }
   {
-    std::ofstream ofs(dumpPath);
+    std::ofstream ofs;
+    ofs.open(dumpPath, std::ofstream::out | std::ofstream::trunc);
     ofs << json();
     ofs.flush();
     ofs.close();
