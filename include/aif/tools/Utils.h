@@ -35,6 +35,10 @@ bool floatGreaterThan(float a, float b);
 std::string fileToStr(
     const std::string& file);
 
+bool strToFile(
+    const std::string& str,
+    const std::string& outfile);
+
 bool bufferToFile(
     const std::vector<char>& buffer,
     int len,

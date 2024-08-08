@@ -29,6 +29,7 @@ public:
     static LogLevel strToLogLevel(const std::string& str);
     static std::string logLevelToStr(LogLevel level);
     static PmLogContext getPmLogContext();
+    static void setFullLog(bool fullLog);
     //Logger() = default;
 
     //~Logger();
@@ -57,6 +58,7 @@ private:
     static std::unique_ptr<Logger> s_instance;
     static std::once_flag s_onceFlag;
     static aif::LogLevel s_logLevel;
+    static bool s_fullLog;
 //    static std::mutex s_mutex;
 
     Logger() = default;

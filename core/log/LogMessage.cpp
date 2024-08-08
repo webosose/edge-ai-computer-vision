@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <aif/tools/Utils.h>
 #include <boost/exception/all.hpp>
 
 #include <aif/log/LogMessage.h>
@@ -15,6 +16,8 @@
 namespace aif {
 
 std::mutex LogMessage::s_mutex;
+bool LogMessage::s_writeToFile = false;
+std::string LogMessage::s_logFileName;
 
 LogMessage::LogMessage(LogLevel level)
     : std::ostream(&m_buffer)
@@ -60,7 +63,13 @@ LogMessage::~LogMessage() noexcept
         };
 
         try {
-            std::cout << m_when << " [" << itsLevel << "] " << m_buffer.m_data.str() << std::endl;
+            if (s_writeToFile) {
+                std::string reportContent = boost::posix_time::to_simple_string(m_when) + " [" + itsLevel + "] " + m_buffer.m_data.str() + "\n";
+                strToFile(reportContent, s_logFileName);
+            }
+            else {
+                std::cout << m_when << " [" << itsLevel << "] " << m_buffer.m_data.str() << std::endl;
+            }
         } catch (...) {
             std::cout << boost::current_exception_diagnostic_information() << std::endl;
         }
@@ -82,6 +91,12 @@ LogMessage::Buffer::xsputn(const char *s, std::streamsize n)
 {
     m_data.write(s, n);
     return (n);
+}
+
+void LogMessage::setWriteToFile(bool writeToFile, const std::string& logFileName)
+{
+    s_writeToFile = writeToFile;
+    s_logFileName = logFileName;
 }
 
 } // end of namespace aif

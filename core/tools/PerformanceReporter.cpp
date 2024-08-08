@@ -8,6 +8,7 @@
 #include <aif/base/Types.h>
 #include <numeric>
 #include <iostream>
+
 namespace aif {
 
 PerformanceRecorder::PerformanceRecorder(
@@ -229,8 +230,9 @@ Performance::ReportType PerformanceReporter::strToReportType(const std::string& 
     if (type == "CONSOLE") {
         return Performance::CONSOLE;
     } else if (type == "REPORT") {
-
         return Performance::REPORT;
+    } else if (type == "REPORT_FILE") {
+        return Performance::REPORT_FILE;
     }
     return Performance::NONE;
 }
@@ -241,15 +243,41 @@ void PerformanceReporter::clear()
     m_recorders.clear();
 }
 
+void PerformanceReporter::enableFileWriting()
+{
+    Stopwatch sw;
+    int64_t currentTime = sw.getTimestamp() % 100000; // get current time in max 5 digits
+    std::string reportFile = std::string(EDGEAI_VISION_REPORT_PATH) + "/" + m_reportFileName + "-" + std::to_string(currentTime) + ".log";
+
+    Logw("Performance report file is saved at ", reportFile);
+
+    LogMessage::setWriteToFile(true, reportFile);
+    Logger::setFullLog(false);
+}
+
+void PerformanceReporter::disableFileWriting()
+{
+    LogMessage::setWriteToFile(false);
+    Logger::setFullLog(true);
+}
+
 void PerformanceReporter::showSimpleReport()
 {
     if (!(m_reportType & Performance::REPORT)) return;
+
+    if (m_reportType & Performance::FILE_WRITE_SETTING) {
+        enableFileWriting();
+    }
 
     Logw("######### Performance Simple Report ###############");
     for (auto& recorder : m_recorders) {
         recorder.second->printAll(false, true);
     }
     Logw("############################################");
+
+    if (m_reportType & Performance::FILE_WRITE_SETTING) {
+        disableFileWriting();
+    }
 }
 
 
@@ -257,11 +285,19 @@ void PerformanceReporter::showReport(bool showRawData)
 {
     if (!(m_reportType & Performance::REPORT)) return;
 
+    if (m_reportType & Performance::FILE_WRITE_SETTING) {
+        enableFileWriting();
+    }
+
     Logw("######### Performance Report ###############");
     for (auto& recorder : m_recorders) {
         recorder.second->printAll(showRawData);
     }
     Logw("############################################");
+
+    if (m_reportType & Performance::FILE_WRITE_SETTING) {
+        disableFileWriting();
+    }
 }
 
-}
+} // end of namespace aif

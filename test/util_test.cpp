@@ -237,3 +237,11 @@ TEST_F(UtilTest, util12_isIOUOver)
     EXPECT_FALSE(aif::isIOUOver(rect1, rect4, 0.7f));
 
 }
+
+TEST_F(UtilTest, util13_strToFile)
+{
+    std::string str = "Hello, edgeai-vision!";
+    std::string outfile = basePath + "/hello.txt";
+    auto result = aif::strToFile(str, outfile);
+    EXPECT_TRUE(result);
+}

@@ -36,6 +36,7 @@ class LogMessage : public std::ostream
 public:
     LogMessage(LogLevel level);
     ~LogMessage() noexcept;
+    static void setWriteToFile(bool writeToFile, const std::string& logFileName="");
 
 private:
     class Buffer : public std::streambuf
@@ -51,6 +52,8 @@ private:
     Buffer m_buffer;
     LogLevel m_level;
     static std::mutex s_mutex;
+    static bool s_writeToFile;
+    static std::string s_logFileName;
 };
 
 } // end of namespace aif

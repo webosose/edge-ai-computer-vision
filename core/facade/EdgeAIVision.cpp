@@ -119,6 +119,7 @@ bool EdgeAIVision::deleteDetector(DetectorType type) {
         Logw("Detector is not created : ", static_cast<int>(type));
         return false;
     }
+    PerformanceReporter::get().showSimpleReport();
     DetectorFactory::get().deleteDetector(m_selectedModels[type]);
     m_selectedModels.erase(type);
     return true;
@@ -290,12 +291,11 @@ bool EdgeAIVision::pipeDelete(const std::string& id)
         return false;
     }
 
-    PerformanceReporter::get().showSimpleReport();
-
-   if (m_pipeMap.find(id) == m_pipeMap.end()) {
+    if (m_pipeMap.find(id) == m_pipeMap.end()) {
         Loge(id, ": pipe is not created");
         return false;
     }
+    PerformanceReporter::get().showSimpleReport();
     m_pipeMap.erase(id);
     return true;
 }

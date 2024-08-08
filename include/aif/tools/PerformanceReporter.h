@@ -6,6 +6,10 @@
 #ifndef AIF_PERFORMANCE_REPORTER_H
 #define AIF_PERFORMANCE_REPORTER_H
 
+#ifndef EDGEAI_VISION_REPORT_PATH
+#define EDGEAI_VISION_REPORT_PATH "/tmp"
+#endif
+
 #include <aif/tools/Stopwatch.h>
 
 #include <vector>
@@ -21,6 +25,8 @@ public:
         NONE = 0x00,
         CONSOLE = 0x01,
         REPORT = 0x02,
+        FILE_WRITE_SETTING = 0X04, // not used as a report type
+        REPORT_FILE = REPORT | FILE_WRITE_SETTING,
         DEFAULT_REPORT_TYPE = CONSOLE,
     };
 
@@ -86,6 +92,8 @@ public:
     void addRecorder(const std::string& name,
             const std::shared_ptr<PerformanceRecorder>& recorder);
     void removeRecorder(const std::string& name);
+    void enableFileWriting();
+    void disableFileWriting();
     void showSimpleReport();
     void showReport(bool showRawData = true);
 
@@ -96,6 +104,7 @@ private:
 
 private:
     int m_reportType;
+    std::string m_reportFileName = "edgeai-perf-report";
     std::unordered_map<std::string, std::shared_ptr<PerformanceRecorder>> m_recorders;
 
 };

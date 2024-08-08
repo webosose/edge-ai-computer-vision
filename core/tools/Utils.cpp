@@ -57,6 +57,18 @@ std::string fileToStr(const std::string& file)
     }
 }
 
+bool strToFile(const std::string& str, const std::string& outfile)
+{
+    std::ofstream fout(outfile, std::ios::out | std::ios::app);
+    if (!fout) {
+        Loge(__func__, "Error: can't write file at ", outfile);
+        return false;
+    }
+    fout << str;
+    fout.close();
+    return true;
+}
+
 bool bufferToFile(const std::vector<char>& buffer, int len, const std::string& outfile)
 {
     std::ofstream fout(outfile, std::ios::out | std::ios::binary);

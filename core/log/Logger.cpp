@@ -17,6 +17,7 @@ namespace aif {
 std::unique_ptr<Logger> Logger::s_instance;
 std::once_flag Logger::s_onceFlag;
 aif::LogLevel Logger::s_logLevel;
+bool Logger::s_fullLog = true;
 //std::mutex Logger::s_mutex;
 
 void Logger::init(LogLevel loglevel)
@@ -95,10 +96,20 @@ PmLogContext Logger::getPmLogContext() {
     return logContext;
 }
 
+void Logger::setFullLog(bool fullLog)
+{
+    s_fullLog = fullLog;
+}
+
 template<>
 void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    std::string logStr;
+    if (s_fullLog) {
+        logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    } else {
+        logStr = msg.str();
+    }
     for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
         PmLogCritical(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
     }
@@ -116,7 +127,12 @@ void Logger::writer<LogLevel::FATAL>(const char* functionName, const char* fileN
 template<>
 void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    std::string logStr;
+    if (s_fullLog) {
+        logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    } else {
+        logStr = msg.str();
+    }
     for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
         PmLogError(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
     }
@@ -134,7 +150,12 @@ void Logger::writer<LogLevel::ERROR>(const char* functionName, const char* fileN
 template<>
 void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    std::string logStr;
+    if (s_fullLog) {
+        logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    } else {
+        logStr = msg.str();
+    }
     for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
         PmLogWarning(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
     }
@@ -152,7 +173,12 @@ void Logger::writer<LogLevel::WARNING>(const char* functionName, const char* fil
 template<>
 void Logger::writer<LogLevel::INFO>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::string logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    std::string logStr;
+    if (s_fullLog) {
+        logStr = "[" + std::string(functionName) + ":" + std::to_string(line) + "] " + msg.str();
+    } else {
+        logStr = msg.str();
+    }
     for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
         PmLogInfo(getPmLogContext(), fileName, 0, "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
     }

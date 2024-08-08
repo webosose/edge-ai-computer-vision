@@ -44,6 +44,7 @@ TEST_F(PerformanceReporterTest, str_to_report_type)
     EXPECT_EQ(PerformanceReporter::strToReportType("NONE"), Performance::NONE);
     EXPECT_EQ(PerformanceReporter::strToReportType("CONSOLE"), Performance::CONSOLE);
     EXPECT_EQ(PerformanceReporter::strToReportType("REPORT"), Performance::REPORT);
+    EXPECT_EQ(PerformanceReporter::strToReportType("REPORT_FILE"), Performance::REPORT_FILE);
 }
 
 TEST_F(PerformanceReporterTest, record_type_to_str)
@@ -68,11 +69,27 @@ TEST_F(PerformanceReporterTest, add_report_type)
     pr.addReportType(Performance::REPORT);
     EXPECT_EQ(pr.getReportType(), Performance::NONE | Performance::CONSOLE | Performance::REPORT);
 
+    pr.addReportType(Performance::REPORT_FILE);
+    EXPECT_EQ(pr.getReportType(), Performance::NONE | Performance::CONSOLE | Performance::REPORT | Performance::REPORT_FILE);
+
     pr.clear();
     EXPECT_EQ(pr.getReportType(), Performance::NONE);
 
     pr.addReportType(Performance::CONSOLE | Performance::REPORT);
     EXPECT_EQ(pr.getReportType(), Performance::CONSOLE | Performance::REPORT);
+
+    pr.clear();
+    EXPECT_EQ(pr.getReportType(), Performance::NONE);
+
+    pr.addReportType(Performance::CONSOLE | Performance::REPORT_FILE);
+    EXPECT_EQ(pr.getReportType(), Performance::CONSOLE | Performance::REPORT_FILE);
+
+    pr.clear();
+    EXPECT_EQ(pr.getReportType(), Performance::NONE);
+
+    pr.addReportType(Performance::REPORT | Performance::REPORT_FILE);
+    EXPECT_EQ(pr.getReportType(), Performance::REPORT | Performance::REPORT_FILE);
+
 }
 
 TEST_F(PerformanceReporterTest, recorder_first_infernece)
@@ -293,6 +310,35 @@ TEST_F(PerformanceReporterTest, reporter_with_detector_test)
 {
     PerformanceReporter::get().clear();
     PerformanceReporter::get().addReportType(Performance::CONSOLE | Performance::REPORT);
+
+    EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
+    EdgeAIVision::DetectorType type2 = EdgeAIVision::DetectorType::POSE;
+
+    EdgeAIVision& ai = EdgeAIVision::getInstance();
+    ai.startup();
+    EXPECT_TRUE(ai.isStarted());
+
+    std::string basePath = AIVision::getBasePath();
+    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
+    std::string output;
+
+    EXPECT_TRUE(ai.createDetector(type));
+    EXPECT_TRUE(ai.createDetector(type2));
+    for (int i = 0; i < 10; i++) {
+        EXPECT_TRUE(ai.detect(type, input, output));
+        EXPECT_TRUE(ai.detect(type2, input, output));
+    }
+    EXPECT_TRUE(ai.deleteDetector(type));
+    EXPECT_TRUE(ai.deleteDetector(type2));
+    ai.shutdown();
+
+    PerformanceReporter::get().showReport();
+}
+
+TEST_F(PerformanceReporterTest, write_reporter_with_detector_test)
+{
+    PerformanceReporter::get().clear();
+    PerformanceReporter::get().addReportType(Performance::REPORT_FILE);
 
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
     EdgeAIVision::DetectorType type2 = EdgeAIVision::DetectorType::POSE;

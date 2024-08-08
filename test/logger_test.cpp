@@ -89,3 +89,20 @@ TEST_F(LoggerTest, 01_Logger)
     EXPECT_TRUE(true);
 }
 
+TEST_F(LoggerTest, 02_LoggerfalseSetFullLog)
+{
+    Logger::getInstance().setFullLog(false);
+
+    AIF_FATAL << "AIF_FATAL";
+    AIF_ERROR << "AIF_ERROR";
+    AIF_WARNING << "AIF_WARNING";
+    AIF_INFO << "AIF_INFO";
+
+    Logf("Logf test");
+    Loge("Loge test");
+    Logw("Logw test");
+    Logi("Logi test");
+
+    EXPECT_TRUE(true);
+}
+
