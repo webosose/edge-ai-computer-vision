@@ -50,6 +50,45 @@ bool Pipe::build(const std::string& config)
     return true;
 }
 
+bool Pipe::rebuild(const std::string& config)
+{
+    auto new_config = std::make_shared<PipeConfig>();
+    if (!new_config->parse(config)) {
+        Loge("failed to rebuild pipe (invalid config): ", config);
+        return false;
+    }
+
+    if (m_config->getName() != new_config->getName()) {
+        Loge("failed: name is different! ", m_config->getName(), " != ", new_config->getName());
+        return false;
+    }
+
+    if (m_config->getDescriptorId() != new_config->getDescriptorId()) {
+        Loge("failed: descriptorId is different! ", m_config->getDescriptorId(),
+             " != ", new_config->getDescriptorId());
+        return false;
+    }
+
+    if (m_config->getNodeSize() != new_config->getNodeSize()) {
+        Loge("failed: nodeSize is different! ", m_config->getNodeSize(),
+             " != ", new_config->getNodeSize());
+        return false;
+    }
+
+    for (int i = 0; i < new_config->getNodeSize(); i++) {
+        auto newConfig = new_config->getNode(i);
+
+        for (auto& pipeNode : m_nodes) {
+            if (!pipeNode->rebuildOperation(newConfig)) {
+                return false; //// TODO: update? when?
+            }
+        }
+    }
+
+    m_config = std::move(new_config);
+    return true;
+}
+
 bool Pipe::detect(const cv::Mat& image)
 {
     if (m_nodes.empty()) {

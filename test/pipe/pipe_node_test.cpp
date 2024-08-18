@@ -42,7 +42,7 @@ public:
             "operation" : {
                 "type" : "detector",
                 "config": {
-                    "model": "face_yunet_cpu",
+                    "model": "face_yunet_360_640",
                     "param": {
                         "autoDelegate": {
                             "policy": "CPU_ONLY"

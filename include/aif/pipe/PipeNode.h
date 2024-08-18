@@ -23,6 +23,7 @@ class PipeNode {
         const std::shared_ptr<NodeOutput>& getOutput() const;
 
         virtual bool build(const std::shared_ptr<NodeConfig>& config);
+        virtual bool rebuildOperation(const std::shared_ptr<NodeConfig>& config);
         virtual bool run();
 
         bool setDescriptor(const std::shared_ptr<PipeDescriptor>& descriptor);

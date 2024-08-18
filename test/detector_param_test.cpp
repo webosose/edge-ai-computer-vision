@@ -113,3 +113,13 @@ TEST_F(DetectorParamTest, 04_getDelegates) {
     EXPECT_EQ(param2.fromJson(param_delegates_2), kAifOk);
     EXPECT_EQ(param2.getDelegates().size(), 2);
 }
+
+TEST_F(DetectorParamTest, 05_updateParam) {
+    DetectorParam param;
+    EXPECT_EQ(param.fromJson(param_numThreads_4), kAifOk);
+
+    EXPECT_EQ(param.updateParam(param_delegates_1), kAifError);
+    /* Can't be updated in terms of numThreads, usexnnpack in runtime. */
+    EXPECT_EQ(param.getNumThreads(), 4);
+    EXPECT_TRUE(param.getUseXnnpack());
+}

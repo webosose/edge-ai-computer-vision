@@ -45,6 +45,15 @@ t_aif_status Detector::init(const std::string &param) {
     return status;
 }
 
+t_aif_status Detector::updateConfig(const std::string &param) {
+    if (m_param->updateParam(param) != kAifOk) {
+        Loge("failed to update param from json: ", m_modelName, " / param: ", param);
+        return kAifError;
+    }
+
+    return kAifOk;
+}
+
 void Detector::setModelInfo(TfLiteTensor* inputTensor)
 {
     t_aif_modelinfo inputInfo;

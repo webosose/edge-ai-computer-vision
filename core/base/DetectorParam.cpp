@@ -19,7 +19,7 @@ DetectorParam::DetectorParam()
     : m_useAutoDelegate(false),
 #endif
       m_useXnnpack(true),
-      m_numThreads(DEFAULT_NUM_THREADS) {}
+      m_numThreads(DEFAULT_NUM_THREADS){}
 
 DetectorParam::~DetectorParam() {}
 
@@ -60,6 +60,42 @@ t_aif_status DetectorParam::fromJson(const std::string &param) {
             }
         }
     }
+
+    return kAifOk;
+}
+
+t_aif_status DetectorParam::updateParam(const std::string& param) {
+    Logi(__func__, param);
+
+    DetectorParam new_param;
+    new_param.fromJson(param);
+
+    try {
+        /* descript the params not to be updated in runtime */
+        if (m_useAutoDelegate != new_param.getUseAutoDelegate()) {
+            throw std::runtime_error("m_useAutoDelegate");
+        }
+        if (m_autoDelegateConfig != new_param.getAutoDelegateConfig()) {
+            throw std::runtime_error("autoDelegateConfig");
+        }
+        if (m_useXnnpack != new_param.getUseXnnpack()) {
+            throw std::runtime_error("m_useXnnpack");
+        }
+        if (m_numThreads != new_param.getNumThreads()) {
+            throw std::runtime_error("m_numThreads");
+        }
+        if (m_delegates != new_param.getDelegates()) {
+            throw std::runtime_error("m_delegates");
+        }
+    } catch(const std::exception& e) {
+        Loge(__func__,"Error: ", e.what(), " param can't be updated in runtime");
+        return kAifError;
+    } catch(...) {
+        Loge(__func__,"Error: Unknown exception occured!!");
+        return kAifError;
+    }
+
+    m_param = param;
     return kAifOk;
 }
 

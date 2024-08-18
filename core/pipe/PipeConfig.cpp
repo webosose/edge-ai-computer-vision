@@ -23,7 +23,6 @@ bool NodeOperationConfig::parse(const rj::Value& value)
     }
     const char* type = value["type"].GetString();
     m_type = (type ? type : "");
-
     m_config = jsonObjectToString(value["config"]);
     return true;
 }

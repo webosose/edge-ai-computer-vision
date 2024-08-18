@@ -18,6 +18,7 @@ class Pipe {
         virtual ~Pipe();
 
         bool build(const std::string& config);
+        bool rebuild(const std::string& config);
         bool detect(const cv::Mat& image);
         bool detect(const cv::Mat& image, const ExtraOutputs& extraOutputs);
         bool detectFromFile(const std::string& imagePath);

@@ -116,3 +116,32 @@ TEST_F(YuNetFaceParamTest, 05_test_fromJson_partial)
     EXPECT_EQ(fp.topK, 1000);
 }
 
+TEST_F(YuNetFaceParamTest, 04_test_updateParam)
+{
+    YuNetFaceParam fp;
+    fp.fromJson("{ \
+        \"modelParam\": { \
+            \"scoreThreshold\": 0.9, \
+            \"nmsThreshold\": 0.5, \
+            \"topK\": 1000 \
+        } \
+    }");
+
+    EXPECT_EQ(fp.scoreThreshold, 0.9f);
+    EXPECT_EQ(fp.nmsThreshold, 0.5f);
+    EXPECT_EQ(fp.topK, 1000);
+
+    fp.updateParam("{ \
+        \"modelParam\": { \
+            \"scoreThreshold\": 0.6, \
+            \"nmsThreshold\": 0.5, \
+            \"topK\": 100 \
+        } \
+    }");
+
+    EXPECT_EQ(fp.scoreThreshold, 0.6f);
+    EXPECT_EQ(fp.nmsThreshold, 0.5f);
+    EXPECT_EQ(fp.topK, 100);
+}
+
+

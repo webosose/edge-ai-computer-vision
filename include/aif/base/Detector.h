@@ -36,6 +36,7 @@ class Detector {
     enum { MAX_INTERPRETER_THREADS = 4 };
 
     virtual t_aif_status init(const std::string &param = "");
+    virtual t_aif_status updateConfig(const std::string& param);
     virtual t_aif_status
     detectFromImage(const std::string &imagePath,
                     std::shared_ptr<Descriptor> &descriptor);

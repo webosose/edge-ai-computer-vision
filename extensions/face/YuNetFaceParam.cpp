@@ -121,4 +121,15 @@ t_aif_status YuNetFaceParam::fromJson(const std::string& param)
     return res;
 }
 
+t_aif_status YuNetFaceParam::updateParam(const std::string& param)
+{
+    auto res = DetectorParam::updateParam(param);
+    if (res != kAifOk) {
+        return res;
+    }
+
+    /* no exception. all param is acceptable to be updated in runtime */
+    return fromJson(param);
+}
+
 } // end of namespace aif

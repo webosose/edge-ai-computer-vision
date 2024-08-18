@@ -125,6 +125,42 @@ bool EdgeAIVision::deleteDetector(DetectorType type) {
     return true;
 }
 
+bool EdgeAIVision::updateDetector(DetectorType type, const std::string& option)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+    if (m_selectedModels.find(type) == m_selectedModels.end()) {
+        Logw("Detector is not created : ", static_cast<int>(type));
+        return false;
+    }
+
+    std::string model = m_selectedModels[type];
+    auto detector = DetectorFactory::get().getDetector(model);
+    if (detector == nullptr) {
+        Loge("Detector get failed: ", model);
+        return false;
+    }
+
+    std::string param = "";
+    if (!option.empty()) {
+        rj::Document json;
+        rj::ParseResult ok = json.Parse(option.c_str());
+        if (ok) {
+            if (json.IsObject() && json.HasMember("param")) {
+                param = jsonObjectToString(json["param"]);
+                auto res = detector->updateConfig(param);
+                return (kAifOk == res);
+            }
+        }
+    }
+
+    Loge("cannot parse option: " , option);
+    return false;
+}
+
 bool EdgeAIVision::detect(DetectorType type, const cv::Mat &input,
                           std::string &output) {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -297,6 +333,28 @@ bool EdgeAIVision::pipeDelete(const std::string& id)
     }
     PerformanceReporter::get().showSimpleReport();
     m_pipeMap.erase(id);
+    return true;
+}
+
+bool EdgeAIVision::pipeUpdate(const std::string& id, const std::string& option)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!isStarted()) {
+        Loge("Edge AI Vision is not started");
+        return false;
+    }
+
+    auto pipe = m_pipeMap.find(id);
+    if (pipe == m_pipeMap.end()) {
+        Loge(id, ": pipe is not created");
+        return false;
+    }
+
+    auto pp = pipe->second;
+    if (!pp->rebuild(option)) {
+        return false;
+    }
+
     return true;
 }
 

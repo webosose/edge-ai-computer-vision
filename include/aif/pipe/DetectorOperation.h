@@ -24,6 +24,7 @@ class DetectorOperation : public NodeOperation {
        friend class NodeOperationFactoryRegistration;
 
        bool init(const std::shared_ptr<NodeOperationConfig>& config) override;
+       bool update(const std::shared_ptr<NodeOperationConfig>& config) override;
 
     protected:
        bool runImpl(const std::shared_ptr<NodeInput>& input) override;

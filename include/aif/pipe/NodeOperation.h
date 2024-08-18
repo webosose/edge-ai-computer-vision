@@ -19,6 +19,7 @@ class NodeOperation {
 
     public:
        virtual bool init(const std::shared_ptr<NodeOperationConfig>& config);
+       virtual bool update(const std::shared_ptr<NodeOperationConfig>& config) = 0;
        bool run(const std::shared_ptr<NodeInput>& input,
                const std::shared_ptr<NodeOutput>& output);
 
@@ -31,7 +32,6 @@ class NodeOperation {
     protected:
        std::string m_id;
        std::shared_ptr<NodeOperationConfig> m_config;
-
 };
 
 } // end of namespace aif

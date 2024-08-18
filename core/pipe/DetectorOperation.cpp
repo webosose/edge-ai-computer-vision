@@ -29,7 +29,7 @@ bool DetectorOperation::init(const std::shared_ptr<NodeOperationConfig>& config)
     std::shared_ptr<DetectorOperationConfig> doConfig =
         std::dynamic_pointer_cast<DetectorOperationConfig>(m_config);
     if (doConfig == nullptr) {
-        Loge(__func__, "failed to convert NodeOperationConfig to DetectorOperationConfig");
+        Loge(" failed to convert NodeOperationConfig to DetectorOperationConfig");
         return false;
     }
 
@@ -42,6 +42,35 @@ bool DetectorOperation::init(const std::shared_ptr<NodeOperationConfig>& config)
 
     m_detector = DetectorFactory::get().getDetector(m_model, m_param);
     return (m_detector != nullptr);
+}
+
+bool DetectorOperation::update(const std::shared_ptr<NodeOperationConfig>& config)
+{
+    std::shared_ptr<DetectorOperationConfig> newConfig =
+        std::dynamic_pointer_cast<DetectorOperationConfig>(config);
+    if (newConfig == nullptr) {
+        Loge(" failed to convert NodeOperationConfig to DetectorOperationConfig");
+        return false;
+    }
+
+    if (m_model != newConfig->getModel()) {
+        Loge(" can't be changed to other model ", m_model, "!=", newConfig->getModel());
+        return false;
+    }
+
+    if (m_detector->updateConfig(newConfig->getParam()) != kAifOk) {
+        Loge(" can't update new config in Detector ", m_model);
+        return false;
+    }
+
+    m_param = newConfig->getParam();
+    m_config = std::move(config);
+
+    Logi(m_id, ": updated detector operation");
+    Logi(m_id, ": model - ", m_model);
+    Logi(m_id, ": updated param - ", m_param);
+
+    return true;
 }
 
 bool DetectorOperation::runImpl(const std::shared_ptr<NodeInput>& input)

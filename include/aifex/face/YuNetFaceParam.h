@@ -34,6 +34,7 @@ public:
 
 
     t_aif_status fromJson(const std::string& param) override;
+    t_aif_status updateParam(const std::string& param) override;
 
 public:
     float scoreThreshold;

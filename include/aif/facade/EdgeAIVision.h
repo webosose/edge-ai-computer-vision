@@ -115,6 +115,14 @@ class EdgeAIVision {
     bool deleteDetector(DetectorType type);
 
     /**
+     * @brief update detector with new option
+     * @param type detector type
+     * @param option detector option to modify (setup specific model, param, delegates)
+     * @return return true if success to update detector
+     */
+    bool updateDetector(DetectorType type, const std::string& option);
+
+    /**
      * @brief detect the result from input image
      * @param type detector type
      * @param input input image data
@@ -167,6 +175,14 @@ class EdgeAIVision {
      * @return return true if success to delete pipe
      */
     bool pipeDelete(const std::string& id);
+
+    /**
+     * @brief update pipe with new option
+     * @param id pipe identifier
+     * @param option pipe configuration to modify (setup specific model, param, delegates)
+     * @return return true if success to update pipe
+     */
+    bool pipeUpdate(const std::string& id, const std::string& option);
 
     /**
      * @brief detect the result from input image

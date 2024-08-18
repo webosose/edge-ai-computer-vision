@@ -39,7 +39,53 @@ protected:
                     "operation" : {
                         "type" : "detector",
                         "config": {
-                            "model": "face_yunet_cpu"
+                            "model": "face_yunet_360_640"
+                        }
+                    }
+                }
+            ]
+        }
+    )";
+    std::string facePipeNewConfig = R"(
+        {
+            "name" : "pipe_face",
+            "nodes": [
+                {
+                    "id" : "detect_face",
+                    "input" : ["image"],
+                    "output" : ["image", "inference"],
+                    "operation" : {
+                        "type" : "detector",
+                        "config": {
+                            "model": "face_yunet_360_640",
+                            "param": {
+                                "modelParam": {
+                                    "nmsThreshold": 0.5
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    )";
+    std::string facePipeInvalidConfig = R"(
+        {
+            "name" : "pipe_face",
+            "nodes": [
+                {
+                    "id" : "detect_face",
+                    "input" : ["image"],
+                    "output" : ["image", "inference"],
+                    "operation" : {
+                        "type" : "detector",
+                        "config": {
+                            "model": "face_yunet_360_640",
+                            "param": {
+                                "autoDelegate": {
+                                    "policy": "MIN_LATENCY"
+                                }
+                            }
                         }
                     }
                 }
@@ -122,6 +168,18 @@ TEST_F(PipeApiFacadeTest, pipeDeleteTest)
     EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
     EXPECT_TRUE(ai.pipeDelete(facePipeId));
     EXPECT_FALSE(ai.pipeDelete(facePipeId));
+    EXPECT_TRUE(ai.shutdown());
+}
+
+TEST_F(PipeApiFacadeTest, pipeUpdateTest)
+{
+    EdgeAIVision& ai = EdgeAIVision::getInstance();
+    EXPECT_TRUE(ai.startup());
+    EXPECT_TRUE(ai.isStarted());
+    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
+    EXPECT_TRUE(ai.pipeUpdate(facePipeId, facePipeNewConfig));
+    EXPECT_FALSE(ai.pipeUpdate(facePipeId, facePipeInvalidConfig));
+
     EXPECT_TRUE(ai.shutdown());
 }
 

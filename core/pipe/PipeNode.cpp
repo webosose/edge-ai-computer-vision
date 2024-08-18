@@ -50,6 +50,32 @@ bool PipeNode::build(const std::shared_ptr<NodeConfig>& config)
     return true;
 }
 
+bool PipeNode::rebuildOperation(const std::shared_ptr<NodeConfig>& config)
+{
+    Logi(config->getId(), ": build pipe node operation");
+
+    if (m_id != config->getId()) {
+        Loge(" failed: newConfig->getId is different! ", m_id, " != ", config->getId());
+        return false;
+    }
+    if (m_input->getType() != config->getInputType()) {
+        Loge(" failed: newConfig->getInputType is different! ", m_input->getType().toString(), " != ", config->getInputType().toString());
+        return false;
+    }
+    if (m_output->getType() != config->getOutputType()) {
+        Loge(" failed: newConfig->getOutputType is different! ", m_output->getType().toString(), " != ", config->getOutputType().toString());
+        return false;
+    }
+
+    auto origOpConfig = m_operation->getConfig();
+    auto newOpConfig = config->getOperation();
+    if (origOpConfig->getConfig() != newOpConfig->getConfig()) {
+        return m_operation->update(newOpConfig);
+    }
+
+    return true;
+}
+
 bool PipeNode::run()
 {
     Stopwatch sw;

@@ -15,6 +15,7 @@ protected:
     BridgeOperation(const std::string& id)
         : NodeOperation(id) {}
     virtual ~BridgeOperation() {}
+    virtual bool update(const std::shared_ptr<NodeOperationConfig>& config) override { return false; }
 };
 
 } // end of namespace aif

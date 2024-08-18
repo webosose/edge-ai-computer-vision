@@ -20,6 +20,7 @@ class DetectorParam {
     enum { DEFAULT_NUM_THREADS = 1 };
 
     virtual t_aif_status fromJson(const std::string &param);
+    virtual t_aif_status updateParam(const std::string &param);
 
     bool getUseXnnpack() const;
     int getNumThreads() const;
