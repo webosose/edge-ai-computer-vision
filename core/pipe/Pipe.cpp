@@ -58,6 +58,9 @@ bool Pipe::rebuild(const std::string& config)
         return false;
     }
 
+    Logi(m_name, ": rebuild pipe ");
+    Logi("config: ", config);
+
     if (m_config->getName() != new_config->getName()) {
         Loge("failed: name is different! ", m_config->getName(), " != ", new_config->getName());
         return false;
@@ -77,11 +80,10 @@ bool Pipe::rebuild(const std::string& config)
 
     for (int i = 0; i < new_config->getNodeSize(); i++) {
         auto newConfig = new_config->getNode(i);
+        auto pipeNode = m_nodes[i];
 
-        for (auto& pipeNode : m_nodes) {
-            if (!pipeNode->rebuildOperation(newConfig)) {
-                return false; //// TODO: update? when?
-            }
+        if (!pipeNode->rebuildOperation(newConfig)) {
+            return false;
         }
     }
 
