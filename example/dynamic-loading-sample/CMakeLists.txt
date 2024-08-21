@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(dynamic-loading-sample CXX)
 
-OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
-OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
-
 #set(BOOST_ROOT /home/worker)
 #set(BOOST_INCLUDEDIR $BOOST_ROOT/include/boost)
 

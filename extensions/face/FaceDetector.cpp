@@ -371,7 +371,7 @@ float FaceDetector::calculateScale(float min_scale, float max_scale, size_t stri
 bool FaceDetector::checkUpdate(size_t idx, float cur_x, float cur_y, float cur_w, float cur_h, float updateThreshold){
     if (m_prev_faces.size() <= idx) {
         std::vector<float> init_coord = {0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        m_prev_faces.push_back(init_coord);
+        m_prev_faces.push_back(std::move(init_coord));
         return true;
     }
 

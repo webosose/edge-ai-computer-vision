@@ -19,9 +19,13 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
     rj::Document payload;
     payload.Parse(m_option.c_str());
 
-    size_t numOptions = 0;
+    unsigned int numOptions = 0;
     std::map<std::string, std::string> optionMap;
     for (auto& opt : payload.GetObject()) {
+        if (numOptions >= UINT_MAX - 1) {
+            Loge("numOptions overflow error, too many options. ignored");
+            break;
+        }
         if (opt.value.IsArray()) {
             std::string optStr;
             for (int i = 0; i < opt.value.Size(); i++) {
@@ -37,15 +41,10 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
         else if (opt.value.IsString()) {
             optionMap[opt.name.GetString()] = opt.value.GetString();
         } else {
-            Loge("option is not string: ", opt.name.GetString());
+            Loge("option is not string: ", opt.name.GetString(), ", ignored");
+            continue;
         }
-
-        if (UINT_MAX - numOptions > 0) {
-            numOptions++;
-            std::string name = opt.name.GetString();
-            std::string value  = optionMap[name];
-            Logi(name, " : ", value);
-        }
+        numOptions++;
     }
 
     if (optionMap.find("save-cached-network") != optionMap.end() &&
@@ -57,23 +56,21 @@ ArmNNDelegate::ArmNNDelegate(const std::string& option)
         }
     }
 
-    if (UINT_MAX - numOptions > 0) {
-        std::unique_ptr<const char*> keys =
-            std::unique_ptr<const char*>(new const char*[numOptions + 1]);
-        std::unique_ptr<const char*> values =
-            std::unique_ptr<const char*>(new const char*[numOptions + 1]);
-        int i = 0;
-        for (auto& opt : optionMap) {
-            Logi("armnn option: ", opt.first, " : ", opt.second);
-            keys.get()[i]   = opt.first.c_str();
-            values.get()[i] = opt.second.c_str();
-            if (INT_MAX - i > 0) i++;
-        }
-        armnnDelegate::DelegateOptions options(
-                keys.get(), values.get(), numOptions, nullptr);
-
-        m_delegateOptions = std::move(options);
+    std::unique_ptr<const char*> keys =
+        std::unique_ptr<const char*>(new const char*[numOptions + 1]);
+    std::unique_ptr<const char*> values =
+        std::unique_ptr<const char*>(new const char*[numOptions + 1]);
+    unsigned int i = 0;
+    for (auto& opt : optionMap) {
+        Logi("armnn option: ", opt.first, " : ", opt.second);
+        keys.get()[i]   = opt.first.c_str();
+        values.get()[i] = opt.second.c_str();
+        if (i < UINT_MAX) i++;
     }
+    armnnDelegate::DelegateOptions options(
+            keys.get(), values.get(), numOptions, nullptr);
+
+    m_delegateOptions = std::move(options);
 }
 
 ArmNNDelegate::~ArmNNDelegate()

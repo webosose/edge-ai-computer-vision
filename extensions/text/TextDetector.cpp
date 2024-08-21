@@ -179,7 +179,7 @@ void TextDetector::convertOutputToBoxes(
         for (int j = 0; j < 4; j++) {
             points.push_back(cv::Point(pts[j].x/scaleRatioX, pts[j].y/scaleRatioY));
         }
-        boxes.push_back(points);
+        boxes.push_back(std::move(points));
     }
 
     std::shared_ptr<TextDescriptor> textDescriptor = std::dynamic_pointer_cast<TextDescriptor>(descriptor);

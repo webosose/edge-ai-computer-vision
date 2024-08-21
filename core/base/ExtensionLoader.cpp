@@ -66,9 +66,9 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile,
     {
       for (auto const &[id, reg] : RegistrationJob::get().getRegistrations(DEFAULT_EXTENSION_NAME))
       {
-        t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = DEFAULT_EXTENSION_NAME};
         //Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", DEFAULT_EXTENSION_NAME);
-        m_featureInfos.push_back(feature_info);
+        t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = DEFAULT_EXTENSION_NAME};
+        m_featureInfos.push_back(std::move(feature_info));
         reg->doRegister(); // This is needed for unittests (i.e. unittests link libraries directly and not via dlopen)
       }
     }
@@ -108,9 +108,9 @@ t_aif_status ExtensionLoader::init(bool readRegistryFile,
       {
         for (auto const &[id, reg] : RegistrationJob::get().getRegistrations(plugin_info.name))
         {
-          t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = plugin_info.name};
           //Logd("Feature: ", id, ", type: ", featureTypeToString(reg->getType()), ", pluginName: ", plugin_info.name);
-          m_featureInfos.push_back(feature_info);
+          t_aif_feature_info feature_info = {.name = id, .type = reg->getType(), .pluginName = plugin_info.name};
+          m_featureInfos.push_back(std::move(feature_info));
         }
       }
     }
@@ -187,7 +187,7 @@ t_aif_status ExtensionLoader::initFromRegistryFile()
     setOptionalValues("alias");
     setOptionalValues("version");
     setOptionalValues("description");
-    m_pluginInfos.push_back(plugin_info);
+    m_pluginInfos.push_back(std::move(plugin_info));
 
     //Required fields in registry file
     t_aif_feature_info feature_info;
@@ -203,7 +203,7 @@ t_aif_status ExtensionLoader::initFromRegistryFile()
         continue;
 
       t_aif_feature_info feature_info = {.name = feature["name"].GetString(), .type = stringToFeatureType(feature["type"].GetString()), .pluginName = plugin["name"].GetString()};
-      m_featureInfos.push_back(feature_info);
+      m_featureInfos.push_back(std::move(feature_info));
     }
   }
   return kAifOk;
@@ -228,12 +228,14 @@ t_aif_status ExtensionLoader::loadExtension(const std::string& extensionFilePath
   if (plugin_init == nullptr)
   {
     Loge("Failed to find plugin_init function: ", dlerror());
+    dlclose(handle);
     return kAifError;
   }
   auto plugin = plugin_init();
   if (plugin == nullptr)
   {
     Loge("Failed to call plugin_init function: ", dlerror());
+    dlclose(handle);
     return kAifError;
   }
   if (!plugin->getAlias().empty())
@@ -257,7 +259,7 @@ t_aif_status ExtensionLoader::loadExtension(const std::string& extensionFilePath
     RegistrationJob::get().removeRegistration(extensionName, hiddenFeature);
   }
 
-  m_pluginInfos.push_back(plugin_info);
+  m_pluginInfos.push_back(std::move(plugin_info));
   unsetenv("AIF_EXTENSION_NAME");
   return kAifOk;
 }

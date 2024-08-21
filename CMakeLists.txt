@@ -1,14 +1,9 @@
 cmake_minimum_required(VERSION 2.8.7)
 project (edgeai-vision)
 
+include(${CMAKE_SOURCE_DIR}/CMakeOptions.cmake)
+
 set(CMAKE_CXX_STANDARD 17)  # for C++17
-
-OPTION(WITH_UPDATABLE_MODELS "Enable Updatable Models" OFF)
-OPTION(WITH_EXAMPLES "Enable Examples" OFF)
-OPTION(WITH_UNIT_TEST "Enable UnitTests" ON)
-OPTION(WITH_HOST_TEST "Enable Host Based Unit test" OFF)
-OPTION(WITH_NNAPI "Enable Nnapi Delegate Support" OFF)
-
 set(SRC_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 

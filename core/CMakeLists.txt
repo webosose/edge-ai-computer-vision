@@ -10,14 +10,6 @@ set(EDGE_AI_VISION_VERSION_LIST
     "${EDGE_AI_VISION_VERSION_PATCH}")
 string(REPLACE ";" "" EDGE_AI_VISION_VERSION ${EDGE_AI_VISION_VERSION_LIST})
 
-OPTION(WITH_EDGETPU "Enable Google Coral EdgeTPU Support" OFF)
-OPTION(WITH_ARMNN "Enable ArmNN Delegate Support" OFF)
-OPTION(WITH_XNNPACK "Enable Xnnpack Delegate Support" ON)
-OPTION(WITH_GPU "Enable Gpu Delegate Support" OFF)
-OPTION(WITH_AUTO_DELEGATE "Enable Auto Delegate Selector Support" OFF)
-OPTION(WITH_NPU "Enable Npu Delegate Support" OFF)
-OPTION(WITH_NNAPI "Enable Nnapi Delegate Support" OFF)
-
 IF("${CMAKE_INSTALL_INCLUDEDIR}" STREQUAL "")
     set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
 ENDIF()
@@ -151,28 +143,13 @@ IF(WITH_EDGETPU)
 ENDIF(WITH_EDGETPU)
 
 IF(WITH_ARMNN)
-    set(SRC_FILES
-        ${SRC_FILES}
-        ${ARMNN_DELEGATE_SRCS}
-    )
     set(LIBS
         ${LIBS}
         ${ARMNN-DELEGATE_LIBRARIES}
     )
 ENDIF(WITH_ARMNN)
 
-IF(WITH_GPU)
-    set(SRC_FILES
-        ${SRC_FILES}
-        ${GPU_DELEGATE_SRCS}
-    )
-ENDIF(WITH_GPU)
-
 IF(WITH_NPU)
-    set(SRC_FILES
-        ${SRC_FILES}
-        ${NPU_DELEGATE_SRCS}
-    )
     set(LIBS
         ${LIBS}
         ${NPU-DELEGATE_LIBRARIES}
@@ -203,6 +180,7 @@ set_target_properties(${CORE_NAME} PROPERTIES
     VERSION ${EDGE_AI_VISION_VERSION}
     SOVERSION ${EDGE_AI_VISION_VERSION_MAJOR})
 target_link_libraries(${CORE_NAME}
+    PRIVATE
     ${LIBS}
 )
 
