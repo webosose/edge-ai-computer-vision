@@ -14,7 +14,6 @@
 
 namespace aif {
 
-std::unique_ptr<Logger> Logger::s_instance;
 std::once_flag Logger::s_onceFlag;
 aif::LogLevel Logger::s_logLevel;
 bool Logger::s_fullLog = true;
@@ -31,11 +30,8 @@ void Logger::init(LogLevel loglevel)
 
 Logger& Logger::getInstance()
 {
-    std::call_once(Logger::s_onceFlag, []() {
-        s_instance.reset(new Logger);
-    });
-
-    return *(s_instance.get());
+    static Logger instance;
+    return instance;
 }
 
 LogLevel Logger::getLogLevel()
@@ -247,18 +243,18 @@ void Logger::writer<LogLevel::TRACE1>(const char* functionName, const char* file
 template<>
 void Logger::writer<LogLevel::TRACE2>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::ostringstream ss;
-    ss << std::this_thread::get_id();
-    std::string logStr = "(tid:" + ss.str() + ")" + msg.str();
-    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
-        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
-    }
-#ifndef NDEBUG
-    if (s_logLevel <  LogLevel::TRACE2) return;
     try {
+        std::ostringstream ss;
+        ss << std::this_thread::get_id();
+        std::string logStr = "(tid:" + ss.str() + ")" + msg.str();
+        for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+            PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+        }
+#ifndef NDEBUG
+        if (s_logLevel <  LogLevel::TRACE2) return;
         AIF_TRACE1 << logStr;
-    } catch (...) {
-        std::cout << "Exception in Logger::writer<LogLevel::TRACE2>" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "Exception in Logger::writer<LogLevel::TRACE2> Exception: " << e.what() << std::endl;
     }
 #endif
 }
@@ -286,23 +282,23 @@ void Logger::writer<LogLevel::TRACE3>(const char* functionName, const char* file
 template<>
 void Logger::writer<LogLevel::TRACE4>(const char* functionName, const char* fileName, int line, std::ostringstream& msg) noexcept
 {
-    std::ostringstream ss;
-    ss << std::this_thread::get_id();
-    std::string logStr =
-        std::string(fileName) +
-        "[" + std::string(functionName) + ":" + std::to_string(line) + "]" +
-        "(tid:" + ss.str() + ")" +
-        msg.str();
-
-    for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
-        PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
-    }
-#ifndef NDEBUG
-    if (s_logLevel <  LogLevel::TRACE4) return;
     try {
+        std::ostringstream ss;
+        ss << std::this_thread::get_id();
+        std::string logStr =
+            std::string(fileName) +
+            "[" + std::string(functionName) + ":" + std::to_string(line) + "]" +
+            "(tid:" + ss.str() + ")" +
+            msg.str();
+
+        for (size_t i = 0; i < logStr.size(); i += PMLOG_MAX_LOG_LEN) {
+            PmLogDebug(getPmLogContext(), "%s", logStr.substr(i, PMLOG_MAX_LOG_LEN).c_str());
+        }
+#ifndef NDEBUG
+        if (s_logLevel <  LogLevel::TRACE4) return;
         AIF_TRACE1 << logStr;
-    } catch (...) {
-        std::cout << "Exception in Logger::writer<LogLevel::TRACE4>" << std::endl;
+    } catch(const std::exception& e) {
+        std::cout << "Exception in Logger::writer<LogLevel::TRACE4> Exception: " << e.what() << std::endl;
     }
 #endif
 }

@@ -22,8 +22,8 @@ ProcessRunner::ProcessRunner(std::string cmd, std::initializer_list<std::string>
     for (const auto &a : args) {
         arg += a + " ";
     }
-    Logi("ProcessRunner::ProcessRunner(", cmd, " ", arg, ")");
     try {
+      Logi("ProcessRunner::ProcessRunner(", cmd, " ", arg, ")");
       bp::ipstream outStream;
       bp::child c(cmd + " " + arg, bp::std_out > outStream);
 
@@ -38,6 +38,8 @@ ProcessRunner::ProcessRunner(std::string cmd, std::initializer_list<std::string>
       if (m_exitCode != 0) {
           throw std::runtime_error("ProcessRunner::ProcessRunner() failed with exit code: " + std::to_string(m_exitCode));
       }
+    } catch(const std::system_error& e) {
+      Loge("System error occurred: ", cmd + " " + arg, " Error: ", e.what());
     } catch(const std::exception &e) {
       Loge("Failed to execute command: ", cmd + " " + arg, " Error: ", e.what());
     }

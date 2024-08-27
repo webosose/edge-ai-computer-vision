@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -30,24 +31,29 @@ public:
     static std::string logLevelToStr(LogLevel level);
     static PmLogContext getPmLogContext();
     static void setFullLog(bool fullLog);
-    //Logger() = default;
-
-    //~Logger();
 
     template<LogLevel loglevel, typename... Args>
-    void printLog(const char* app, const char* ctx, const char* functioName, const char* fileName, int line, const Args&... args)
+    void printLog(const char* app, const char* ctx, const char* functioName, const char* fileName, int line, const Args&... args) noexcept
     {
-        std::ostringstream msg;
-        // msg << app << " " << ctx << " ";
-        writer<loglevel>(functioName, fileName, line, msg, args...);
+        try {
+            std::ostringstream msg;
+            // msg << app << " " << ctx << " ";
+            writer<loglevel>(functioName, fileName, line, msg, args...);
+        } catch (const std::exception& e) {
+            std::cerr << "Exception in printLog: " << e.what() << std::endl;
+        }
     }
 
     template<LogLevel loglevel, typename T, typename ... Types>
     void writer(const char* functioName, const char* fileName, int line,
-                std::ostringstream& msg, T value, const Types&... args)
+                std::ostringstream& msg, T value, const Types&... args) noexcept
     {
-        msg << value;
-        writer<loglevel>(functioName, fileName, line, msg, args...);
+        try {
+            msg << value;
+            writer<loglevel>(functioName, fileName, line, msg, args...);
+        } catch (const std::exception& e) {
+            std::cerr << "Exception in writer: " << e.what() << std::endl;
+        }
     }
 
     template<LogLevel loglevel>
@@ -55,7 +61,6 @@ public:
 
 
 private:
-    static std::unique_ptr<Logger> s_instance;
     static std::once_flag s_onceFlag;
     static aif::LogLevel s_logLevel;
     static bool s_fullLog;
@@ -87,14 +92,14 @@ private:
 #define LOG_CONTEXT        "AIF"
 #endif
 
-inline const char *basename(const char *path) {
-    const char *cp = strrchr(path, '/');
-    return (cp ? cp+1 : path);
-}
-
-inline std::string truncateLength(const char* path, std::size_t length) {
-    std::string_view fileName = basename(path);
-    return std::string(fileName.substr(0, std::min(fileName.size(), length)));
+inline std::string truncateLength(const char* path, std::size_t length) noexcept {
+    try {
+        std::string fileName = std::filesystem::path(path).filename().string();
+        return std::string(fileName.substr(0, std::min(fileName.size(), length)));
+    } catch (const std::exception& e) {
+        std::cerr << "Exception in truncateLength: " << e.what() << std::endl;
+        return std::string(length, ' ');
+    }
 }
 
 const std::size_t MAX_FILE_NAME_LENGTH = 31;

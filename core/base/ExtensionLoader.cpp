@@ -595,8 +595,8 @@ std::string ExtensionLoader::getBaseFileName(const std::string& name) noexcept
   try {
     std::regex so_regex(R"(\.so.*$)");
     return std::regex_replace(name, so_regex, "");
-  } catch (const std::regex_error& e) {
-    Loge("Regex error: ", e.what());
+  } catch (const std::exception& e) {
+    Loge("Exception occurred: ", e.what());
     return name;
   }
 }
