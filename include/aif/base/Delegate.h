@@ -22,6 +22,7 @@ public:
     virtual ~Delegate();
 
     const std::string& getName() const;
+    const std::string& getOption() const;
 
     virtual TfLiteDelegatePtr getTfLiteDelegate() const = 0;
 

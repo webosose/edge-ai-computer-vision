@@ -27,7 +27,7 @@ public:
             const std::string& id,
             const DelegateGenerator& DelegateGenerator);
     std::shared_ptr<Delegate> getDelegate(const std::string& id, const std::string& options = "");
-    
+
     size_t getNumDelegates() const { return m_delegates.size(); }
     void clear() {
         m_delegates.clear();
@@ -39,7 +39,7 @@ private:
     ~DelegateFactory() {}
 
 private:
-    std::unordered_map<std::string, std::shared_ptr<Delegate>> m_delegates;
+    std::unordered_multimap<std::string, std::shared_ptr<Delegate>> m_delegates;
     std::unordered_map<std::string, DelegateGenerator> m_delegateGenerators;
 };
 

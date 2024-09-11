@@ -28,16 +28,31 @@ std::shared_ptr<Delegate> DelegateFactory::getDelegate(const std::string& id, co
         Loge(__func__, "AIVision is not initialized");
         return nullptr;
     }
-    if (m_delegates.find(id) == m_delegates.end() &&
-            m_delegateGenerators.find(id) == m_delegateGenerators.end()) {
+
+    if (m_delegateGenerators.find(id) == m_delegateGenerators.end()) {
         Loge(id, " delegate generator is not registered");
         return nullptr;
     }
-    if (m_delegates.find(id) != m_delegates.end()) {
-        return m_delegates[id];
-    }
-    m_delegates[id] = m_delegateGenerators[id](option);
-    return m_delegates[id];
-}
 
+    auto range = m_delegates.equal_range(id);
+    for (auto it = range.first; it != range.second; ++it) {
+        if (it->second != nullptr && it->second->getOption() == option) {
+            return it->second;
+        }
+    }
+
+    auto delegate = m_delegateGenerators[id](option);
+    if (!delegate) {
+        Loge(__func__, " failed to generate delegate ", id, ", option: ", option);
+        return nullptr;
+    }
+
+    auto itr = m_delegates.insert(std::make_pair(id, delegate));
+    if (itr == m_delegates.end()) {
+        Loge(__func__, " failed to insert m_delegates");
+        return nullptr;
+    }
+
+    return itr->second;
+}
 } // end of idspace aif

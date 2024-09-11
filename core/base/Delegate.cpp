@@ -25,4 +25,9 @@ const std::string& Delegate::getName() const
     return m_name;
 }
 
+const std::string& Delegate::getOption() const
+{
+    return m_option;
+}
+
 }   // end of namespace aif
