@@ -29,6 +29,7 @@
 #define KEY_ALLOWED_EXTENSIONS "AllowedExtensions"
 #define KEY_EXTENSION_LOADER_RETRY_COUNT "ExtensionLoaderRetryCount"
 #define KEY_EXTENSION_LOADER_FAULT_TOLEARANCE "ExtensionLoaderFaultTolerance"
+#define KEY_FORCE_REGEN_REGISTRY "ForceRegenRegistry"
 
 namespace aif {
 

@@ -53,18 +53,24 @@ bool AIVision::init(const std::string& basePath)
     {
         std::string extensionPath = s_config->getOption(KEY_EXTENSION_PATH);
         std::vector<std::string> allowedExtensions = s_config->getOptionArray(KEY_ALLOWED_EXTENSIONS);
+        std::string retryCount = s_config->getOption(KEY_EXTENSION_LOADER_RETRY_COUNT);
+        std::string faultTolerance = s_config->getOption(KEY_EXTENSION_LOADER_FAULT_TOLEARANCE);
+        std::string forceRegenRegistry = s_config->getOption(KEY_FORCE_REGEN_REGISTRY);
+
         if (extensionPath.empty())
             extensionPath = EDGEAI_VISION_EXTENSION_PATH;
         if (allowedExtensions.size() == 0) 
             allowedExtensions = {};
-
-        std::string retryCount = s_config->getOption(KEY_EXTENSION_LOADER_RETRY_COUNT);
         if (!retryCount.empty())
             ExtensionLoader::get().setRetryCount(std::stoi(retryCount));
-        std::string faultTolerance = s_config->getOption(KEY_EXTENSION_LOADER_FAULT_TOLEARANCE);
-        Logd("FaultTolerance: ", faultTolerance); //TODO: Check why "1" comes, not "true"
-        if (!faultTolerance.empty())
+        if (!faultTolerance.empty()) {
+            Logd("FaultTolerance: ", faultTolerance); //TODO: Check why "1" comes, not "true"
             ExtensionLoader::get().setFaultTolerance(faultTolerance == "1");
+        }
+        if (!forceRegenRegistry.empty()) {
+            Logd("ForceRegenRegistry: ", forceRegenRegistry); //TODO: Check why "1" comes, not "true"
+            ExtensionLoader::get().setForceRegenRegistry(forceRegenRegistry == "1");
+        }
 
         if (ExtensionLoader::get().initRetry(true, extensionPath, allowedExtensions) != kAifOk) {
             Loge("Failed to initialize ExtensionLoader");

@@ -485,6 +485,9 @@ bool ExtensionLoader::isAllowedExtension(const std::string& extensionName)
 
 bool ExtensionLoader::isNeededToGenRegistryFile() noexcept
 {
+  if (m_forceRegenRegistry)
+    return true;
+
   try {
     // 1. Check if registry file exists and is readable
     {

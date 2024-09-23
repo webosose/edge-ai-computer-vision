@@ -65,6 +65,8 @@ public:
   int getRetryCount() noexcept { return m_retryCount; }
   void setFaultTolerance(bool faultTolerance) noexcept { m_faultTolerance = faultTolerance; }
   bool getFaultTolerance() noexcept { return m_faultTolerance; }
+  void setForceRegenRegistry(bool forceRegenRegistry) noexcept { m_forceRegenRegistry = forceRegenRegistry; }
+  bool getForceRegenRegistry() noexcept { return m_forceRegenRegistry; }
 
 private:
   ExtensionLoader(): m_registryFilePath(EDGEAI_VISION_EXTENSION_REGISTRY_PATH)
@@ -94,6 +96,7 @@ private:
 
   int  m_retryCount = 1;
   bool m_faultTolerance = false;
+  bool m_forceRegenRegistry = false;
 
   std::string m_registryFilePath;
   std::string m_extensionDirectoryPath;
