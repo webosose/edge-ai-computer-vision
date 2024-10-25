@@ -30,10 +30,7 @@ ENDIF()
 add_subdirectory(core)
 add_subdirectory(extensions)
 add_subdirectory(bin)
-
-IF(WITH_EXAMPLES)
-    add_subdirectory(example)
-ENDIF()
+add_subdirectory(example)
 
 IF(WITH_HOST_TEST)        ### for meta-shift unit test ###
     enable_testing()
