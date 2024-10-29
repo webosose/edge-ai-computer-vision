@@ -6,11 +6,11 @@
 #ifndef AIF_RENDERER_H
 #define AIF_RENDERER_H
 
-#include <Bbox.h>
-
 #include <opencv2/opencv.hpp>
 
 namespace aif {
+
+class BBox;
 
 class Renderer {
 public:

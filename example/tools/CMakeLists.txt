@@ -17,7 +17,7 @@ add_definitions(
     -DLOG_APPLICATION="AIF"
 )
 
-set(LIB_NAME ${PROJECT_NAME})
+set(LIB_NAME "edgeai-${PROJECT_NAME}")
 set(HDR_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -53,10 +53,22 @@ set(LIBS
 )
 
 add_library(${LIB_NAME}
-    STATIC
+    SHARED
     ${SRC_FILES}
 )
+
+set_target_properties(${LIB_NAME} PROPERTIES
+    VERSION 1.0.0
+    SOVERSION 1
+)
+
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(${LIB_NAME}
     ${LIBS}
 )
+
+file(GLOB EXAMPLE_TOOLS_HDRS
+    "${CMAKE_CURRENT_LIST_DIR}/*.h"
+)
+install(FILES ${EXAMPLE_TOOLS_HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aif/example-tools)
+install(TARGETS ${LIB_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

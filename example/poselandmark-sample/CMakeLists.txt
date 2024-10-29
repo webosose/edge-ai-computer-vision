@@ -81,7 +81,7 @@ set(LIBS
     ${RAPIDJSON_LIBRARIES}
     edgeai-vision
     edgeai-vision-base
-    example-tools
+    edgeai-example-tools
     pthread
 )
 

@@ -19,7 +19,7 @@ file(GLOB THIRD_PARTY_HDRS
     "${THIRD_PARTY_SRC_DIR}/mediapipe/selfie/*.h"
     "${THIRD_PARTY_SRC_DIR}/CubicSpline/*.h"
 )
-install(FILES ${THIRD_PARTY_HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/third_party)
+install(FILES ${THIRD_PARTY_HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aif/third_party)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${THIRD_PARTY_SRC_DIR})
