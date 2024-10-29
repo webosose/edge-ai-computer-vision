@@ -23,3 +23,6 @@ IF(WITH_EXTRA_MODELS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/handlandmark-sample)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/palm-sample)
 ENDIF(WITH_EXTRA_MODELS)
+
+file(GLOB IMAGES "${CMAKE_CURRENT_LIST_DIR}/images/*")
+install(FILES ${IMAGES} DESTINATION ${AIF_INSTALL_EXAMPLE_DIR}/images/)
