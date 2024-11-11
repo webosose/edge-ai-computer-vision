@@ -40,6 +40,7 @@ public:
     static bool isInitialized();
     static std::string getBasePath();
     static std::string getModelPath(const std::string& modelName);
+    static std::string getExtraModelPath(const std::string& modelName);
     static void mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_ptr<ConfigReader>& source);
 #ifdef USE_UPDATABLE_MODELS
     static int getUpdatableModelIndex(const std::string& modelName);

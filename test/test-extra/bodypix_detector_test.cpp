@@ -72,8 +72,8 @@ protected:
 TEST_F(BodypixDetectorTest, 01_getModelInfo)
 {
     auto dt = DetectorFactory::get().getDetector("bodypix_mobilenet_cpu");
-    EXPECT_TRUE(dt.get() != nullptr);
-    EXPECT_EQ(dt->getModelName(), "bodypix_mobilenet_v1_075_512_512_16_quant_decoder.tflite");
+    ASSERT_TRUE(dt.get() != nullptr);
+    ASSERT_EQ(dt->getModelName(), "bodypix_mobilenet_v1_075_512_512_16_quant_decoder.tflite");
     auto modelInfo = dt->getModelInfo();
     EXPECT_EQ(modelInfo.height, 512);
     EXPECT_EQ(modelInfo.width, 512);
@@ -83,12 +83,12 @@ TEST_F(BodypixDetectorTest, 01_getModelInfo)
 TEST_F(BodypixDetectorTest, 02_detect)
 {
     auto dt = DetectorFactory::get().getDetector("bodypix_mobilenet_cpu");
-    EXPECT_TRUE(dt.get() != nullptr);
+    ASSERT_TRUE(dt.get() != nullptr);
 
     BodypixDescriptor* bodypixDescriptor = new BodypixDescriptor();
     std::shared_ptr<Descriptor> descriptor(bodypixDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
-    EXPECT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("segments"));
 }
 
@@ -96,13 +96,13 @@ TEST_F(BodypixDetectorTest, 02_detect)
 TEST_F(BodypixDetectorTest, 03_detect_base64)
 {
     auto dt = DetectorFactory::get().getDetector("bodypix_mobilenet_cpu");
-    EXPECT_TRUE(dt.get() != nullptr);
+    ASSERT_TRUE(dt.get() != nullptr);
 
     auto base64image = aif::fileToStr(basePath + "/images/mona_base64.jpg"); // 128 x 128
     BodypixDescriptor* bodypixDescriptor = new BodypixDescriptor();
     std::shared_ptr<Descriptor> descriptor(bodypixDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
-    EXPECT_TRUE(dt->detectFromBase64(base64image, descriptor) == aif::kAifOk);
+    ASSERT_TRUE(dt->detectFromBase64(base64image, descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("segments"));
 }
 
@@ -110,12 +110,12 @@ TEST_F(BodypixDetectorTest, 03_detect_base64)
 TEST_F(BodypixDetectorTest, 04_edgetpu_test)
 {
     auto dt = DetectorFactory::get().getDetector("bodypix_mobilenet_edgetpu");
-    EXPECT_TRUE(dt.get() != nullptr);
+    ASSERT_TRUE(dt.get() != nullptr);
 
     BodypixDescriptor* bodypixDescriptor = new BodypixDescriptor();
     std::shared_ptr<Descriptor> descriptor(bodypixDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
-    EXPECT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("segments"));
 }
 #endif
@@ -124,13 +124,13 @@ TEST_F(BodypixDetectorTest, 04_edgetpu_test)
 TEST_F(BodypixDetectorTest, 05_armnn_delegate_test)
 {
     auto dt = DetectorFactory::get().getDetector("bodypix_mobilenet_cpu", armnn_delegate_param);
-    EXPECT_TRUE(dt.get() != nullptr);
+    ASSERT_TRUE(dt.get() != nullptr);
     EXPECT_TRUE(dt->getNumDelegates() == 1);
 
     BodypixDescriptor* bodypixDescriptor = new BodypixDescriptor();
     std::shared_ptr<Descriptor> descriptor(bodypixDescriptor);
     EXPECT_FALSE(descriptor->hasMember("segments"));
-    EXPECT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(dt->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
     EXPECT_TRUE(descriptor->hasMember("segments"));
 }
 

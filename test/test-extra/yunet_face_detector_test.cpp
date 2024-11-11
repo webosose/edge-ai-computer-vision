@@ -53,8 +53,8 @@ protected:
 TEST_F(YuNetFaceDetectorTest, 01_yunet_init)
 {
     auto fd = DetectorFactory::get().getDetector("face_yunet_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "face_yunet.tflite");
+    ASSERT_TRUE(fd.get() != nullptr);
+    ASSERT_EQ(fd->getModelName(), "face_yunet.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 120);
     EXPECT_EQ(modelInfo.width, 160);
@@ -64,19 +64,19 @@ TEST_F(YuNetFaceDetectorTest, 01_yunet_init)
 TEST_F(YuNetFaceDetectorTest, 02_faces_from_5faces)
 {
     auto fd = DetectorFactory::get().getDetector("face_yunet_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<FaceDescriptor>();
     auto foundFaces = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/5faces.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/5faces.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundFaces->size(), 5);
 }
 
 TEST_F(YuNetFaceDetectorTest, 03_faces_from_2faces)
 {
     auto fd = DetectorFactory::get().getDetector("face_yunet_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<FaceDescriptor>();
     auto foundFaces = std::dynamic_pointer_cast<FaceDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/2faces.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/2faces.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundFaces->size(), 2);
 }

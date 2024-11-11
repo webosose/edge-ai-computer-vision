@@ -61,11 +61,11 @@ TEST_F(MovenetDescriptorTest, 02_addKeyPoints_one)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("poses"));
-    EXPECT_TRUE(d["poses"].IsArray());
-    EXPECT_TRUE(d["poses"][0].IsObject());
-    EXPECT_TRUE(d["poses"][0].HasMember("keyPoints"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("poses"));
+    ASSERT_TRUE(d["poses"].IsArray());
+    ASSERT_TRUE(d["poses"][0].IsObject());
+    ASSERT_TRUE(d["poses"][0].HasMember("keyPoints"));
     EXPECT_TRUE(d["poses"][0]["keyPoints"].IsArray());
 }
 
@@ -91,8 +91,8 @@ TEST_F(MovenetDescriptorTest, 03_addKeyPoints_two)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("poses"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("poses"));
     EXPECT_TRUE(d["poses"].IsArray());
     EXPECT_TRUE(d["poses"].Size() == 2);
 }
@@ -118,10 +118,10 @@ TEST_F(MovenetDescriptorTest, 04_add_response_and_returncode)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("response"));
-    EXPECT_TRUE(d.HasMember("returnCode"));
-    EXPECT_TRUE(d.HasMember("poses"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("response"));
+    ASSERT_TRUE(d.HasMember("returnCode"));
+    ASSERT_TRUE(d.HasMember("poses"));
     EXPECT_TRUE(d["poses"].IsArray());
     EXPECT_TRUE(d["poses"].Size() == 1);
 }

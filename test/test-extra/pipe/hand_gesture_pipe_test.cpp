@@ -6,7 +6,7 @@
 #include <aif/pipe/Pipe.h>
 #include <aif/base/AIVision.h>
 #include <gtest/gtest.h>
-#include "ConfigUtil.h"
+#include "pipe/ConfigUtil.h"
 
 #include <opencv2/opencv.hpp>
 using namespace std;
@@ -141,11 +141,11 @@ public:
 TEST_F(HandGesturePipeTest, 01_build_hand_gesture)
 {
     Pipe pipe1;
-    EXPECT_TRUE(pipe1.build(palmDetectorPipe));
+    ASSERT_TRUE(pipe1.build(palmDetectorPipe));
     EXPECT_EQ(pipe1.getName(), "pipe_palm");
 
     Pipe pipe2;
-    EXPECT_TRUE(pipe2.build(handGesturePipe));
+    ASSERT_TRUE(pipe2.build(handGesturePipe));
     EXPECT_EQ(pipe2.getName(), "pipe_hand_gesture");
 }
 
@@ -153,11 +153,11 @@ TEST_F(HandGesturePipeTest, 02_detect_hand_gesture)
 {
     cv::Mat image = cv::imread(basePath + "/images/hand_right.jpg");
     Pipe pipe;
-    EXPECT_TRUE(pipe.build(handGesturePipe));
-    EXPECT_TRUE(pipe.detect(image));
+    ASSERT_TRUE(pipe.build(handGesturePipe));
+    ASSERT_TRUE(pipe.detect(image));
 
     auto descriptor = pipe.getDescriptor();
-    EXPECT_TRUE(descriptor != nullptr);
+    ASSERT_TRUE(descriptor != nullptr);
 
     string resultPalms = descriptor->getResult("detect_palm");
     rj::Document d1;

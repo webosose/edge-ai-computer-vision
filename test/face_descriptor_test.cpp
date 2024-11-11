@@ -57,46 +57,46 @@ TEST_F(FaceDescriptorTest, 02_addface_one)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("faces"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("faces"));
     EXPECT_TRUE(d["faces"].IsArray());
     EXPECT_TRUE(d["faces"].Size() == 1);
-    EXPECT_TRUE(d["faces"][0].IsObject());
-    EXPECT_TRUE(d["faces"][0].HasMember("score"));
+    ASSERT_TRUE(d["faces"][0].IsObject());
+    ASSERT_TRUE(d["faces"][0].HasMember("score"));
     EXPECT_TRUE(d["faces"][0]["score"].GetDouble() == 1.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("region"));
+    ASSERT_TRUE(d["faces"][0].HasMember("region"));
     EXPECT_TRUE(d["faces"][0]["region"].IsArray());
     EXPECT_TRUE(d["faces"][0]["region"].Size() == 4);
     EXPECT_TRUE(d["faces"][0]["region"][0].GetDouble() == 2.0);
     EXPECT_TRUE(d["faces"][0]["region"][1].GetDouble() == 3.0);
     EXPECT_TRUE(d["faces"][0]["region"][2].GetDouble() == 4.0);
     EXPECT_TRUE(d["faces"][0]["region"][3].GetDouble() == 5.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("lefteye"));
+    ASSERT_TRUE(d["faces"][0].HasMember("lefteye"));
     EXPECT_TRUE(d["faces"][0]["lefteye"].IsArray());
     EXPECT_TRUE(d["faces"][0]["lefteye"].Size() == 2);
     EXPECT_TRUE(d["faces"][0]["lefteye"][0].GetDouble() == 6.0);
     EXPECT_TRUE(d["faces"][0]["lefteye"][1].GetDouble() == 7.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("righteye"));
+    ASSERT_TRUE(d["faces"][0].HasMember("righteye"));
     EXPECT_TRUE(d["faces"][0]["righteye"].IsArray());
     EXPECT_TRUE(d["faces"][0]["righteye"].Size() == 2);
     EXPECT_TRUE(d["faces"][0]["righteye"][0].GetDouble() == 8.0);
     EXPECT_TRUE(d["faces"][0]["righteye"][1].GetDouble() == 9.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("nosetip"));
+    ASSERT_TRUE(d["faces"][0].HasMember("nosetip"));
     EXPECT_TRUE(d["faces"][0]["nosetip"].IsArray());
     EXPECT_TRUE(d["faces"][0]["nosetip"].Size() == 2);
     EXPECT_TRUE(d["faces"][0]["nosetip"][0].GetDouble() == 10.0);
     EXPECT_TRUE(d["faces"][0]["nosetip"][1].GetDouble() == 11.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("mouth"));
+    ASSERT_TRUE(d["faces"][0].HasMember("mouth"));
     EXPECT_TRUE(d["faces"][0]["mouth"].IsArray());
     EXPECT_TRUE(d["faces"][0]["mouth"].Size() == 2);
     EXPECT_TRUE(d["faces"][0]["mouth"][0].GetDouble() == 12.0);
     EXPECT_TRUE(d["faces"][0]["mouth"][1].GetDouble() == 13.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("leftear"));
+    ASSERT_TRUE(d["faces"][0].HasMember("leftear"));
     EXPECT_TRUE(d["faces"][0]["leftear"].IsArray());
     EXPECT_TRUE(d["faces"][0]["leftear"].Size() == 2);
     EXPECT_TRUE(d["faces"][0]["leftear"][0].GetDouble() == 14.0);
     EXPECT_TRUE(d["faces"][0]["leftear"][1].GetDouble() == 15.0);
-    EXPECT_TRUE(d["faces"][0].HasMember("rightear"));
+    ASSERT_TRUE(d["faces"][0].HasMember("rightear"));
     EXPECT_TRUE(d["faces"][0]["rightear"].IsArray());
     EXPECT_TRUE(d["faces"][0]["rightear"].Size() == 2);
     EXPECT_TRUE(d["faces"][0]["rightear"][0].GetDouble() == 16.0);
@@ -122,8 +122,8 @@ TEST_F(FaceDescriptorTest, 03_addface_two)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("faces"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("faces"));
     EXPECT_TRUE(d["faces"].IsArray());
     EXPECT_TRUE(d["faces"].Size() == 2);
 }
@@ -146,10 +146,10 @@ TEST_F(FaceDescriptorTest, 04_add_response_and_returncode)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("response"));
-    EXPECT_TRUE(d.HasMember("returnCode"));
-    EXPECT_TRUE(d.HasMember("faces"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("response"));
+    ASSERT_TRUE(d.HasMember("returnCode"));
+    ASSERT_TRUE(d.HasMember("faces"));
     EXPECT_TRUE(d["faces"].IsArray());
     EXPECT_TRUE(d["faces"].Size() == 1);
 }
@@ -166,7 +166,7 @@ TEST_F(FaceDescriptorTest, 05_empty_faces)
 
     rj::Document d;
     d.Parse(json.c_str());
-    EXPECT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("response"));
     EXPECT_TRUE(d.HasMember("returnCode"));
     EXPECT_TRUE(d.HasMember("faces"));

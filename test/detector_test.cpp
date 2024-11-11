@@ -17,7 +17,7 @@ using namespace aif;
 
 class TestDetector : public Detector {
   public:
-    TestDetector() : Detector("face_detection_short_range.tflite") {
+    TestDetector() : Detector("yunet_yunet_final_360_640_simplify_float32.tflite") {
         isCalledCreateParam = false;
         isCalledCompileModel = false;
         isCalledPreProcessing = false;
@@ -76,7 +76,7 @@ class DetectorTest : public ::testing::Test {
 
 TEST_F(DetectorTest, 01_getModelName) {
     TestDetector td;
-    EXPECT_EQ(td.getModelName(), "face_detection_short_range.tflite");
+    EXPECT_EQ(td.getModelName(), "yunet_yunet_final_360_640_simplify_float32.tflite");
 }
 
 TEST_F(DetectorTest, 02_init) {
@@ -87,7 +87,7 @@ TEST_F(DetectorTest, 02_init) {
     EXPECT_FALSE(td.isCalledFillInputTensor);
     EXPECT_FALSE(td.isCalledPostProcessing);
 
-    EXPECT_EQ(td.init(), kAifOk);
+    ASSERT_EQ(td.init(), kAifOk);
     EXPECT_TRUE(td.isCalledCreateParam);
     EXPECT_TRUE(td.isCalledCompileModel);
     EXPECT_TRUE(td.isCalledPreProcessing);
@@ -97,16 +97,16 @@ TEST_F(DetectorTest, 02_init) {
 
 TEST_F(DetectorTest, 03_getModelInfo) {
     TestDetector td;
-    EXPECT_EQ(td.init(), kAifOk);
+    ASSERT_EQ(td.init(), kAifOk);
     auto modelInfo = td.getModelInfo();
-    EXPECT_EQ(modelInfo.height, 128);
-    EXPECT_EQ(modelInfo.width, 128);
+    EXPECT_EQ(modelInfo.height, 360);
+    EXPECT_EQ(modelInfo.width, 640);
     EXPECT_EQ(modelInfo.channels, 3);
 }
 
 TEST_F(DetectorTest, 04_detect) {
     TestDetector td;
-    EXPECT_EQ(td.init(), kAifOk);
+    ASSERT_EQ(td.init(), kAifOk);
     EXPECT_FALSE(td.isCalledFillInputTensor);
     EXPECT_FALSE(td.isCalledPostProcessing);
 

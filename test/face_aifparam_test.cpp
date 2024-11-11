@@ -84,6 +84,7 @@ TEST_F(FaceAifparamTest, 01_generateAIFParam_face)
     json j1 = json::parse(face, nullptr, false);
     json j2 = json::parse(str, nullptr, false);
     EXPECT_EQ(j1, j2);
+    ai.shutdown();
 }
 
 

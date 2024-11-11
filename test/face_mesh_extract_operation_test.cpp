@@ -138,8 +138,8 @@ TEST_F(FaceMeshExtractOperationTest, face_mesh_rgb_extract_test)
     std::string faceMeshRGBExtractResult = pipeDescriptor->getResult("extract_face_mesh_rgb");
     rj::Document dd;
     dd.Parse(faceMeshRGBExtractResult.c_str());
-    EXPECT_TRUE(dd.IsObject());
-    EXPECT_TRUE(dd.HasMember("meshData"));
+    ASSERT_TRUE(dd.IsObject());
+    ASSERT_TRUE(dd.HasMember("meshData"));
     EXPECT_TRUE(dd["meshData"].IsArray());
     EXPECT_TRUE(dd["meshData"].Size() == 3);
 }

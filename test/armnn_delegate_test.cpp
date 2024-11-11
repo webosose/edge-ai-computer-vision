@@ -60,7 +60,7 @@ TEST_F(ArmNNDelegateTest, 01_constructor)
 {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("armnn_delegate");
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
     DelegateFactory::get().clear();
 }
 
@@ -68,9 +68,9 @@ TEST_F(ArmNNDelegateTest, 02_constructor_with_options_cppacc_info)
 {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("armnn_delegate", options_cpuacc_info);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
 
-    std::shared_ptr<ArmNNDelegate> armnnDelegate = 
+    std::shared_ptr<ArmNNDelegate> armnnDelegate =
         std::dynamic_pointer_cast<ArmNNDelegate>(delegate);
     auto option = armnnDelegate->getDelegateOptions();
     EXPECT_EQ(option.GetLoggingSeverity(), armnn::LogSeverity::Info);
@@ -85,9 +85,9 @@ TEST_F(ArmNNDelegateTest, 03_constructor_with_options_cppref_debug)
 {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("armnn_delegate", options_cpuref_debug);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
 
-    std::shared_ptr<ArmNNDelegate> armnnDelegate = 
+    std::shared_ptr<ArmNNDelegate> armnnDelegate =
         std::dynamic_pointer_cast<ArmNNDelegate>(delegate);
     auto option = armnnDelegate->getDelegateOptions();
     EXPECT_EQ(option.GetLoggingSeverity(), armnn::LogSeverity::Debug);
@@ -102,8 +102,8 @@ TEST_F(ArmNNDelegateTest, 04_getTfLiteDelegate)
 {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("armnn_delegate", options_cpuacc_info);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
     auto ptr = delegate->getTfLiteDelegate();
-    EXPECT_TRUE(ptr.get() != nullptr);
+    ASSERT_TRUE(ptr.get() != nullptr);
     DelegateFactory::get().clear();
 }

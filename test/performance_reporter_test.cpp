@@ -312,24 +312,34 @@ TEST_F(PerformanceReporterTest, reporter_with_detector_test)
     PerformanceReporter::get().addReportType(Performance::CONSOLE | Performance::REPORT);
 
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
+#ifndef USE_UPDATABLE_MODELS
     EdgeAIVision::DetectorType type2 = EdgeAIVision::DetectorType::POSE;
+#endif
 
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.createDetector(type2));
+    ASSERT_TRUE(ai.createDetector(type));
+#ifndef USE_UPDATABLE_MODELS
+    ASSERT_TRUE(ai.createDetector(type2));
+#endif
+
     for (int i = 0; i < 10; i++) {
         EXPECT_TRUE(ai.detect(type, input, output));
+#ifndef USE_UPDATABLE_MODELS
         EXPECT_TRUE(ai.detect(type2, input, output));
+#endif
     }
+
     EXPECT_TRUE(ai.deleteDetector(type));
+#ifndef USE_UPDATABLE_MODELS
     EXPECT_TRUE(ai.deleteDetector(type2));
+#endif
     ai.shutdown();
 
     PerformanceReporter::get().showReport();
@@ -341,24 +351,34 @@ TEST_F(PerformanceReporterTest, write_reporter_with_detector_test)
     PerformanceReporter::get().addReportType(Performance::REPORT_FILE);
 
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
+#ifndef USE_UPDATABLE_MODELS
     EdgeAIVision::DetectorType type2 = EdgeAIVision::DetectorType::POSE;
+#endif
 
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.createDetector(type2));
+    ASSERT_TRUE(ai.createDetector(type));
+#ifndef USE_UPDATABLE_MODELS
+    ASSERT_TRUE(ai.createDetector(type2));
+#endif
+
     for (int i = 0; i < 10; i++) {
         EXPECT_TRUE(ai.detect(type, input, output));
+#ifndef USE_UPDATABLE_MODELS
         EXPECT_TRUE(ai.detect(type2, input, output));
+#endif
     }
+
     EXPECT_TRUE(ai.deleteDetector(type));
+#ifndef USE_UPDATABLE_MODELS
     EXPECT_TRUE(ai.deleteDetector(type2));
+#endif
     ai.shutdown();
 
     PerformanceReporter::get().showReport();

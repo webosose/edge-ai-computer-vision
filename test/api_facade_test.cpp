@@ -17,7 +17,7 @@ class ApiFacadeTest : public ::testing::Test
 {
 protected:
     ApiFacadeTest() {
-        m_detectorOption = "{ \"model\" : \"face_short_range_cpu\" }";
+        m_detectorOption = "{ \"model\" : \"face_yunet_360_640\" }";
     };
     ~ApiFacadeTest() = default;
     void SetUp() override
@@ -52,12 +52,14 @@ TEST_F(ApiFacadeTest, 02_createDetector_default)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::POSE));
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
+#ifndef USE_UPDATABLE_MODELS
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::POSE));
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+#endif
     EXPECT_FALSE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM));
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM, m_detectorOption));
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM, m_detectorOption));
     ai.shutdown();
 }
 
@@ -65,20 +67,26 @@ TEST_F(ApiFacadeTest, 03_deleteDetector_default)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));
+#ifndef USE_UPDATABLE_MODELS
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::POSE));
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+#endif
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::CUSTOM));
 
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::POSE));
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SEGMENTATION));
-    EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM, m_detectorOption));
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
+#ifndef USE_UPDATABLE_MODELS
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::POSE));
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+#endif
+    ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::CUSTOM, m_detectorOption));
 
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));
+#ifndef USE_UPDATABLE_MODELS
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::POSE));
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::SEGMENTATION));
+#endif
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::CUSTOM));
     ai.shutdown();
 }
@@ -88,14 +96,14 @@ TEST_F(ApiFacadeTest, 04_detect_face_default)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -110,12 +118,12 @@ TEST_F(ApiFacadeTest, 05_detectFromFile_face_default)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string inputPath = AIVision::getBasePath() + "/images/person.jpg";
     std::string output;
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detectFromFile(type, inputPath, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -125,19 +133,20 @@ TEST_F(ApiFacadeTest, 05_detectFromFile_face_default)
     Logd(output);
 }
 
+#ifndef USE_UPDATABLE_MODELS
 TEST_F(ApiFacadeTest, 06_detect_pose_default)
 {
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::POSE;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -152,12 +161,12 @@ TEST_F(ApiFacadeTest, 07_detectFromFile_pose_default)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::POSE;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string inputPath = AIVision::getBasePath() + "/images/person.jpg";
     std::string output;
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detectFromFile(type, inputPath, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -172,19 +181,20 @@ TEST_F(ApiFacadeTest, 08_detect_segmentation_default)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::SEGMENTATION;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
     rj::Document result;
     result.Parse(output.c_str());
+    ASSERT_TRUE(result.HasMember("segments"));
     EXPECT_EQ(result["segments"].Size(), 1);
     //Logd(output);
 }
@@ -194,19 +204,21 @@ TEST_F(ApiFacadeTest, 09_detectFromFile_segmentation_default)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::SEGMENTATION;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string inputPath = AIVision::getBasePath() + "/images/person.jpg";
     std::string output;
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detectFromFile(type, inputPath, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
     rj::Document result;
     result.Parse(output.c_str());
+    ASSERT_TRUE(result.HasMember("segments"));
     EXPECT_EQ(result["segments"].Size(), 1);
 }
+#endif
 
 #if 0
 TEST_F(ApiFacadeTest, 10_detect_face_full_range)
@@ -239,14 +251,14 @@ TEST_F(ApiFacadeTest, 10_detect_face_full_range)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::FACE;
     EdgeAIVision ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type, param));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type, param));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -261,7 +273,7 @@ TEST_F(ApiFacadeTest, 11_create_delete_detector)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
     EXPECT_FALSE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
     EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));

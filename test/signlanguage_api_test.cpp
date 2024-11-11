@@ -55,7 +55,7 @@ TEST_F(SignLanguageAreaApiTest, createDetector_default)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SIGNLANGUAGEAREA));
     ai.shutdown();
 }
@@ -64,7 +64,7 @@ TEST_F(SignLanguageAreaApiTest, deleteDetector_default)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::SIGNLANGUAGEAREA));
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::SIGNLANGUAGEAREA));
@@ -77,14 +77,14 @@ TEST_F(SignLanguageAreaApiTest, detect_signlanguagearea)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::SIGNLANGUAGEAREA;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     cv::Mat input;
     std::string output;
     input = cv::imread(SignLanguageAreaApiTest::imagePath, cv::IMREAD_COLOR);
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 

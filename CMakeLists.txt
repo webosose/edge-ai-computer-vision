@@ -19,10 +19,6 @@ IF(WITH_UPDATABLE_MODELS)
     ADD_DEFINITIONS(-DUSE_UPDATABLE_MODELS)
 ENDIF(WITH_UPDATABLE_MODELS)
 
-IF(WITH_EXTRA_MODELS)
-    ADD_DEFINITIONS(-DUSE_EXTRA_MODELS)
-ENDIF(WITH_EXTRA_MODELS)
-
 IF(WITH_NNAPI)
     ADD_DEFINITIONS(-DUSE_NNAPI)
 ENDIF()
@@ -40,6 +36,7 @@ ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test/test-dl)
     add_subdirectory(test/test-plugin)
     add_subdirectory(test/test-inspector)
+    add_subdirectory(test/test-extra)
 ENDIF()
 
 add_subdirectory(third_party)

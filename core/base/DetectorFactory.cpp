@@ -61,7 +61,7 @@ std::shared_ptr<Detector> DetectorFactory::getDetector(const std::string& id, co
 
     m_detectors[id] = m_detectorGenerators[id]();
     if (m_detectors[id]->init(param) != kAifOk) {
-        Loge(id, "detector init error");
+        Loge(id, " detector init error");
         return nullptr;
     }
     return m_detectors[id];

@@ -94,12 +94,22 @@ std::string Detector::getModelPath() const
     return AIVision::getModelPath(m_modelName);
 }
 
+std::string Detector::getExtraModelPath() const
+{
+    return AIVision::getExtraModelPath(m_modelName);
+}
+
 t_aif_status Detector::compile() {
     std::string path = getModelPath();
     m_model = tflite::FlatBufferModel::BuildFromFile(path.c_str());
     if (m_model == nullptr) {
-        Loge("Can't get tflite model: ",  path);
-        return kAifError;
+        Logw("Can't get tflite model: ",  path, ". Retry in extra_models...");
+        std::string extra_path = getExtraModelPath();
+        m_model = tflite::FlatBufferModel::BuildFromFile(extra_path.c_str());
+        if (m_model == nullptr) {
+            Loge("Can't get tflite model: ",  extra_path);
+            return kAifError;
+        }
     }
 
     Logi("compile: ", path);

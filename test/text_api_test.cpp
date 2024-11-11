@@ -31,7 +31,7 @@ TEST_F(TextApiTest, createDetector_default)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::TEXT));
     ai.shutdown();
 }
@@ -40,7 +40,7 @@ TEST_F(TextApiTest, deleteDetector_default)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     EXPECT_FALSE(ai.deleteDetector(EdgeAIVision::DetectorType::TEXT));
     EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::TEXT));
@@ -53,20 +53,23 @@ TEST_F(TextApiTest, detect_text)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::TEXT;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/text.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
     rj::Document result;
     result.Parse(output.c_str());
+    ASSERT_TRUE(result.HasMember("texts"));
+    ASSERT_TRUE(result["texts"].HasMember("bbox"));
     EXPECT_EQ(result["texts"]["bbox"].Size(), 19);
+    ASSERT_TRUE(result["texts"].HasMember("box"));
     EXPECT_EQ(result["texts"]["box"].Size(), 19);
     Logd(output);
 }
@@ -86,20 +89,24 @@ TEST_F(TextApiTest, detect_text_with_detection_region)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::TEXT;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string basePath = AIVision::getBasePath();
     cv::Mat input = cv::imread(basePath + "/images/text.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(ai.createDetector(type, option));
-    EXPECT_TRUE(ai.detect(type, input, output));
+    ASSERT_TRUE(ai.createDetector(type, option));
+    ASSERT_TRUE(ai.detect(type, input, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
     rj::Document result;
     result.Parse(output.c_str());
+    std::cout << "output: " << output << std::endl;
+    ASSERT_TRUE(result.HasMember("texts"));
+    ASSERT_TRUE(result["texts"].HasMember("bbox"));
     EXPECT_EQ(result["texts"]["bbox"].Size(), 6);
+    ASSERT_TRUE(result["texts"].HasMember("box"));
     EXPECT_EQ(result["texts"]["box"].Size(), 6);
     Logd(output);
 }
@@ -109,18 +116,21 @@ TEST_F(TextApiTest, detectFromFile_text)
     EdgeAIVision::DetectorType type = EdgeAIVision::DetectorType::TEXT;
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
 
     std::string inputPath = AIVision::getBasePath() + "/images/text.jpg";
     std::string output;
-    EXPECT_TRUE(ai.createDetector(type));
-    EXPECT_TRUE(ai.detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.detectFromFile(type, inputPath, output));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
     rj::Document result;
     result.Parse(output.c_str());
+    ASSERT_TRUE(result.HasMember("texts"));
+    ASSERT_TRUE(result["texts"].HasMember("bbox"));
     EXPECT_EQ(result["texts"]["bbox"].Size(), 19);
+    ASSERT_TRUE(result["texts"].HasMember("box"));
     EXPECT_EQ(result["texts"]["box"].Size(), 19);
     Logd(output);
 }

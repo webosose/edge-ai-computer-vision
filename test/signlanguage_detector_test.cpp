@@ -73,8 +73,8 @@ std::string SignLanguageAreaDetectorTest::imagePath = "";
 TEST_F(SignLanguageAreaDetectorTest, 01_init_signlanguage_model_cpu)
 {
     auto fd = DetectorFactory::get().getDetector("signlanguagearea_model_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "signlanguagearea_mb2_ssd_lite_float32.tflite");
+    ASSERT_TRUE(fd.get() != nullptr);
+    ASSERT_EQ(fd->getModelName(), "signlanguagearea_mb2_ssd_lite_float32.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 300);
     EXPECT_EQ(modelInfo.width, 300);
@@ -84,9 +84,9 @@ TEST_F(SignLanguageAreaDetectorTest, 01_init_signlanguage_model_cpu)
 TEST_F(SignLanguageAreaDetectorTest, 02_detect_signlanguagearea)
 {
     auto fd = DetectorFactory::get().getDetector("signlanguagearea_model_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<SignLanguageAreaDescriptor>();
     auto foundSignLanguageArea = std::dynamic_pointer_cast<SignLanguageAreaDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(SignLanguageAreaDetectorTest::imagePath, descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(SignLanguageAreaDetectorTest::imagePath, descriptor) == aif::kAifOk);
     Logi("Output: ", foundSignLanguageArea->toStr());
 }

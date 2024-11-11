@@ -13,11 +13,11 @@
 using namespace aif;
 namespace rj = rapidjson;
 
-class PipeApiFacadeTest : public ::testing::Test
+class ExtraPipeApiFacadeTest : public ::testing::Test
 {
 protected:
-    PipeApiFacadeTest() = default;
-    ~PipeApiFacadeTest() = default;
+    ExtraPipeApiFacadeTest() = default;
+    ~ExtraPipeApiFacadeTest() = default;
     void SetUp() override
     {
     }
@@ -146,75 +146,30 @@ protected:
     )";
 };
 
-TEST_F(PipeApiFacadeTest, pipeCreateTest)
-{
-    EdgeAIVision& ai = EdgeAIVision::getInstance();
-    EXPECT_FALSE(ai.isStarted());
-    EXPECT_FALSE(ai.pipeCreate(facePipeId, facePipeConfig));
-
-    ASSERT_TRUE(ai.startup());
-    ASSERT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_FALSE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.shutdown());
-}
-
-TEST_F(PipeApiFacadeTest, pipeDeleteTest)
+TEST_F(ExtraPipeApiFacadeTest, pipeCreateTest_multiple_pipes)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ASSERT_TRUE(ai.startup());
     ASSERT_TRUE(ai.isStarted());
-    EXPECT_FALSE(ai.pipeDelete(facePipeId));
     EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
+    EXPECT_TRUE(ai.pipeCreate(hgPipeId, hgPipeConfig));
     EXPECT_TRUE(ai.pipeDelete(facePipeId));
-    EXPECT_FALSE(ai.pipeDelete(facePipeId));
+    EXPECT_TRUE(ai.pipeDelete(hgPipeId));
     EXPECT_TRUE(ai.shutdown());
 }
 
-TEST_F(PipeApiFacadeTest, pipeUpdateTest)
-{
-    EdgeAIVision& ai = EdgeAIVision::getInstance();
-    ASSERT_TRUE(ai.startup());
-    ASSERT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.pipeUpdate(facePipeId, facePipeNewConfig));
-    EXPECT_FALSE(ai.pipeUpdate(facePipeId, facePipeInvalidConfig));
-
-    EXPECT_TRUE(ai.shutdown());
-}
-
-TEST_F(PipeApiFacadeTest, pipeDetectTest)
+TEST_F(ExtraPipeApiFacadeTest, pipeCreateTest_multiple_nodes)
 {
     std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
+    cv::Mat input = cv::imread(basePath + "/images/hand_left.jpg", cv::IMREAD_COLOR);
     std::string output;
 
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ASSERT_TRUE(ai.startup());
     ASSERT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.pipeDetect(facePipeId, input, output));
-    EXPECT_TRUE(ai.pipeDelete(facePipeId));
-    EXPECT_TRUE(ai.shutdown());
-
-    rj::Document d;
-    d.Parse(output.c_str());
-    ASSERT_TRUE(d.IsObject());
-    ASSERT_TRUE(d["results"].GetArray()[0][faceNodeId.c_str()].HasMember("faces"));
-    EXPECT_EQ(d["results"].GetArray()[0][faceNodeId.c_str()]["faces"].Size(), 1);
-}
-
-TEST_F(PipeApiFacadeTest, pipeDetectFromFileTest)
-{
-    std::string inputPath = AIVision::getBasePath() + "/images/person.jpg";
-    std::string output;
-
-    EdgeAIVision& ai = EdgeAIVision::getInstance();
-    ASSERT_TRUE(ai.startup());
-    ASSERT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.pipeDetectFromFile(facePipeId, inputPath, output));
-    EXPECT_TRUE(ai.pipeDelete(facePipeId));
+    EXPECT_TRUE(ai.pipeCreate(hgPipeId, hgPipeConfig));
+    EXPECT_TRUE(ai.pipeDetect(hgPipeId, input, output));
+    EXPECT_TRUE(ai.pipeDelete(hgPipeId));
     EXPECT_TRUE(ai.shutdown());
 
     rj::Document d;
@@ -222,51 +177,10 @@ TEST_F(PipeApiFacadeTest, pipeDetectFromFileTest)
     ASSERT_TRUE(d.IsObject());
     ASSERT_TRUE(d.HasMember("returnCode"));
     EXPECT_EQ(d["returnCode"].GetInt(), 0);
-    ASSERT_TRUE(d["results"].GetArray()[0][faceNodeId.c_str()].HasMember("faces"));
-    EXPECT_EQ(d["results"].GetArray()[0][faceNodeId.c_str()]["faces"].Size(), 1);
-}
-
-TEST_F(PipeApiFacadeTest, pipeCreateDeleteTest)
-{
-    EdgeAIVision& ai = EdgeAIVision::getInstance();
-    ASSERT_TRUE(ai.startup());
-    ASSERT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.pipeDelete(facePipeId));
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.pipeDelete(facePipeId));
-    EXPECT_TRUE(ai.shutdown());
-}
-
-TEST_F(PipeApiFacadeTest, usePipeApiBeforeStartup)
-{
-    std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
-    std::string output;
-
-    EdgeAIVision& ai = EdgeAIVision::getInstance();
-    EXPECT_FALSE(ai.isStarted());
-    EXPECT_FALSE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_FALSE(ai.pipeDetect(facePipeId, input, output));
-    EXPECT_FALSE(ai.pipeDelete(facePipeId));
-    EXPECT_FALSE(ai.shutdown());
-}
-
-TEST_F(PipeApiFacadeTest, usePipeApiAfterShutdown)
-{
-    std::string basePath = AIVision::getBasePath();
-    cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
-    std::string output;
-
-    EdgeAIVision& ai = EdgeAIVision::getInstance();
-    ASSERT_TRUE(ai.startup());
-    ASSERT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_TRUE(ai.pipeDetect(facePipeId, input, output));
-    EXPECT_TRUE(ai.pipeDelete(facePipeId));
-    EXPECT_TRUE(ai.shutdown());
-
-    EXPECT_FALSE(ai.pipeCreate(facePipeId, facePipeConfig));
-    EXPECT_FALSE(ai.pipeDetect(facePipeId, input, output));
-    EXPECT_FALSE(ai.pipeDelete(facePipeId));
+    EXPECT_EQ(d["results"].GetArray().Size(), 3);
+    ASSERT_TRUE(d["results"].GetArray()[0].HasMember("detect_palm"));
+    ASSERT_TRUE(d["results"].GetArray()[1].HasMember("palm_crop"));
+    ASSERT_TRUE(d["results"].GetArray()[2].HasMember("hand_landmark"));
+    ASSERT_TRUE(d["results"].GetArray()[2]["hand_landmark"].HasMember("hands"));
+    EXPECT_EQ(d["results"].GetArray()[2]["hand_landmark"]["hands"].GetArray().Size(), 1);
 }

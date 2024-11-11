@@ -49,14 +49,14 @@ class GpuDelegateTest : public ::testing::Test {
 TEST_F(GpuDelegateTest, 01_constructor) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("gpu_delegate");
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
     DelegateFactory::get().clear();
 }
 
 TEST_F(GpuDelegateTest, 02_constructor_with_options1) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("gpu_delegate", options1);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
 
     std::shared_ptr<GpuDelegate> gpuDelegate =
         std::dynamic_pointer_cast<GpuDelegate>(delegate);
@@ -80,7 +80,7 @@ TEST_F(GpuDelegateTest, 02_constructor_with_options1) {
 TEST_F(GpuDelegateTest, 02_constructor_with_options2) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("gpu_delegate", options2);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
 
     std::shared_ptr<GpuDelegate> gpuDelegate =
         std::dynamic_pointer_cast<GpuDelegate>(delegate);
@@ -101,8 +101,8 @@ TEST_F(GpuDelegateTest, 02_constructor_with_options2) {
 TEST_F(GpuDelegateTest, 04_getTfLiteDelegate) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("gpu_delegate", options1);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
     auto ptr = delegate->getTfLiteDelegate();
-    EXPECT_TRUE(ptr.get() != nullptr);
+    ASSERT_TRUE(ptr.get() != nullptr);
     DelegateFactory::get().clear();
 }

@@ -79,7 +79,7 @@ protected:
   void SetUp() override
   {
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.isStarted());
   }
 
   void TearDown() override
@@ -113,7 +113,7 @@ protected:
 // before creating the detector or pipe.
 TEST_F(ExtensionLoaderTest, 01_Init)
 {
-  EXPECT_TRUE(ai.isStarted());
+  ASSERT_TRUE(ai.isStarted());
   EXPECT_TRUE(this->ExistsInMaps(CORE_NAME));
   EXPECT_FALSE(this->ExistsInMaps(BASE_EXTION_NAME));
 }
@@ -122,8 +122,8 @@ TEST_F(ExtensionLoaderTest, 01_Init)
 // after the EdgeAIVision::createDetector() is called.
 TEST_F(ExtensionLoaderTest, 02_DetectorCreation)
 {
-  EXPECT_TRUE(ai.isStarted());
-  EXPECT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
+  ASSERT_TRUE(ai.isStarted());
+  ASSERT_TRUE(ai.createDetector(EdgeAIVision::DetectorType::FACE));
   EXPECT_TRUE(this->ExistsInMaps(CORE_NAME));
   EXPECT_TRUE(this->ExistsInMaps(BASE_EXTION_NAME));
   EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));
@@ -133,8 +133,8 @@ TEST_F(ExtensionLoaderTest, 02_DetectorCreation)
 // after the EdgeAIVision::pipeCreate() is called.
 TEST_F(ExtensionLoaderTest, 03_PipCreation)
 {
-  EXPECT_TRUE(ai.isStarted());
-  EXPECT_TRUE(ai.pipeCreate(hgPipeId, hgPipeConfig));
+  ASSERT_TRUE(ai.isStarted());
+  ASSERT_TRUE(ai.pipeCreate(hgPipeId, hgPipeConfig));
   EXPECT_TRUE(this->ExistsInMaps(CORE_NAME));
   EXPECT_TRUE(this->ExistsInMaps(BASE_EXTION_NAME));
   EXPECT_TRUE(ai.pipeDelete(hgPipeId));

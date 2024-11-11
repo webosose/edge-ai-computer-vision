@@ -82,6 +82,7 @@ TEST_F(DelegateFactoryTest, 02_clear)
 {
     DelegateFactory* factory = &DelegateFactory::get();
     EXPECT_TRUE(factory != nullptr);
+    factory->clear();
     EXPECT_TRUE(factory->getDelegate("test_delegate1") != nullptr);
     EXPECT_TRUE(factory->getDelegate("test_delegate2") != nullptr);
     EXPECT_EQ(factory->getNumDelegates(), 2);

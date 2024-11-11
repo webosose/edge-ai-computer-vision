@@ -10,7 +10,7 @@
 #include <aif/base/DetectorFactory.h>
 #include <gtest/gtest.h>
 #include <opencv2/opencv.hpp>
-#include "ConfigUtil.h"
+#include "pipe/ConfigUtil.h"
 
 using namespace std;
 using namespace aif;
@@ -52,9 +52,9 @@ TEST_F(PalmCropOperationTest, 01_run)
 {
     cv::Mat image = cv::imread(basePath + "/images/hand_right.jpg");
     auto detector = DetectorFactory::get().getDetector("palm_lite_cpu");
-    EXPECT_TRUE(detector.get() != nullptr);
+    ASSERT_TRUE(detector.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
-    EXPECT_TRUE(detector->detect(image, descriptor) == aif::kAifOk);
+    ASSERT_TRUE(detector->detect(image, descriptor) == aif::kAifOk);
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
     EXPECT_EQ(foundPalms->size(), 1);
     string targetId = "detect_palm";
@@ -75,14 +75,14 @@ TEST_F(PalmCropOperationTest, 01_run)
 
     input->setDescriptor(pipeDescriptor);
     cv::Size originSize = input->getDescriptor()->getImage().size();
-    EXPECT_TRUE(operation->run(input, output));
+    ASSERT_TRUE(operation->run(input, output));
     cv::Size cropSize = output->getDescriptor()->getImage().size();
     EXPECT_NE(originSize, cropSize);
 
     string cropResult = output->getDescriptor()->getResult(id);
     rj::Document doc;
     doc.Parse(cropResult);
-    EXPECT_TRUE(doc.HasMember("region"));
+    ASSERT_TRUE(doc.HasMember("region"));
     EXPECT_EQ(doc["region"][2].GetInt(), cropSize.width);
     EXPECT_EQ(doc["region"][3].GetInt(), cropSize.height);
 }

@@ -157,28 +157,36 @@ TEST_F(CApiFacadeDLTest, 01_startup)
 TEST_F(CApiFacadeDLTest, 02_createDetector_default)
 {
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::POSE, ""));
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::SEGMENTATION, ""));
+    ASSERT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
+#ifndef USE_UPDATABLE_MODELS
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::POSE, ""));
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::SEGMENTATION, ""));
+#endif
     EXPECT_TRUE(edgeai_shutdown());
 }
 
 TEST_F(CApiFacadeDLTest, 03_deleteDetector_default)
 {
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
     EXPECT_FALSE(edgeai_deleteDetector(DetectorType::FACE));
+#ifndef USE_UPDATABLE_MODELS
     EXPECT_FALSE(edgeai_deleteDetector(DetectorType::POSE));
     EXPECT_FALSE(edgeai_deleteDetector(DetectorType::SEGMENTATION));
+#endif
 
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::POSE, ""));
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::SEGMENTATION, ""));
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
+#ifndef USE_UPDATABLE_MODELS
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::POSE, ""));
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::SEGMENTATION, ""));
+#endif
 
     EXPECT_TRUE(edgeai_deleteDetector(DetectorType::FACE));
+#ifndef USE_UPDATABLE_MODELS
     EXPECT_TRUE(edgeai_deleteDetector(DetectorType::POSE));
     EXPECT_TRUE(edgeai_deleteDetector(DetectorType::SEGMENTATION));
+#endif
     EXPECT_TRUE(edgeai_shutdown());
 }
 
@@ -187,13 +195,13 @@ TEST_F(CApiFacadeDLTest, 04_detect_face_default)
     DetectorType type = DetectorType::FACE;
 
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
 
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(edgeai_createDetector(type, ""));
-    EXPECT_TRUE(edgeai_detect(type, input, output));
+    ASSERT_TRUE(edgeai_createDetector(type, ""));
+    ASSERT_TRUE(edgeai_detect(type, input, output));
     EXPECT_TRUE(edgeai_deleteDetector(type));
     EXPECT_TRUE(edgeai_shutdown());
 
@@ -208,12 +216,12 @@ TEST_F(CApiFacadeDLTest, 05_detectFromFile_face_default)
     DetectorType type = DetectorType::FACE;
 
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
 
     std::string inputPath = basePath + "/images/person.jpg";
     std::string output;
-    EXPECT_TRUE(edgeai_createDetector(type, ""));
-    EXPECT_TRUE(edgeai_detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(edgeai_createDetector(type, ""));
+    ASSERT_TRUE(edgeai_detectFromFile(type, inputPath, output));
     EXPECT_TRUE(edgeai_deleteDetector(type));
     EXPECT_TRUE(edgeai_shutdown());
 
@@ -223,18 +231,19 @@ TEST_F(CApiFacadeDLTest, 05_detectFromFile_face_default)
     std::cout << output << std::endl;
 }
 
+#ifndef USE_UPDATABLE_MODELS
 TEST_F(CApiFacadeDLTest, 06_detect_pose_default)
 {
     DetectorType type = DetectorType::POSE;
 
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
 
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(edgeai_createDetector(type, ""));
-    EXPECT_TRUE(edgeai_detect(type, input, output));
+    ASSERT_TRUE(edgeai_createDetector(type, ""));
+    ASSERT_TRUE(edgeai_detect(type, input, output));
     EXPECT_TRUE(edgeai_deleteDetector(type));
     EXPECT_TRUE(edgeai_shutdown());
 
@@ -249,12 +258,12 @@ TEST_F(CApiFacadeDLTest, 07_detectFromFile_pose_default)
     DetectorType type = DetectorType::POSE;
 
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
 
     std::string inputPath = basePath + "/images/person.jpg";
     std::string output;
-    EXPECT_TRUE(edgeai_createDetector(type, ""));
-    EXPECT_TRUE(edgeai_detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(edgeai_createDetector(type, ""));
+    ASSERT_TRUE(edgeai_detectFromFile(type, inputPath, output));
     EXPECT_TRUE(edgeai_deleteDetector(type));
     EXPECT_TRUE(edgeai_shutdown());
 
@@ -269,18 +278,19 @@ TEST_F(CApiFacadeDLTest, 08_detect_segmentation_default)
     DetectorType type = DetectorType::SEGMENTATION;
 
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
 
     cv::Mat input = cv::imread(basePath + "/images/person.jpg", cv::IMREAD_COLOR);
     std::string output;
 
-    EXPECT_TRUE(edgeai_createDetector(type, ""));
-    EXPECT_TRUE(edgeai_detect(type, input, output));
+    ASSERT_TRUE(edgeai_createDetector(type, ""));
+    ASSERT_TRUE(edgeai_detect(type, input, output));
     EXPECT_TRUE(edgeai_deleteDetector(type));
     EXPECT_TRUE(edgeai_shutdown());
 
     rj::Document result;
     result.Parse(output.c_str());
+    ASSERT_TRUE(result.HasMember("segments"));
     EXPECT_EQ(result["segments"].Size(), 1);
 }
 
@@ -288,29 +298,31 @@ TEST_F(CApiFacadeDLTest, 09_detectFromFile_segmentation_default)
 {
     DetectorType type = DetectorType::SEGMENTATION;
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_isStarted());
 
     std::string inputPath = basePath + "/images/person.jpg";
     std::string output;
-    EXPECT_TRUE(edgeai_createDetector(type, ""));
-    EXPECT_TRUE(edgeai_detectFromFile(type, inputPath, output));
+    ASSERT_TRUE(edgeai_createDetector(type, ""));
+    ASSERT_TRUE(edgeai_detectFromFile(type, inputPath, output));
     EXPECT_TRUE(edgeai_deleteDetector(type));
     EXPECT_TRUE(edgeai_shutdown());
 
     rj::Document result;
     result.Parse(output.c_str());
+    ASSERT_TRUE(result.HasMember("segments"));
     EXPECT_EQ(result["segments"].Size(), 1);
 }
+#endif
 
 TEST_F(CApiFacadeDLTest, 10_create_delete_detector)
 {
     EXPECT_TRUE(edgeai_startup(""));
-    EXPECT_TRUE(edgeai_isStarted());
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
+    ASSERT_TRUE(edgeai_isStarted());
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
     EXPECT_FALSE(edgeai_createDetector(DetectorType::FACE, ""));
     EXPECT_TRUE(edgeai_deleteDetector(DetectorType::FACE));
     EXPECT_FALSE(edgeai_deleteDetector(DetectorType::FACE));
-    EXPECT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
+    ASSERT_TRUE(edgeai_createDetector(DetectorType::FACE, ""));
     EXPECT_TRUE(edgeai_shutdown());
 }
 

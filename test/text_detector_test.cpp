@@ -54,8 +54,8 @@ protected:
 TEST_F(TextDetectorTest, 01_init_paddleocr_320_v2)
 {
     auto fd = DetectorFactory::get().getDetector("text_paddleocr_320_v2");
-    EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "paddleocr_320_320_float32.tflite");
+    ASSERT_TRUE(fd.get() != nullptr);
+    ASSERT_EQ(fd->getModelName(), "paddleocr_320_320_float32.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 320);
     EXPECT_EQ(modelInfo.width, 320);
@@ -65,10 +65,10 @@ TEST_F(TextDetectorTest, 01_init_paddleocr_320_v2)
 TEST_F(TextDetectorTest, 02_detect_texts)
 {
     auto fd = DetectorFactory::get().getDetector("text_paddleocr_320_v2");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<TextDescriptor>();
     auto foundTexts = std::dynamic_pointer_cast<TextDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/text.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/text.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundTexts->getTextRectCount(), 19);
     Logi("Output: ", foundTexts->toStr());
 }
@@ -83,10 +83,10 @@ TEST_F(TextDetectorTest, 03_detect_texts_with_detection_region)
             })";
 
     auto fd = DetectorFactory::get().getDetector("text_paddleocr_320_v2", param);
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<TextDescriptor>();
     auto foundTexts = std::dynamic_pointer_cast<TextDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/text.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/text.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundTexts->getTextRectCount(), 6);
     Logi("Output: ", foundTexts->toStr());
 }

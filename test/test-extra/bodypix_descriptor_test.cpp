@@ -27,7 +27,7 @@ protected:
     void TearDown() override
     {
     }
-    
+
     int width{320};
     int height{240};
     void initMaskData(uint8_t* mask, bool reverse = false) {
@@ -53,20 +53,20 @@ TEST_F(BodypixDescriptorTest, 02_addMaskData_one)
 {
     uint8_t mask[width * height];
     initMaskData(mask);
-    
+
     BodypixDescriptor descriptor;
     descriptor.addMaskData(width, height, mask);
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("segments"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("segments"));
     EXPECT_TRUE(d["segments"].IsArray());
     EXPECT_TRUE(d["segments"].Size() == 1);
-    EXPECT_TRUE(d["segments"][0].HasMember("width"));
-    EXPECT_TRUE(d["segments"][0].HasMember("height"));
-    EXPECT_TRUE(d["segments"][0].HasMember("mask"));
+    ASSERT_TRUE(d["segments"][0].HasMember("width"));
+    ASSERT_TRUE(d["segments"][0].HasMember("height"));
+    ASSERT_TRUE(d["segments"][0].HasMember("mask"));
     EXPECT_EQ(d["segments"][0]["width"], width);
     EXPECT_EQ(d["segments"][0]["height"], height);
     EXPECT_TRUE(d["segments"][0]["mask"].IsArray());
@@ -84,17 +84,17 @@ TEST_F(BodypixDescriptorTest, 03_addMaskData_two)
     uint8_t mask2[width * height];
     initMaskData(mask1, false);
     initMaskData(mask2, true);
-    
+
     BodypixDescriptor descriptor;
     descriptor.addMaskData(width, height, mask1);
     descriptor.addMaskData(width, height, mask2);
-    
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("segments"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("segments"));
     EXPECT_TRUE(d["segments"].Size() == 2);
     int count1 = 0;
     int count2 = 0;
@@ -110,17 +110,17 @@ TEST_F(BodypixDescriptorTest, 04_add_response_and_returncode)
 {
     uint8_t mask[width * height];
     initMaskData(mask, false);
- 
+
     BodypixDescriptor descriptor;
     descriptor.addMaskData(width, height, mask);
     descriptor.addResponseName("bodypix_detect");
     descriptor.addReturnCode(kAifOk);
- 
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("response"));
     EXPECT_TRUE(d.HasMember("returnCode"));
     EXPECT_TRUE(d.HasMember("segments"));

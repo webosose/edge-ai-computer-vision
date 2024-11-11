@@ -17,7 +17,7 @@ using namespace aif;
 
 class TestDetector1 : public Detector {
   public:
-    TestDetector1() : Detector("face_detection_short_range.tflite") {}
+    TestDetector1() : Detector("yunet_yunet_final_360_640_simplify_float32.tflite") {}
 
     t_aif_status init(const std::string &param) override { return kAifOk; }
     std::shared_ptr<DetectorParam> createParam() override {

@@ -72,14 +72,14 @@ TEST_F(PipeDescriptorTest, 04_addBridgeOperationResult)
     rj::Document doc;
     doc.Parse(result.c_str());
 
-    EXPECT_TRUE(doc.HasMember("results"));
+    ASSERT_TRUE(doc.HasMember("results"));
     EXPECT_EQ(doc["results"].GetArray().Size(), 3);
-    EXPECT_TRUE(doc["results"].GetArray()[0].HasMember("test1"));
-    EXPECT_TRUE(doc["results"].GetArray()[0]["test1"].HasMember("item1"));
-    EXPECT_TRUE(doc["results"].GetArray()[1].HasMember("test2"));
-    EXPECT_TRUE(doc["results"].GetArray()[1]["test2"].HasMember("item2"));
-    EXPECT_TRUE(doc["results"].GetArray()[2].HasMember("test3"));
-    EXPECT_TRUE(doc["results"].GetArray()[2]["test3"].HasMember("item3"));
+    ASSERT_TRUE(doc["results"].GetArray()[0].HasMember("test1"));
+    ASSERT_TRUE(doc["results"].GetArray()[0]["test1"].HasMember("item1"));
+    ASSERT_TRUE(doc["results"].GetArray()[1].HasMember("test2"));
+    ASSERT_TRUE(doc["results"].GetArray()[1]["test2"].HasMember("item2"));
+    ASSERT_TRUE(doc["results"].GetArray()[2].HasMember("test3"));
+    ASSERT_TRUE(doc["results"].GetArray()[2]["test3"].HasMember("item3"));
 }
 
 TEST_F(PipeDescriptorTest, 05_getResult)

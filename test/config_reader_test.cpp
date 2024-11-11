@@ -120,7 +120,7 @@ TEST_F(ConfigReaderTest, 05_MergeConfigTest)
     AIVision::mergeConfig(config, override_config);
     for (auto& member : override_config->m_document.GetObject()) {
         if (member.name.IsString()) {
-            EXPECT_EQ(config->m_document.HasMember(member.name), true);
+            ASSERT_EQ(config->m_document.HasMember(member.name), true);
             EXPECT_EQ(config->getOption(member.name.GetString()), override_config->getOption(member.name.GetString()));
         }
     }

@@ -7,7 +7,10 @@
 #include <aif/base/DetectorFactory.h>
 #include <aif/base/DelegateFactory.h>
 
+#include <aifex/face/FaceDescriptor.h>
+#ifndef USE_UPDATABLE_MODELS
 #include <aifex/pose/PosenetDescriptor.h>
+#endif
 
 #include <aif/tools/Utils.h>
 #include <aif/log/Logger.h>
@@ -59,7 +62,8 @@ protected:
     std::string use_auto_delegate {
         "{"
         "  \"autoDelegate\" : {"
-        "      \"policy\": \"MIN_LATENCY\""
+        "      \"policy\": \"PYTORCH_MODEL_GPU\","
+        "      \"cpu_fallback_percentage\": 15 "
         "    }"
         "}"};
 
@@ -83,18 +87,19 @@ protected:
 
 TEST_F(AutoDelegateTest, 01_use_default)
 {
-    auto pd = DetectorFactory::get().getDetector("posenet_mobilenet_cpu");
-    EXPECT_TRUE(pd.get() != nullptr);
+    auto fd = DetectorFactory::get().getDetector("face_yunet_360_640");
+    ASSERT_TRUE(fd.get() != nullptr);
 
-    PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
-    std::shared_ptr<Descriptor> descriptor(poseDescriptor);
-    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
-    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(poseDescriptor->getPoseCount(), 1);
-    EXPECT_TRUE(pd->getAutoDelegateMode());
+    FaceDescriptor* faceDescriptor = new FaceDescriptor();
+    std::shared_ptr<Descriptor> descriptor(faceDescriptor);
+    EXPECT_EQ(faceDescriptor->size(), 0);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/person.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(faceDescriptor->size(), 1);
+    EXPECT_TRUE(fd->getAutoDelegateMode());
 }
 
 #ifndef USE_HOST_TEST
+#ifndef USE_UPDATABLE_MODELS
 TEST_F(AutoDelegateTest, 02_not_use_auto_delegate)
 {
     auto pd = DetectorFactory::get().getDetector("posenet_mobilenet_cpu", not_use_auto_delegate);
@@ -107,17 +112,18 @@ TEST_F(AutoDelegateTest, 02_not_use_auto_delegate)
     EXPECT_EQ(poseDescriptor->getPoseCount(), 5);
     EXPECT_FALSE(pd->getAutoDelegateMode());
 }
+#endif
 
 TEST_F(AutoDelegateTest, 03_use_auto_delegate)
 {
-    std::shared_ptr<Detector> pd = DetectorFactory::get().getDetector("posenet_mobilenet_cpu", use_auto_delegate);
-    EXPECT_TRUE(pd.get() != nullptr);
+    std::shared_ptr<Detector> fd = DetectorFactory::get().getDetector("face_yunet_360_640", use_auto_delegate);
+    ASSERT_TRUE(fd.get() != nullptr);
 
-    PosenetDescriptor* poseDescriptor = new PosenetDescriptor();
-    std::shared_ptr<Descriptor> descriptor(poseDescriptor);
-    EXPECT_EQ(poseDescriptor->getPoseCount(), 0);
-    EXPECT_TRUE(pd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
-    EXPECT_EQ(poseDescriptor->getPoseCount(), 5);
-    EXPECT_TRUE(pd->getAutoDelegateMode());
+    FaceDescriptor* faceDescriptor = new FaceDescriptor();
+    std::shared_ptr<Descriptor> descriptor(faceDescriptor);
+    EXPECT_EQ(faceDescriptor->size(), 0);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/people.jpg", descriptor) == aif::kAifOk);
+    EXPECT_EQ(faceDescriptor->size(), 5);
+    EXPECT_TRUE(fd->getAutoDelegateMode());
 }
 #endif

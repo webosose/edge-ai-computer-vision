@@ -56,9 +56,9 @@ TEST_F(TextDescriptorTest, 02_addBbox)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("texts"));
-    EXPECT_TRUE(d["texts"].HasMember("bbox"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("texts"));
+    ASSERT_TRUE(d["texts"].HasMember("bbox"));
     EXPECT_TRUE(d["texts"]["bbox"].IsArray());
     EXPECT_TRUE(d["texts"]["bbox"].Size() == 3);
     EXPECT_TRUE(d["texts"]["bbox"][0].IsArray());
@@ -95,9 +95,9 @@ TEST_F(TextDescriptorTest, 03_addBox)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("texts"));
-    EXPECT_TRUE(d["texts"].HasMember("box"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("texts"));
+    ASSERT_TRUE(d["texts"].HasMember("box"));
     EXPECT_TRUE(d["texts"]["box"].IsArray());
     EXPECT_TRUE(d["texts"]["box"].Size() == 3);
 
@@ -158,10 +158,10 @@ TEST_F(TextDescriptorTest, 04_add_response_and_returncode)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("response"));
-    EXPECT_TRUE(d.HasMember("returnCode"));
-    EXPECT_TRUE(d.HasMember("texts"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("response"));
+    ASSERT_TRUE(d.HasMember("returnCode"));
+    ASSERT_TRUE(d.HasMember("texts"));
     EXPECT_TRUE(d["texts"]["bbox"].IsArray());
     EXPECT_TRUE(d["texts"]["bbox"].Size() == 3);
     EXPECT_TRUE(d["texts"]["box"].IsArray());
@@ -180,7 +180,7 @@ TEST_F(TextDescriptorTest, 05_empty_texts)
 
     rj::Document d;
     d.Parse(json.c_str());
-    EXPECT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.IsObject());
     EXPECT_TRUE(d.HasMember("response"));
     EXPECT_TRUE(d.HasMember("returnCode"));
     EXPECT_TRUE(d.HasMember("texts"));

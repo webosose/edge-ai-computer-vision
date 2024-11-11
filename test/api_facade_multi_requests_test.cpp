@@ -42,15 +42,21 @@ public:
         std::string output;
         for (int i = 0; i < m_count; i++) {
             Logi(m_name, " exec: ",  i + 1);
-            EXPECT_TRUE(m_ai.detect(m_type, m_input, output));
+            ASSERT_TRUE(m_ai.detect(m_type, m_input, output));
             rj::Document result;
             result.Parse(output.c_str());
-            if (EdgeAIVision::DetectorType::FACE == m_type)
+            if (EdgeAIVision::DetectorType::FACE == m_type) {
+                ASSERT_TRUE(result.HasMember("faces"));
                 EXPECT_EQ(result["faces"].Size(), 1);
-            else if (EdgeAIVision::DetectorType::POSE == m_type)
+            }
+            else if (EdgeAIVision::DetectorType::POSE == m_type) {
+                ASSERT_TRUE(result.HasMember("poses"));
                 EXPECT_EQ(result["poses"].Size(), 1);
-            else if (EdgeAIVision::DetectorType::SEGMENTATION == m_type)
+            }
+            else if (EdgeAIVision::DetectorType::SEGMENTATION == m_type) {
+                ASSERT_TRUE(result.HasMember("segments"));
                 EXPECT_EQ(result["segments"].Size(), 1);
+            }
         }
     }
 private:
@@ -68,8 +74,8 @@ TEST_F(ApiFacadeMultiRequestTest, 01_thread1)
     auto type = EdgeAIVision::DetectorType::FACE;
 
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type));
 
     std::thread t1(RequestThread("thread1", ai, type, 10));
     t1.join();
@@ -84,8 +90,8 @@ TEST_F(ApiFacadeMultiRequestTest, 02_thread2_same_model)
     auto type = EdgeAIVision::DetectorType::FACE;
 
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type));
 
     std::thread t1(RequestThread("thread1", ai, type, 5));
     std::thread t2(RequestThread("thread2", ai, type, 10));
@@ -97,6 +103,7 @@ TEST_F(ApiFacadeMultiRequestTest, 02_thread2_same_model)
     ai.shutdown();
 }
 
+#ifndef USE_UPDATABLE_MODELS
 TEST_F(ApiFacadeMultiRequestTest, 02_thread2_different_model)
 {
     EdgeAIVision& ai = EdgeAIVision::getInstance();
@@ -104,9 +111,9 @@ TEST_F(ApiFacadeMultiRequestTest, 02_thread2_different_model)
     auto type2 = EdgeAIVision::DetectorType::POSE;
 
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type1));
-    EXPECT_TRUE(ai.createDetector(type2));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type1));
+    ASSERT_TRUE(ai.createDetector(type2));
 
     std::thread t1(RequestThread("thread1", ai, type1, 10));
     std::thread t2(RequestThread("thread2", ai, type2, 5));
@@ -127,10 +134,10 @@ TEST_F(ApiFacadeMultiRequestTest, 02_thread3_different_model)
     auto type3 = EdgeAIVision::DetectorType::SEGMENTATION;
 
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type1));
-    EXPECT_TRUE(ai.createDetector(type2));
-    EXPECT_TRUE(ai.createDetector(type3));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type1));
+    ASSERT_TRUE(ai.createDetector(type2));
+    ASSERT_TRUE(ai.createDetector(type3));
 
     std::thread t1(RequestThread("thread1", ai, type1, 10));
     std::thread t2(RequestThread("thread2", ai, type2, 5));
@@ -145,3 +152,4 @@ TEST_F(ApiFacadeMultiRequestTest, 02_thread3_different_model)
     EXPECT_TRUE(ai.deleteDetector(type3));
     ai.shutdown();
 }
+#endif

@@ -77,8 +77,8 @@ TEST_F(DetectorOperationTest, 01_face_detector_operation_test)
     descriptor->setImage(image);
     input->setDescriptor(descriptor);
 
-    EXPECT_TRUE(operation.get() != nullptr);
-    EXPECT_TRUE(operation->run(input, output));
+    ASSERT_TRUE(operation.get() != nullptr);
+    ASSERT_TRUE(operation->run(input, output));
 
     string result = output->getDescriptor()->getResult(id);
     rj::Document d;
@@ -86,6 +86,7 @@ TEST_F(DetectorOperationTest, 01_face_detector_operation_test)
     EXPECT_TRUE(d["faces"].Size() == 1);
 }
 
+#ifndef USE_UPDATABLE_MODELS
 TEST_F(DetectorOperationTest, 02_posenet_detector_operation_test)
 {
     string id = "detect_posenet";
@@ -117,11 +118,12 @@ TEST_F(DetectorOperationTest, 02_posenet_detector_operation_test)
     descriptor->setImage(image);
     input->setDescriptor(descriptor);
 
-    EXPECT_TRUE(operation.get() != nullptr);
-    EXPECT_TRUE(operation->run(input, output));
+    ASSERT_TRUE(operation.get() != nullptr);
+    ASSERT_TRUE(operation->run(input, output));
 
     string result = output->getDescriptor()->getResult(id);
     rj::Document d;
     d.Parse(result.c_str());
     EXPECT_TRUE(d["poses"].Size() == 1);
 }
+#endif

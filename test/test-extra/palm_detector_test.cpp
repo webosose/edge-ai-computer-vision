@@ -54,7 +54,7 @@ protected:
 TEST_F(PalmDetectorTest, 01_palm_lite_init)
 {
     auto fd = DetectorFactory::get().getDetector("palm_lite_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     EXPECT_EQ(fd->getModelName(), "palm_detection_lite.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 192);
@@ -65,38 +65,38 @@ TEST_F(PalmDetectorTest, 01_palm_lite_init)
 TEST_F(PalmDetectorTest, 02_palm_lite_from_one_hand)
 {
     auto fd = DetectorFactory::get().getDetector("palm_lite_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/hand_right.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/hand_right.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundPalms->size(), 1);
 }
 
 TEST_F(PalmDetectorTest, 03_palm_lite_from_two_hand)
 {
     auto fd = DetectorFactory::get().getDetector("palm_lite_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/hand_two.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/hand_two.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundPalms->size(), 2);
 }
 
 TEST_F(PalmDetectorTest, 04_palm_lite_from_no_hand)
 {
     auto fd = DetectorFactory::get().getDetector("palm_lite_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/hand_none.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/hand_none.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundPalms->size(), 0);
 }
 
 TEST_F(PalmDetectorTest, 05_palm_full_init)
 {
     auto fd = DetectorFactory::get().getDetector("palm_full_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
-    EXPECT_EQ(fd->getModelName(), "palm_detection_full.tflite");
+    ASSERT_TRUE(fd.get() != nullptr);
+    ASSERT_EQ(fd->getModelName(), "palm_detection_full.tflite");
     auto modelInfo = fd->getModelInfo();
     EXPECT_EQ(modelInfo.height, 192);
     EXPECT_EQ(modelInfo.width, 192);
@@ -106,30 +106,30 @@ TEST_F(PalmDetectorTest, 05_palm_full_init)
 TEST_F(PalmDetectorTest, 06_palm_full_from_one_hand)
 {
     auto fd = DetectorFactory::get().getDetector("palm_full_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/hand_right.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/hand_right.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundPalms->size(), 1);
 }
 
 TEST_F(PalmDetectorTest, 07_palm_full_from_two_hand)
 {
     auto fd = DetectorFactory::get().getDetector("palm_full_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/hand_two.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/hand_two.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundPalms->size(), 2);
 }
 
 TEST_F(PalmDetectorTest, 08_palm_full_from_no_hand)
 {
     auto fd = DetectorFactory::get().getDetector("palm_full_cpu");
-    EXPECT_TRUE(fd.get() != nullptr);
+    ASSERT_TRUE(fd.get() != nullptr);
     std::shared_ptr<Descriptor> descriptor = std::make_shared<PalmDescriptor>();
     auto foundPalms = std::dynamic_pointer_cast<PalmDescriptor>(descriptor);
-    EXPECT_TRUE(fd->detectFromImage(basePath + "/images/hand_none.jpg", descriptor) == aif::kAifOk);
+    ASSERT_TRUE(fd->detectFromImage(basePath + "/images/hand_none.jpg", descriptor) == aif::kAifOk);
     EXPECT_EQ(foundPalms->size(), 0);
 }
 

@@ -116,9 +116,7 @@ std::string AIVision::getBasePath()
 int AIVision::getUpdatableModelIndex(const std::string& modelName)
 {
     std::vector<std::string> updatableModels {
-        "face_detection_short_range.tflite",
-        "posenet_mobilenet_v1_075_353_481_quant_decoder.tflite",
-        "selfie_segmentation.tflite"
+        "yunet_yunet_final_360_640_simplify_float32.tflite"
     };
 
     for (int i = 0; i < updatableModels.size(); i++) {
@@ -143,7 +141,10 @@ std::string AIVision::getModelPath(const std::string& modelName)
 #endif
     return getBasePath() + "/model/" + modelName;
 }
-
+std::string AIVision::getExtraModelPath(const std::string& modelName)
+{
+    return getBasePath() + "/extra_models/" + modelName;
+}
 
 void AIVision::mergeConfig(std::unique_ptr<ConfigReader>& target, std::unique_ptr<ConfigReader>& source)
 {

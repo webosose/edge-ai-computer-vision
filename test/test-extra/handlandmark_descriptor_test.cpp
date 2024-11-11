@@ -46,7 +46,7 @@ TEST_F(HandLandmarkDescriptorTest, 01_constructor)
 TEST_F(HandLandmarkDescriptorTest, 02_addLandmarks)
 {
     HandLandmarkDescriptor descriptor;
-    float landmarks[HandLandmarkDescriptor::LANDMARK_TYPE_COUNT * 
+    float landmarks[HandLandmarkDescriptor::LANDMARK_TYPE_COUNT *
         HandLandmarkDescriptor::LANDMARK_ITEM_COUNT];
     for (int i = 0; i < HandLandmarkDescriptor::LANDMARK_TYPE_COUNT; i++) {
         for (int j = 0; j < HandLandmarkDescriptor::LANDMARK_ITEM_COUNT; j++) {
@@ -54,18 +54,18 @@ TEST_F(HandLandmarkDescriptorTest, 02_addLandmarks)
         }
     }
     descriptor.addLandmarks(1.0, 1.0, landmarks, landmarks);
-   
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
     Logd(json);
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("hands"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("hands"));
     EXPECT_TRUE(d["hands"].IsArray());
     EXPECT_TRUE(d["hands"].Size() == 1);
-    EXPECT_TRUE(d["hands"][0].IsObject());
-    EXPECT_TRUE(d["hands"][0].HasMember("landmarks"));
-    EXPECT_TRUE(d["hands"][0].HasMember("landmarks3d"));
+    ASSERT_TRUE(d["hands"][0].IsObject());
+    ASSERT_TRUE(d["hands"][0].HasMember("landmarks"));
+    ASSERT_TRUE(d["hands"][0].HasMember("landmarks3d"));
     EXPECT_TRUE(d["hands"][0]["landmarks"].IsArray());
     EXPECT_TRUE(d["hands"][0]["landmarks3d"].IsArray());
     EXPECT_EQ(HandLandmarkDescriptor::LANDMARK_TYPE_COUNT,
@@ -76,7 +76,7 @@ TEST_F(HandLandmarkDescriptorTest, 02_addLandmarks)
 TEST_F(HandLandmarkDescriptorTest, 03_add_response_and_returncode)
 {
     HandLandmarkDescriptor descriptor;
-    float landmarks[HandLandmarkDescriptor::LANDMARK_TYPE_COUNT * 
+    float landmarks[HandLandmarkDescriptor::LANDMARK_TYPE_COUNT *
         HandLandmarkDescriptor::LANDMARK_ITEM_COUNT];
     for (int i = 0; i < HandLandmarkDescriptor::LANDMARK_TYPE_COUNT; i++) {
         for (int j = 0; j < HandLandmarkDescriptor::LANDMARK_ITEM_COUNT; j++) {
@@ -87,15 +87,15 @@ TEST_F(HandLandmarkDescriptorTest, 03_add_response_and_returncode)
     descriptor.addLandmarks(1.0, 1.0, landmarks, landmarks);
     descriptor.addResponseName("handlandmark_detect");
     descriptor.addReturnCode(kAifOk);
-   
+
     auto json = descriptor.toStr();
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("response"));
-    EXPECT_TRUE(d.HasMember("returnCode"));
-    EXPECT_TRUE(d.HasMember("hands"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("response"));
+    ASSERT_TRUE(d.HasMember("returnCode"));
+    ASSERT_TRUE(d.HasMember("hands"));
     EXPECT_TRUE(d["hands"].IsArray());
     EXPECT_TRUE(d["hands"].Size() == 1);
 }

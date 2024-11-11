@@ -66,16 +66,16 @@ TEST_F(PoseLandmarkDescriptorTest, 02_addMaskData_one)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("segments"));
-    EXPECT_TRUE(d["segments"].IsArray());
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("segments"));
+    ASSERT_TRUE(d["segments"].IsArray());
     EXPECT_TRUE(d["segments"].Size() == 1);
-    EXPECT_TRUE(d["segments"][0].HasMember("width"));
-    EXPECT_TRUE(d["segments"][0].HasMember("height"));
-    EXPECT_TRUE(d["segments"][0].HasMember("mask"));
+    ASSERT_TRUE(d["segments"][0].HasMember("width"));
+    ASSERT_TRUE(d["segments"][0].HasMember("height"));
+    ASSERT_TRUE(d["segments"][0].HasMember("mask"));
     EXPECT_EQ(d["segments"][0]["width"], width);
     EXPECT_EQ(d["segments"][0]["height"], height);
-    EXPECT_TRUE(d["segments"][0]["mask"].IsArray());
+    ASSERT_TRUE(d["segments"][0]["mask"].IsArray());
     EXPECT_EQ(d["segments"][0]["mask"].Size(), width * height);
     int count = 0;
     for (int i = 0; i < width * height; i++) {
@@ -101,8 +101,8 @@ TEST_F(PoseLandmarkDescriptorTest, 03_addMaskData_two)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("segments"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("segments"));
     EXPECT_TRUE(d["segments"].Size() == 2);
     int count1 = 0;
     int count2 = 0;
@@ -132,13 +132,13 @@ TEST_F(PoseLandmarkDescriptorTest, 04_addLandmarks)
     rj::Document d;
     d.Parse(json.c_str());
     Logd(json);
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("poses"));
-    EXPECT_TRUE(d["poses"].IsArray());
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("poses"));
+    ASSERT_TRUE(d["poses"].IsArray());
     EXPECT_TRUE(d["poses"].Size() == 1);
-    EXPECT_TRUE(d["poses"][0].IsObject());
-    EXPECT_TRUE(d["poses"][0].HasMember("landmarks"));
-    EXPECT_TRUE(d["poses"][0]["landmarks"].IsArray());
+    ASSERT_TRUE(d["poses"][0].IsObject());
+    ASSERT_TRUE(d["poses"][0].HasMember("landmarks"));
+    ASSERT_TRUE(d["poses"][0]["landmarks"].IsArray());
     EXPECT_EQ(PoseLandmarkDescriptor::NUM_LANDMARK_TYPES,
             d["poses"][0]["landmarks"].Size());
 
@@ -170,13 +170,13 @@ TEST_F(PoseLandmarkDescriptorTest, 05_add_response_and_returncode)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("response"));
-    EXPECT_TRUE(d.HasMember("returnCode"));
-    EXPECT_TRUE(d.HasMember("segments"));
-    EXPECT_TRUE(d["segments"].IsArray());
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("response"));
+    ASSERT_TRUE(d.HasMember("returnCode"));
+    ASSERT_TRUE(d.HasMember("segments"));
+    ASSERT_TRUE(d["segments"].IsArray());
     EXPECT_TRUE(d["segments"].Size() == 1);
-    EXPECT_TRUE(d.HasMember("poses"));
-    EXPECT_TRUE(d["poses"].IsArray());
+    ASSERT_TRUE(d.HasMember("poses"));
+    ASSERT_TRUE(d["poses"].IsArray());
     EXPECT_TRUE(d["poses"].Size() == 1);
 }

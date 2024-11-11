@@ -40,23 +40,23 @@ class NpuDelegateTest : public ::testing::Test {
 TEST_F(NpuDelegateTest, 01_constructor) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("npu_delegate");
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
     DelegateFactory::get().clear();
 }
 
 TEST_F(NpuDelegateTest, 02_getTfLiteDelegate) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("npu_delegate");
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
     auto ptr = delegate->getTfLiteDelegate();
-    EXPECT_TRUE(ptr.get() != nullptr);
+    ASSERT_TRUE(ptr.get() != nullptr);
     DelegateFactory::get().clear();
 }
 
 TEST_F(NpuDelegateTest, 03_getTfLiteDelegateWithOptions) {
     std::shared_ptr<Delegate> delegate =
         DelegateFactory::get().getDelegate("npu_delegate", options);
-    EXPECT_TRUE(delegate.get() != nullptr);
+    ASSERT_TRUE(delegate.get() != nullptr);
 
     std::shared_ptr<NpuDelegate> npuDelegate =
         std::dynamic_pointer_cast<NpuDelegate>(delegate);

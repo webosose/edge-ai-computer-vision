@@ -25,7 +25,7 @@ class ExtraOutputTestData {
 
 class ExtraOutputTestDetector : public Detector {
   public:
-    ExtraOutputTestDetector() : Detector("face_detection_short_range.tflite") {
+    ExtraOutputTestDetector() : Detector("yunet_yunet_final_360_640_simplify_float32.tflite") {
         std::cout << "create test detctor" << std::endl;
     }
 
@@ -130,19 +130,19 @@ class ExtraOutputTest : public ::testing::Test {
 
         AIVision::init();
         Pipe pipe;
-        EXPECT_TRUE(pipe.build(pipeConfig));
-        EXPECT_TRUE(pipe.detect(input, extraOutputs));
+        ASSERT_TRUE(pipe.build(pipeConfig));
+        ASSERT_TRUE(pipe.detect(input, extraOutputs));
 
         auto descriptor = pipe.getDescriptor();
-        EXPECT_TRUE(descriptor != nullptr);
+        ASSERT_TRUE(descriptor != nullptr);
 
         std::string output = descriptor->getResult(nodeId);
         AIVision::deinit();
 
         rj::Document d;
         d.Parse(output.c_str());
-        EXPECT_TRUE(d.IsObject());
-        EXPECT_TRUE(d.HasMember("useExtraOutput"));
+        ASSERT_TRUE(d.IsObject());
+        ASSERT_TRUE(d.HasMember("useExtraOutput"));
         EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
     }
 
@@ -152,16 +152,16 @@ class ExtraOutputTest : public ::testing::Test {
 
         EdgeAIVision& ai = EdgeAIVision::getInstance();
         ai.startup();
-        EXPECT_TRUE(ai.isStarted());
-        EXPECT_TRUE(ai.pipeCreate(pipeId, pipeConfig));
-        EXPECT_TRUE(ai.pipeDetect(pipeId, input, output, extraOutputs));
+        ASSERT_TRUE(ai.isStarted());
+        ASSERT_TRUE(ai.pipeCreate(pipeId, pipeConfig));
+        ASSERT_TRUE(ai.pipeDetect(pipeId, input, output, extraOutputs));
         EXPECT_TRUE(ai.pipeDelete(pipeId));
         ai.shutdown();
 
         rj::Document d;
         d.Parse(output.c_str());
-        EXPECT_TRUE(d.IsObject());
-        EXPECT_TRUE(d["results"].GetArray()[0][nodeId.c_str()].HasMember("useExtraOutput"));
+        ASSERT_TRUE(d.IsObject());
+        ASSERT_TRUE(d["results"].GetArray()[0][nodeId.c_str()].HasMember("useExtraOutput"));
         EXPECT_EQ(d["results"].GetArray()[0][nodeId.c_str()]["useExtraOutput"].GetBool(), true);
     }
 
@@ -182,7 +182,7 @@ TEST_F(ExtraOutputTest, floatDataTest)
             sizeof(float) * d.data_float.size());
     descriptor->initExtraOutput(extraOutput);
 
-    EXPECT_TRUE(td.detect(input, descriptor) == aif::kAifOk);
+    ASSERT_TRUE(td.detect(input, descriptor) == aif::kAifOk);
     float* outputData = static_cast<float*>(extraOutput.buffer());
     for (int i = 0; i < d.data_float.size(); i++) {
         EXPECT_TRUE(floatEquals(d.data_float[i], outputData[i]));
@@ -190,8 +190,8 @@ TEST_F(ExtraOutputTest, floatDataTest)
 
     rj::Document d;
     d.Parse(descriptor->toStr().c_str());
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("useExtraOutput"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("useExtraOutput"));
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 
@@ -210,15 +210,15 @@ TEST_F(ExtraOutputTest, uint8DataTest)
             sizeof(uint8_t) * d.data_uint8.size());
     descriptor->initExtraOutput(extraOutput);
 
-    EXPECT_TRUE(td.detect(input, descriptor) == aif::kAifOk);
+    ASSERT_TRUE(td.detect(input, descriptor) == aif::kAifOk);
     uint8_t* outputData = static_cast<uint8_t*>(extraOutput.buffer());
     for (int i = 0; i < d.data_uint8.size(); i++) {
         EXPECT_EQ(d.data_uint8[i], outputData[i]);
     }
     rj::Document d;
     d.Parse(descriptor->toStr().c_str());
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("useExtraOutput"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("useExtraOutput"));
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 
@@ -237,15 +237,15 @@ TEST_F(ExtraOutputTest, int8DataTest)
             sizeof(int8_t) * d.data_int8.size());
     descriptor->initExtraOutput(extraOutput);
 
-    EXPECT_TRUE(td.detect(input, descriptor) == aif::kAifOk);
+    ASSERT_TRUE(td.detect(input, descriptor) == aif::kAifOk);
     int8_t* outputData = static_cast<int8_t*>(extraOutput.buffer());
     for (int i = 0; i < d.data_int8.size(); i++) {
         EXPECT_EQ(d.data_int8[i], outputData[i]);
     }
     rj::Document d;
     d.Parse(descriptor->toStr().c_str());
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("useExtraOutput"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("useExtraOutput"));
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 
@@ -262,9 +262,9 @@ TEST_F(ExtraOutputTest, floatDataTestUsingFacadeAPI)
 
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type, option));
-    EXPECT_TRUE(ai.detect(type, input, output, extraOutput));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type, option));
+    ASSERT_TRUE(ai.detect(type, input, output, extraOutput));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -274,8 +274,8 @@ TEST_F(ExtraOutputTest, floatDataTestUsingFacadeAPI)
     }
     rj::Document d;
     d.Parse(output.c_str());
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("useExtraOutput"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("useExtraOutput"));
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 
@@ -292,9 +292,9 @@ TEST_F(ExtraOutputTest, uint8DataTestUsingFacadeAPI)
 
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type, option));
-    EXPECT_TRUE(ai.detect(type, input, output, extraOutput));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type, option));
+    ASSERT_TRUE(ai.detect(type, input, output, extraOutput));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -304,8 +304,8 @@ TEST_F(ExtraOutputTest, uint8DataTestUsingFacadeAPI)
     }
     rj::Document d;
     d.Parse(output.c_str());
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("useExtraOutput"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("useExtraOutput"));
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 
@@ -322,9 +322,9 @@ TEST_F(ExtraOutputTest, int8DataTestUsingFacadeAPI)
 
     EdgeAIVision& ai = EdgeAIVision::getInstance();
     ai.startup();
-    EXPECT_TRUE(ai.isStarted());
-    EXPECT_TRUE(ai.createDetector(type, option));
-    EXPECT_TRUE(ai.detect(type, input, output, extraOutput));
+    ASSERT_TRUE(ai.isStarted());
+    ASSERT_TRUE(ai.createDetector(type, option));
+    ASSERT_TRUE(ai.detect(type, input, output, extraOutput));
     EXPECT_TRUE(ai.deleteDetector(type));
     ai.shutdown();
 
@@ -334,8 +334,8 @@ TEST_F(ExtraOutputTest, int8DataTestUsingFacadeAPI)
     }
     rj::Document d;
     d.Parse(output.c_str());
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("useExtraOutput"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("useExtraOutput"));
     EXPECT_EQ(d["useExtraOutput"].GetBool(), true);
 }
 

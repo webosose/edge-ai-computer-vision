@@ -58,22 +58,22 @@ TEST_F(PalmDescriptorTest, 02_addpalm_one)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("palms"));
-    EXPECT_TRUE(d["palms"].IsArray());
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("palms"));
+    ASSERT_TRUE(d["palms"].IsArray());
     EXPECT_TRUE(d["palms"].Size() == 1);
-    EXPECT_TRUE(d["palms"][0].IsObject());
-    EXPECT_TRUE(d["palms"][0].HasMember("score"));
+    ASSERT_TRUE(d["palms"][0].IsObject());
+    ASSERT_TRUE(d["palms"][0].HasMember("score"));
     EXPECT_TRUE(d["palms"][0]["score"].GetDouble() == 1.0);
-    EXPECT_TRUE(d["palms"][0].HasMember("region"));
-    EXPECT_TRUE(d["palms"][0]["region"].IsArray());
+    ASSERT_TRUE(d["palms"][0].HasMember("region"));
+    ASSERT_TRUE(d["palms"][0]["region"].IsArray());
     EXPECT_TRUE(d["palms"][0]["region"].Size() == 4);
     EXPECT_TRUE(d["palms"][0]["region"][0].GetDouble() == 1.0);
     EXPECT_TRUE(d["palms"][0]["region"][1].GetDouble() == 2.0);
     EXPECT_TRUE(d["palms"][0]["region"][2].GetDouble() == (3.0 - 1.0));
     EXPECT_TRUE(d["palms"][0]["region"][3].GetDouble() == (4.0 - 2.0));
-    EXPECT_TRUE(d["palms"][0].HasMember("keyPoints"));
-    EXPECT_TRUE(d["palms"][0]["keyPoints"].IsArray());
+    ASSERT_TRUE(d["palms"][0].HasMember("keyPoints"));
+    ASSERT_TRUE(d["palms"][0]["keyPoints"].IsArray());
     EXPECT_TRUE(d["palms"][0]["keyPoints"].Size() == 14);
     EXPECT_TRUE(d["palms"][0]["keyPoints"][0].GetDouble() == 5.0);
     EXPECT_TRUE(d["palms"][0]["keyPoints"][1].GetDouble() == 6.0);
@@ -114,8 +114,8 @@ TEST_F(PalmDescriptorTest, 03_addpalm_two)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("palms"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("palms"));
     EXPECT_TRUE(d["palms"].IsArray());
     EXPECT_TRUE(d["palms"].Size() == 2);
     EXPECT_TRUE(d["palms"][0]["region"][0].GetDouble() == 1.0);
@@ -142,10 +142,10 @@ TEST_F(PalmDescriptorTest, 04_add_response_and_returncode)
     rj::Document d;
     d.Parse(json.c_str());
 
-    EXPECT_TRUE(d.IsObject());
-    EXPECT_TRUE(d.HasMember("response"));
-    EXPECT_TRUE(d.HasMember("returnCode"));
-    EXPECT_TRUE(d.HasMember("palms"));
+    ASSERT_TRUE(d.IsObject());
+    ASSERT_TRUE(d.HasMember("response"));
+    ASSERT_TRUE(d.HasMember("returnCode"));
+    ASSERT_TRUE(d.HasMember("palms"));
     EXPECT_TRUE(d["palms"].IsArray());
     EXPECT_TRUE(d["palms"].Size() == 1);
 }
