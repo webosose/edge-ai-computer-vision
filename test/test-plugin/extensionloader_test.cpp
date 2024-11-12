@@ -21,60 +21,7 @@ namespace rj = rapidjson;
 class ExtensionLoaderTest : public ::testing::Test
 {
 protected:
-  ExtensionLoaderTest()
-  {
-    hgPipeId= "pipe_hand_gesture";
-    hgPipeConfig = R"(
-        {
-            "name" : "pipe_hand_gesture",
-            "nodes": [
-                {
-                    "id" : "detect_palm",
-                    "input" : ["image"],
-                    "output" : ["image", "inference"],
-                    "operation" : {
-                        "type" : "detector",
-                        "config": {
-                            "model": "palm_lite_cpu",
-                            "param": {
-                                "autoDelegate": {
-                                    "policy": "CPU_ONLY"
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    "id" : "palm_crop",
-                    "input" : ["image", "inference"],
-                    "output" : ["image", "inference"],
-                    "operation" : {
-                        "type" : "palm_crop",
-                        "config": {
-                            "targetId" : "detect_palm"
-                        }
-                    }
-                },
-                {
-                    "id" : "hand_landmark",
-                    "input" : ["image", "inference"],
-                    "output" : ["image", "inference"],
-                    "operation" : {
-                        "type" : "detector",
-                        "config": {
-                            "model": "handlandmark_lite_cpu",
-                            "param": {
-                                "autoDelegate": {
-                                    "policy": "CPU_ONLY"
-                                }
-                            }
-                        }
-                    }
-                }
-            ]
-        }
-    )";
-  };
+  ExtensionLoaderTest() {}
   ~ExtensionLoaderTest() = default;
   void SetUp() override
   {
@@ -104,8 +51,6 @@ protected:
   }
 
   EdgeAIVision &ai = EdgeAIVision::getInstance();
-  std::string hgPipeId;
-  std::string hgPipeConfig;
 };
 
 // This test case is to check if the EdgeAIVision is started properly.
@@ -129,16 +74,6 @@ TEST_F(ExtensionLoaderTest, 02_DetectorCreation)
   EXPECT_TRUE(ai.deleteDetector(EdgeAIVision::DetectorType::FACE));
 }
 
-// This test case is to check if the extension is loaded properly
-// after the EdgeAIVision::pipeCreate() is called.
-TEST_F(ExtensionLoaderTest, 03_PipCreation)
-{
-  ASSERT_TRUE(ai.isStarted());
-  ASSERT_TRUE(ai.pipeCreate(hgPipeId, hgPipeConfig));
-  EXPECT_TRUE(this->ExistsInMaps(CORE_NAME));
-  EXPECT_TRUE(this->ExistsInMaps(BASE_EXTION_NAME));
-  EXPECT_TRUE(ai.pipeDelete(hgPipeId));
-}
 
 // This test case is to check if the extension is unloaded properly
 // after the EdgeAIVision::shutdown() is called.

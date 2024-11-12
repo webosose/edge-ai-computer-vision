@@ -48,8 +48,8 @@ add_definitions(
 
 set(EXE_NAME ${PROJECT_NAME})
 set(TEST_HDR_DIR ${CMAKE_SOURCE_DIR}/test)
-set(HDR_DIR ${CMAKE_SOURCE_DIR}/test/test-extra)
-set(SRC_DIR ${CMAKE_SOURCE_DIR}/test/test-extra)
+set(HDR_DIR ${CMAKE_SOURCE_DIR}/test-extra)
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/test-extra)
 
 # Header Files
 include_directories(
@@ -118,4 +118,5 @@ set_target_properties(${EXE_NAME}
 )
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/pipe")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test-plugin")
 install(TARGETS ${EXE_NAME} DESTINATION ${AIF_INSTALL_TEST_DIR})

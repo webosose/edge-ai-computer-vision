@@ -36,7 +36,7 @@ ELSEIF(WITH_UNIT_TEST)
     add_subdirectory(test/test-dl)
     add_subdirectory(test/test-plugin)
     add_subdirectory(test/test-inspector)
-    add_subdirectory(test/test-extra)
+    add_subdirectory(test-extra)
 ENDIF()
 
 add_subdirectory(third_party)
