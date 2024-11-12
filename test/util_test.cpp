@@ -100,7 +100,7 @@ TEST_F(UtilTest, util02_base64_decode)
     // imgFile.write(buffer.data(), result.first);
     // imgFile.close();
 
-    EXPECT_TRUE(aif::bufferToFile(buffer, result.first, basePath + "/images/mona_decoded.jpg"));
+    EXPECT_TRUE(aif::bufferToFile(buffer, result.first, "/tmp/mona_decoded.jpg"));
 }
 
 TEST_F(UtilTest, util03_base64Encode_to_string)
@@ -115,7 +115,7 @@ TEST_F(UtilTest, util03_base64Encode_to_string)
 
 TEST_F(UtilTest, util04_base64Encode_to_file)
 {
-    bool result = aif::base64Encode(basePath + "/images/mona.jpg", basePath + "/images/mona_base64.jpg");
+    bool result = aif::base64Encode(basePath + "/images/mona.jpg", "/tmp/mona_base64.jpg");
     EXPECT_TRUE(result);
 }
 
@@ -135,10 +135,10 @@ TEST_F(UtilTest, util05_base64Decode_to_buffer)
 TEST_F(UtilTest, util06_base64Decode_to_file)
 {
     std::array<std::pair<std::string, std::string>, 4> filenames{{
-        { basePath + "/images/mona.jpg", basePath + "/images/mona_decoded.jpg" },
-        { basePath + "/images/5faces.jpg", basePath + "/images/5faces_decoded.jpg" },
-        { basePath + "/images/2faces.jpg", basePath + "/images/2faces_decoded.jpg" },
-        { basePath + "/images/5people.jpg", basePath + "/images/5people_decoded.jpg" }
+        { basePath + "/images/mona.jpg", "/tmp/mona_decoded.jpg" },
+        { basePath + "/images/5faces.jpg", "/tmp/5faces_decoded.jpg" },
+        { basePath + "/images/2faces.jpg", "/tmp/2faces_decoded.jpg" },
+        { basePath + "/images/5people.jpg", "/tmp/5people_decoded.jpg" }
     }};
 
     for (const auto& f : filenames) {
@@ -241,7 +241,7 @@ TEST_F(UtilTest, util12_isIOUOver)
 TEST_F(UtilTest, util13_strToFile)
 {
     std::string str = "Hello, edgeai-vision!";
-    std::string outfile = basePath + "/hello.txt";
+    std::string outfile = "/tmp/hello.txt";
     auto result = aif::strToFile(str, outfile);
     EXPECT_TRUE(result);
 }
